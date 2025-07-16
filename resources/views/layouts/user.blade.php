@@ -20,7 +20,7 @@
         
         .sidebar {
             min-height: 100vh;
-            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            background: linear-gradient(135deg, #1292DD 0%, #1292DD 100%);
             position: fixed;
             top: 0;
             left: 0;
@@ -95,11 +95,11 @@
         
         .card.border-primary {
             border-width: 2px !important;
-            border-color: #28a745 !important;
+            border-color: #1292DD !important;
         }
         
         .card-header.bg-primary {
-            background-color: #28a745 !important;
+            background-color: #1292DD !important;
         }
         
         /* Responsive Design */
@@ -186,14 +186,26 @@
                 <div class="ms-auto">
                     <div class="dropdown">
                         <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
-                            <i class="bi bi-person-circle fs-5"></i>
+                            @if(Auth::user()->foto && Auth::user()->foto !== 'default.png')
+                                <img src="{{ asset('storage/profile_photos/' . Auth::user()->foto) }}" 
+                                    alt="Profile" class="rounded-circle me-2" width="40" height="40">
+                            @else
+                                <i class="bi bi-person-circle fs-5"></i>
+                            @endif
                             <span class="ms-2">{{ Auth::user()->nama }}</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
+                            <li><a class="dropdown-item" href="{{ route('user.profile') }}"><i class="bi bi-person me-2"></i>Profile</a></li>
                             <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
                             <li><hr class="dropdown-divider"></li>
-                            <li><a class="dropdown-item" href="{{ route('logout') }}"><i class="bi bi-box-arrow-right me-2"></i>Logout</a></li>
+                            <li>
+                                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
+                                    @csrf
+                                    <button type="submit" class="dropdown-item" style="border: none; background: none; width: 100%; text-align: left;">
+                                        <i class="bi bi-box-arrow-right me-2"></i>Logout
+                                    </button>
+                                </form>
+                            </li>
                         </ul>
                     </div>
                 </div>

@@ -12,8 +12,8 @@ class SubmissionMember extends Model
     protected $fillable = [
         'submission_id',
         'name',
-        'whatsapp',
         'email',
+        'whatsapp',
         'ktp',
         'position',
         'is_leader',

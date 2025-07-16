@@ -61,10 +61,10 @@
 
                             <!-- Jenis Ciptaan -->
                             <div class="mb-3">
-                                <label for="creation_type" class="form-label">Jenis Ciptaan <span class="text-danger">*</span></label>
+                                <label for="creation_type" class="form-label">Jenis Pengajuan <span class="text-danger">*</span></label>
                                 <select class="form-select @error('creation_type') is-invalid @enderror" 
                                         id="creation_type" name="creation_type" required onchange="updateFormFields()">
-                                    <option value="">Pilih Jenis Ciptaan</option>
+                                    <option value="">Pilih Jenis Pengajuan</option>
                                     <option value="program_komputer" {{ old('creation_type') == 'program_komputer' ? 'selected' : '' }}>Program Komputer</option>
                                     <option value="sinematografi" {{ old('creation_type') == 'sinematografi' ? 'selected' : '' }}>Sinematografi</option>
                                     <option value="buku" {{ old('creation_type') == 'buku' ? 'selected' : '' }}>Buku</option>
@@ -86,7 +86,7 @@
                                 @error('description')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <div class="form-text">Minimal 50 karakter, maksimal 1000 karakter</div>
+                                <div class="form-text"> Maksimal 1000 karakter</div>
                             </div>
                         </div>
 
@@ -140,8 +140,9 @@
                                 <i class="bi bi-arrow-left"></i> Kembali
                             </a>
                             <div>
-                                <button type="submit" name="save_as_draft" class="btn btn-outline-primary me-2">
-                                    <i class="bi bi-save"></i> Simpan Draft
+                                {{-- ✅ CHANGED: Replace Save Draft with Reset button --}}
+                                <button type="button" id="resetBtn" class="btn btn-outline-warning me-2" onclick="resetForm()">
+                                    <i class="bi bi-arrow-clockwise"></i> Reset Form
                                 </button>
                                 <button type="submit" class="btn btn-success">
                                     <i class="bi bi-send"></i> Submit
@@ -166,8 +167,8 @@
                     <div class="small" id="guidelines-content">
                         <div class="text-center py-3">
                             <i class="bi bi-file-earmark-text fs-3 text-muted mb-2"></i>
-                            <h6>Pilih Jenis Ciptaan</h6>
-                            <p class="text-muted mb-0">Silakan pilih jenis ciptaan terlebih dahulu untuk melihat persyaratan dokumen yang diperlukan.</p>
+                            <h6>Pilih Jenis Pengajuan</h6>
+                            <p class="text-muted mb-0">Silakan pilih jenis pengajuan terlebih dahulu untuk melihat persyaratan dokumen yang diperlukan.</p>
                         </div>
                     </div>
                 </div>
@@ -189,13 +190,20 @@
                             <li>Semua data harus diisi lengkap</li>
                             <li>Nomor WhatsApp aktif untuk komunikasi</li>
                             <li>Email yang valid</li>
-                            <li>Nomor KTP sesuai identitas</li>
+                            <li><strong>Scan foto KTP dalam format JPG (maksimal 2MB)</strong></li>
                         </ul>
                         
                         <div class="alert alert-info">
                             <small>
                                 <i class="bi bi-info-circle"></i>
-                                <strong>Info:</strong> Jika membutuhkan lebih dari 5 anggota pencipta, hubungi LPPM di hki@amikom.ac.id
+                                <strong>Info KTP:</strong> Pastikan foto KTP jelas, tidak buram, dan semua informasi dapat dibaca dengan baik.
+                            </small>
+                        </div>
+                        
+                        <div class="alert alert-warning">
+                            <small>
+                                <i class="bi bi-exclamation-triangle"></i>
+                                <strong>Privasi:</strong> File KTP hanya akan digunakan untuk verifikasi identitas dan tidak akan disebarluaskan.
                             </small>
                         </div>
                     </div>
@@ -251,7 +259,7 @@ document.addEventListener('DOMContentLoaded', function() {
     // Form submission handling
     document.getElementById('submissionForm').addEventListener('submit', function(e) {
         const submitButton = e.submitter;
-        if (submitButton) {
+        if (submitButton && submitButton.type === 'submit') {
             submitButton.disabled = true;
             const originalText = submitButton.innerHTML;
             submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
@@ -264,17 +272,169 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Initialize if there's old input
+    // ✅ NEW: Initialize form with old values if available
+    initializeFormWithOldValues();
+});
+
+// ✅ NEW: Function to initialize form with old values
+function initializeFormWithOldValues() {
+    // Initialize member count if there's old input
     const memberCount = document.getElementById('member_count').value;
     if (memberCount) {
         updateMemberFields();
     }
 
+    // Initialize creation type if there's old input
     const creationType = document.getElementById('creation_type').value;
     if (creationType) {
         updateFormFields();
     }
-});
+
+    // Restore member data from old input if available
+    @if(old('members'))
+        const oldMembers = @json(old('members'));
+        if (oldMembers && Object.keys(oldMembers).length > 0) {
+            console.log('Restoring old member data:', oldMembers);
+            restoreMemberData(oldMembers);
+        }
+    @endif
+}
+
+// ✅ IMPROVED: Better function to restore member data
+function restoreMemberData(oldMembers) {
+    // This function will be called after the member fields are created
+    setTimeout(() => {
+        Object.keys(oldMembers).forEach(index => {
+            const member = oldMembers[index];
+            
+            // Restore text inputs
+            if (member.name) {
+                const nameInput = document.querySelector(`input[name="members[${index}][name]"]`);
+                if (nameInput) nameInput.value = member.name;
+            }
+            
+            if (member.whatsapp) {
+                const whatsappInput = document.querySelector(`input[name="members[${index}][whatsapp]"]`);
+                if (whatsappInput) whatsappInput.value = member.whatsapp;
+            }
+            
+            if (member.email) {
+                const emailInput = document.querySelector(`input[name="members[${index}][email]"]`);
+                if (emailInput) emailInput.value = member.email;
+            }
+            
+            // Note: File inputs cannot be restored for security reasons
+            // Show notice that file needs to be re-uploaded
+            if (member.ktp) {
+                const ktpInput = document.querySelector(`input[name="members[${index}][ktp]"]`);
+                if (ktpInput && !ktpInput.parentNode.querySelector('.text-warning')) {
+                    const notice = document.createElement('small');
+                    notice.className = 'text-warning d-block mt-1';
+                    notice.innerHTML = '<i class="bi bi-exclamation-triangle"></i> File KTP perlu diupload ulang';
+                    ktpInput.parentNode.appendChild(notice);
+                }
+            }
+        });
+        
+        // Apply validation errors after restoring data
+        showValidationErrors();
+    }, 150);
+}
+
+// ✅ IMPROVED: Better function to show validation errors
+function showValidationErrors() {
+    // Get error data from server-side
+    @if($errors->any())
+        const errors = @json($errors->messages());
+        
+        // Apply error classes to fields with errors
+        Object.keys(errors).forEach(fieldName => {
+            // Convert Laravel error key format to HTML name attribute
+            const inputName = fieldName.replace(/\./g, '][').replace(/^/, '').replace(/]$/, '');
+            const fieldSelector = `input[name="${inputName}"], select[name="${inputName}"], textarea[name="${inputName}"]`;
+            
+            // For member fields, we need different approach since they're dynamically created
+            if (fieldName.includes('members.')) {
+                // Extract member index and field name
+                const matches = fieldName.match(/members\.(\d+)\.(\w+)/);
+                if (matches) {
+                    const memberIndex = matches[1];
+                    const fieldType = matches[2];
+                    
+                    setTimeout(() => {
+                        const input = document.querySelector(`input[name="members[${memberIndex}][${fieldType}]"]`);
+                        if (input) {
+                            input.classList.add('is-invalid');
+                            
+                            // Add error message if not already exists
+                            if (!input.nextElementSibling || !input.nextElementSibling.classList.contains('invalid-feedback')) {
+                                const errorDiv = document.createElement('div');
+                                errorDiv.className = 'invalid-feedback';
+                                errorDiv.textContent = errors[fieldName][0];
+                                input.parentNode.insertBefore(errorDiv, input.nextSibling);
+                            }
+                        }
+                    }, 100);
+                }
+            } else {
+                // For regular fields
+                const field = document.querySelector(fieldSelector);
+                if (field) {
+                    field.classList.add('is-invalid');
+                }
+            }
+        });
+    @endif
+}
+
+    function resetForm() {
+        if (confirm('Apakah Anda yakin ingin mereset form? Semua data yang telah diisi akan hilang.')) {
+            document.getElementById('submissionForm').reset();
+            
+            // Clear dynamic sections
+            document.getElementById('members-section').innerHTML = '';
+            document.getElementById('dynamic-fields').innerHTML = '';
+            
+            // Reset guidelines content
+            document.getElementById('guidelines-content').innerHTML = `
+                <div class="text-center py-3">
+                    <i class="bi bi-file-earmark-text fs-3 text-muted mb-2"></i>
+                    <h6>Pilih Jenis Pengajuan</h6>
+                    <p class="text-muted mb-0">Silakan pilih jenis pengajuan terlebih dahulu untuk melihat persyaratan dokumen yang diperlukan.</p>
+                </div>
+            `;
+            
+            // Reset character counter
+            const description = document.getElementById('description');
+            const counter = description.parentNode.querySelector('.form-text.text-end');
+            if (counter) {
+                counter.textContent = '0/1000 karakter';
+                counter.className = 'form-text text-end mt-1 text-muted';
+            }
+            
+            // Remove validation classes
+            document.querySelectorAll('.is-invalid').forEach(element => {
+                element.classList.remove('is-invalid');
+            });
+            
+            // Reset button animation
+            const resetBtn = document.getElementById('resetBtn');
+            resetBtn.innerHTML = '<i class="bi bi-check-circle"></i> Form Direset';
+            resetBtn.classList.remove('btn-outline-warning');
+            resetBtn.classList.add('btn-outline-success');
+            
+            setTimeout(() => {
+                resetBtn.innerHTML = '<i class="bi bi-arrow-clockwise"></i> Reset Form';
+                resetBtn.classList.remove('btn-outline-success');
+                resetBtn.classList.add('btn-outline-warning');
+            }, 2000);
+            
+            document.getElementById('submissionForm').scrollIntoView({ 
+                behavior: 'smooth', 
+                block: 'start' 
+            });
+        }
+    }
 
 function updateMemberFields() {
     const memberCount = parseInt(document.getElementById('member_count').value);
@@ -295,11 +455,24 @@ function updateMemberFields() {
             <div class="card-body">
     `;
 
+    // ✅ FIXED: Remove the problematic const declaration
     for (let i = 1; i <= memberCount; i++) {
-        const oldName = document.querySelector(`input[name="members[${i}][name]"]`)?.value || '';
-        const oldWhatsapp = document.querySelector(`input[name="members[${i}][whatsapp]"]`)?.value || '';
-        const oldEmail = document.querySelector(`input[name="members[${i}][email]"]`)?.value || '';
-        const oldKtp = document.querySelector(`input[name="members[${i}][ktp]"]`)?.value || '';
+        // ✅ FIXED: Get old values using different approach to avoid Blade issues in JS
+        let oldName = '';
+        let oldWhatsapp = '';
+        let oldEmail = '';
+        let oldKtp = '';
+        
+        // Check if old values exist from server-side
+        @if(old('members'))
+            const oldMembersData = @json(old('members'));
+            if (oldMembersData && oldMembersData[i]) {
+                oldName = oldMembersData[i].name || '';
+                oldWhatsapp = oldMembersData[i].whatsapp || '';
+                oldEmail = oldMembersData[i].email || '';
+                oldKtp = oldMembersData[i].ktp ? true : false;
+            }
+        @endif
 
         html += `
             <div class="member-section ${i !== memberCount ? 'border-bottom pb-4 mb-4' : ''}">
@@ -312,36 +485,32 @@ function updateMemberFields() {
                 <div class="row g-3">
                     <div class="col-md-6">
                         <label for="member_${i}_name" class="form-label">Nama Pencipta <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="member_${i}_name" 
-                               name="members[${i}][name]" value="${oldName}" 
+                        <input type="text" class="form-control" 
+                               id="member_${i}_name" name="members[${i}][name]" value="${oldName}" 
                                placeholder="Masukkan nama lengkap" required>
                         <div class="form-text">Nama sesuai identitas resmi</div>
                     </div>
                     <div class="col-md-6">
                         <label for="member_${i}_whatsapp" class="form-label">No. WhatsApp <span class="text-danger">*</span></label>
-                        <input type="tel" class="form-control" id="member_${i}_whatsapp" 
-                               name="members[${i}][whatsapp]" value="${oldWhatsapp}" 
-                               placeholder="08xxxxxxxxxx" required 
-                               pattern="[0-9]{10,13}" 
+                        <input type="tel" class="form-control" 
+                               id="member_${i}_whatsapp" name="members[${i}][whatsapp]" value="${oldWhatsapp}" 
+                               placeholder="08xxxxxxxxxx" required pattern="[0-9]{10,13}" 
                                title="Nomor WhatsApp harus 10-13 digit">
                         <div class="form-text">Nomor WhatsApp aktif untuk komunikasi</div>
                     </div>
                     <div class="col-md-6">
                         <label for="member_${i}_email" class="form-label">Email <span class="text-danger">*</span></label>
-                        <input type="email" class="form-control" id="member_${i}_email" 
-                               name="members[${i}][email]" value="${oldEmail}" 
+                        <input type="email" class="form-control" 
+                               id="member_${i}_email" name="members[${i}][email]" value="${oldEmail}" 
                                placeholder="email@example.com" required>
                         <div class="form-text">Email yang valid dan aktif</div>
                     </div>
                     <div class="col-md-6">
-                        <label for="member_${i}_ktp" class="form-label">No. KTP <span class="text-danger">*</span></label>
-                        <input type="text" class="form-control" id="member_${i}_ktp" 
-                               name="members[${i}][ktp]" value="${oldKtp}" 
-                               placeholder="16 digit nomor KTP" required 
-                               pattern="[0-9]{16}" 
-                               maxlength="16"
-                               title="Nomor KTP harus 16 digit">
-                        <div class="form-text">Nomor KTP sesuai identitas</div>
+                        <label for="member_${i}_ktp" class="form-label">Scan Foto KTP <span class="text-danger">*</span></label>
+                        <input type="file" class="form-control" 
+                               id="member_${i}_ktp" name="members[${i}][ktp]" accept=".jpg,.jpeg" required>
+                        <div class="form-text">Upload scan KTP dalam format JPG. Maksimal 2MB. Pastikan foto jelas dan dapat dibaca.</div>
+                        ${oldKtp ? '<small class="text-warning d-block mt-1"><i class="bi bi-exclamation-triangle"></i> File KTP perlu diupload ulang</small>' : ''}
                     </div>
                 </div>
             </div>
@@ -357,16 +526,12 @@ function updateMemberFields() {
 
     // Add validation for KTP and WhatsApp
     addMemberValidation();
+    
+    // ✅ NEW: Show error messages if there are validation errors
+    showValidationErrors();
 }
 
 function addMemberValidation() {
-    // KTP validation - only numbers and 16 digits
-    document.querySelectorAll('input[name*="[ktp]"]').forEach(input => {
-        input.addEventListener('input', function() {
-            this.value = this.value.replace(/[^0-9]/g, '').substring(0, 16);
-        });
-    });
-
     // WhatsApp validation - only numbers
     document.querySelectorAll('input[name*="[whatsapp]"]').forEach(input => {
         input.addEventListener('input', function() {
@@ -389,6 +554,29 @@ function addMemberValidation() {
             }
         });
     });
+
+    // KTP file validation
+    document.querySelectorAll('input[name*="[ktp]"]').forEach(input => {
+        input.addEventListener('change', function() {
+            const file = this.files[0];
+            if (file) {
+                // Check file size (2MB max)
+                if (file.size > 2 * 1024 * 1024) {
+                    alert('Ukuran file KTP terlalu besar. Maksimal 2MB.');
+                    this.value = '';
+                    return;
+                }
+                
+                // Check file type
+                const allowedTypes = ['image/jpeg', 'image/jpg'];
+                if (!allowedTypes.includes(file.type)) {
+                    alert('Format file KTP harus JPG atau JPEG.');
+                    this.value = '';
+                    return;
+                }
+            }
+        });
+    });
 }
 
 function updateFormFields() {
@@ -403,8 +591,8 @@ function updateFormFields() {
         guidelinesContent.innerHTML = `
             <div class="text-center py-3">
                 <i class="bi bi-file-earmark-text fs-3 text-muted mb-2"></i>
-                <h6>Pilih Jenis Ciptaan</h6>
-                <p class="text-muted mb-0">Silakan pilih jenis ciptaan terlebih dahulu untuk melihat persyaratan dokumen yang diperlukan.</p>
+                <h6>Pilih Jenis Pengajuan</h6>
+                <p class="text-muted mb-0">Silakan pilih jenis pengajuan terlebih dahulu untuk melihat persyaratan dokumen yang diperlukan.</p>
             </div>
         `;
         return;
@@ -413,90 +601,44 @@ function updateFormFields() {
     switch(creationType) {
         case 'program_komputer':
             dynamicFields.innerHTML = `
-                <!-- Cover Document -->
-                <div class="mb-3">
-                    <label for="cover_document" class="form-label">Cover <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="cover_document" name="cover_document" 
-                           accept=".pdf,.jpg,.jpeg,.png" required>
-                    <div class="form-text">Format: PDF, JPG, PNG. Maksimal 5MB.</div>
-                </div>
-
-                <!-- Screenshot -->
-                <div class="mb-3">
-                    <label for="screenshot_document" class="form-label">Screenshot Program <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="screenshot_document" name="screenshot_document" 
-                           accept=".jpg,.jpeg,.png" required>
-                    <div class="form-text">Format: JPG, PNG. Maksimal 5MB.</div>
-                </div>
-
                 <!-- Manual Penggunaan -->
                 <div class="mb-3">
                     <label for="manual_document" class="form-label">Manual Penggunaan Program (PDF) <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="manual_document" name="manual_document" 
-                           accept=".pdf" required>
+                    <input type="file" class="form-control @error('manual_document') is-invalid @enderror" 
+                           id="manual_document" name="manual_document" accept=".pdf" required>
+                    @error('manual_document')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                     <div class="form-text">Format: PDF. Cover, screenshot, dan manual dalam 1 file PDF. Maksimal 20MB.</div>
                 </div>
 
                 <!-- Link Program -->
                 <div class="mb-3">
                     <label for="program_link" class="form-label">Link Program <span class="text-danger">*</span></label>
-                    <input type="url" class="form-control" id="program_link" name="program_link" 
+                    <input type="url" class="form-control @error('program_link') is-invalid @enderror" 
+                           id="program_link" name="program_link" value="{{ old('program_link') }}"
                            placeholder="https://example.com" required>
+                    @error('program_link')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                     <div class="form-text">Link akses ke program/aplikasi yang dapat diakses online.</div>
                 </div>
-            `;
-
-            guidelinesContent.innerHTML = `
-                <h6>Program Komputer</h6>
-                <p><small>Meliputi: Web aplikasi, media pembelajaran berbentuk aplikasi, dll</small></p>
-                <h6>Dokumen yang Diperlukan:</h6>
-                <ul class="mb-3">
-                    <li>Cover</li>
-                    <li>Screenshot program</li>
-                    <li>Manual penggunaan program (PDF)</li>
-                    <li>Link program yang dapat diakses</li>
-                </ul>
-                <h6>Persyaratan:</h6>
-                <ul class="mb-3">
-                    <li>Manual penggunaan maksimal 20MB dalam PDF (gabungan cover, screenshot, manual)</li>
-                    <li>Link program harus dapat diakses untuk verifikasi</li>
-                </ul>
             `;
             break;
 
         case 'sinematografi':
             dynamicFields.innerHTML = `
-                <!-- Video File -->
+                <!-- Video Link -->
                 <div class="mb-3">
-                    <label for="video_file" class="form-label">File Video <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="video_file" name="video_file" 
-                           accept=".mp4" required>
-                    <div class="form-text">Format: MP4. Maksimal 20MB.</div>
+                    <label for="video_link" class="form-label">Link Video <span class="text-danger">*</span></label>
+                    <input type="url" class="form-control @error('video_link') is-invalid @enderror" 
+                           id="video_link" name="video_link" value="{{ old('video_link') }}"
+                           placeholder="https://youtube.com/watch?v=..." required>
+                    @error('video_link')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <div class="form-text">Link video YouTube, Vimeo, atau platform lainnya yang dapat diakses.</div>
                 </div>
-
-                <!-- Video Description -->
-                <div class="mb-3">
-                    <label for="video_description" class="form-label">Deskripsi Video</label>
-                    <textarea class="form-control" id="video_description" name="video_description" rows="3" 
-                              placeholder="Jelaskan konten video, durasi, dan tujuan pembuatan"></textarea>
-                    <div class="form-text">Opsional: Penjelasan tambahan tentang video.</div>
-                </div>
-            `;
-
-            guidelinesContent.innerHTML = `
-                <h6>Sinematografi</h6>
-                <p><small>Meliputi: Film, Video, animasi video, dll</small></p>
-                <h6>Dokumen yang Diperlukan:</h6>
-                <ul class="mb-3">
-                    <li>File video dalam format MP4</li>
-                    <li>Deskripsi konten video (opsional)</li>
-                </ul>
-                <h6>Persyaratan:</h6>
-                <ul class="mb-3">
-                    <li>Format video: MP4</li>
-                    <li>Ukuran maksimal: 20MB</li>
-                    <li>Kualitas video yang baik dan jelas</li>
-                </ul>
             `;
             break;
 
@@ -505,43 +647,13 @@ function updateFormFields() {
                 <!-- E-book File -->
                 <div class="mb-3">
                     <label for="ebook_file" class="form-label">File E-book <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="ebook_file" name="ebook_file" 
-                           accept=".pdf" required>
+                    <input type="file" class="form-control @error('ebook_file') is-invalid @enderror" 
+                           id="ebook_file" name="ebook_file" accept=".pdf" required>
+                    @error('ebook_file')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                     <div class="form-text">Format: PDF. Maksimal 20MB.</div>
                 </div>
-
-                <!-- ISBN (if any) -->
-                <div class="mb-3">
-                    <label for="isbn" class="form-label">ISBN</label>
-                    <input type="text" class="form-control" id="isbn" name="isbn" 
-                           placeholder="Masukkan ISBN jika ada">
-                    <div class="form-text">Opsional: Nomor ISBN jika buku sudah terdaftar.</div>
-                </div>
-
-                <!-- Number of Pages -->
-                <div class="mb-3">
-                    <label for="page_count" class="form-label">Jumlah Halaman</label>
-                    <input type="number" class="form-control" id="page_count" name="page_count" 
-                           placeholder="Contoh: 150">
-                    <div class="form-text">Jumlah halaman dalam buku.</div>
-                </div>
-            `;
-
-            guidelinesContent.innerHTML = `
-                <h6>Buku</h6>
-                <p><small>E-book dalam format digital</small></p>
-                <h6>Dokumen yang Diperlukan:</h6>
-                <ul class="mb-3">
-                    <li>File e-book dalam format PDF</li>
-                    <li>ISBN (jika ada)</li>
-                    <li>Informasi jumlah halaman</li>
-                </ul>
-                <h6>Persyaratan:</h6>
-                <ul class="mb-3">
-                    <li>Format: PDF</li>
-                    <li>Ukuran maksimal: 20MB</li>
-                    <li>Kualitas teks yang jelas dan dapat dibaca</li>
-                </ul>
             `;
             break;
 
@@ -550,57 +662,13 @@ function updateFormFields() {
                 <!-- Image File -->
                 <div class="mb-3">
                     <label for="image_file" class="form-label">File Gambar/Foto <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="image_file" name="image_file" 
-                           accept=".jpg,.jpeg,.png" required>
+                    <input type="file" class="form-control @error('image_file') is-invalid @enderror" 
+                           id="image_file" name="image_file" accept=".jpg,.jpeg,.png" required>
+                    @error('image_file')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                     <div class="form-text">Format: JPG, PNG. Maksimal 1MB.</div>
                 </div>
-
-                <!-- Image Type -->
-                <div class="mb-3">
-                    <label for="image_type" class="form-label">Jenis Karya <span class="text-danger">*</span></label>
-                    <select class="form-select" id="image_type" name="image_type" required>
-                        <option value="">Pilih Jenis Karya</option>
-                        <option value="poster">Poster</option>
-                        <option value="fotografi">Fotografi</option>
-                        <option value="seni_gambar">Seni Gambar</option>
-                        <option value="karakter_animasi">Karakter Animasi</option>
-                    </select>
-                </div>
-
-                <!-- Dimensions -->
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="width" class="form-label">Lebar (px)</label>
-                            <input type="number" class="form-control" id="width" name="width" 
-                                   placeholder="Contoh: 1920">
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="height" class="form-label">Tinggi (px)</label>
-                            <input type="number" class="form-control" id="height" name="height" 
-                                   placeholder="Contoh: 1080">
-                        </div>
-                    </div>
-                </div>
-            `;
-
-            guidelinesContent.innerHTML = `
-                <h6>Poster / Fotografi / Seni Gambar / Karakter Animasi</h6>
-                <p><small>Karya visual dalam bentuk gambar atau foto</small></p>
-                <h6>Dokumen yang Diperlukan:</h6>
-                <ul class="mb-3">
-                    <li>File gambar/foto</li>
-                    <li>Spesifikasi jenis karya</li>
-                    <li>Dimensi gambar</li>
-                </ul>
-                <h6>Persyaratan:</h6>
-                <ul class="mb-3">
-                    <li>Format: JPG, PNG</li>
-                    <li>Ukuran maksimal: 1MB</li>
-                    <li>Resolusi yang baik dan jelas</li>
-                </ul>
             `;
             break;
 
@@ -609,50 +677,13 @@ function updateFormFields() {
                 <!-- Photo of Teaching Aid -->
                 <div class="mb-3">
                     <label for="tool_photo" class="form-label">Foto Alat Peraga <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="tool_photo" name="tool_photo" 
-                           accept=".jpg,.jpeg,.png" required>
+                    <input type="file" class="form-control @error('tool_photo') is-invalid @enderror" 
+                           id="tool_photo" name="tool_photo" accept=".jpg,.jpeg,.png" required>
+                    @error('tool_photo')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                     <div class="form-text">Format: JPG, PNG. Maksimal 1MB.</div>
                 </div>
-
-                <!-- Multiple Photos (Optional) -->
-                <div class="mb-3">
-                    <label for="additional_photos" class="form-label">Foto Tambahan</label>
-                    <input type="file" class="form-control" id="additional_photos" name="additional_photos[]" 
-                           accept=".jpg,.jpeg,.png" multiple>
-                    <div class="form-text">Opsional: Foto dari berbagai sudut. Format: JPG, PNG. Maksimal 1MB per file.</div>
-                </div>
-
-                <!-- Materials Used -->
-                <div class="mb-3">
-                    <label for="materials" class="form-label">Bahan yang Digunakan</label>
-                    <textarea class="form-control" id="materials" name="materials" rows="3" 
-                              placeholder="Sebutkan bahan-bahan yang digunakan untuk membuat alat peraga"></textarea>
-                </div>
-
-                <!-- Usage Instructions -->
-                <div class="mb-3">
-                    <label for="usage_instructions" class="form-label">Cara Penggunaan</label>
-                    <textarea class="form-control" id="usage_instructions" name="usage_instructions" rows="3" 
-                              placeholder="Jelaskan cara menggunakan alat peraga ini"></textarea>
-                </div>
-            `;
-
-            guidelinesContent.innerHTML = `
-                <h6>Alat Peraga</h6>
-                <p><small>Alat bantu pembelajaran atau demonstrasi</small></p>
-                <h6>Dokumen yang Diperlukan:</h6>
-                <ul class="mb-3">
-                    <li>Foto alat peraga (wajib)</li>
-                    <li>Foto tambahan dari berbagai sudut (opsional)</li>
-                    <li>Deskripsi bahan yang digunakan</li>
-                    <li>Cara penggunaan</li>
-                </ul>
-                <h6>Persyaratan:</h6>
-                <ul class="mb-3">
-                    <li>Format foto: JPG, PNG</li>
-                    <li>Ukuran maksimal: 1MB per file</li>
-                    <li>Foto yang jelas menampilkan alat peraga</li>
-                </ul>
             `;
             break;
 
@@ -661,55 +692,13 @@ function updateFormFields() {
                 <!-- Metadata File -->
                 <div class="mb-3">
                     <label for="metadata_file" class="form-label">File Metadata <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control" id="metadata_file" name="metadata_file" 
-                           accept=".pdf" required>
+                    <input type="file" class="form-control @error('metadata_file') is-invalid @enderror" 
+                           id="metadata_file" name="metadata_file" accept=".pdf" required>
+                    @error('metadata_file')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
                     <div class="form-text">Format: PDF. Maksimal 20MB.</div>
                 </div>
-
-                <!-- Database Type -->
-                <div class="mb-3">
-                    <label for="database_type" class="form-label">Jenis Basis Data <span class="text-danger">*</span></label>
-                    <select class="form-select" id="database_type" name="database_type" required>
-                        <option value="">Pilih Jenis Basis Data</option>
-                        <option value="relational">Relational Database</option>
-                        <option value="nosql">NoSQL Database</option>
-                        <option value="research_data">Research Dataset</option>
-                        <option value="other">Lainnya</option>
-                    </select>
-                </div>
-
-                <!-- Number of Records -->
-                <div class="mb-3">
-                    <label for="record_count" class="form-label">Jumlah Record/Data</label>
-                    <input type="number" class="form-control" id="record_count" name="record_count" 
-                           placeholder="Contoh: 10000">
-                    <div class="form-text">Perkiraan jumlah record atau data dalam basis data.</div>
-                </div>
-
-                <!-- Database Purpose -->
-                <div class="mb-3">
-                    <label for="database_purpose" class="form-label">Tujuan/Kegunaan Basis Data</label>
-                    <textarea class="form-control" id="database_purpose" name="database_purpose" rows="3" 
-                              placeholder="Jelaskan tujuan dan kegunaan basis data ini"></textarea>
-                </div>
-            `;
-
-            guidelinesContent.innerHTML = `
-                <h6>Basis Data</h6>
-                <p><small>Kumpulan data terstruktur dengan metadata</small></p>
-                <h6>Dokumen yang Diperlukan:</h6>
-                <ul class="mb-3">
-                    <li>File metadata dalam PDF</li>
-                    <li>Spesifikasi jenis basis data</li>
-                    <li>Informasi jumlah record</li>
-                    <li>Deskripsi tujuan dan kegunaan</li>
-                </ul>
-                <h6>Persyaratan:</h6>
-                <ul class="mb-3">
-                    <li>Format metadata: PDF</li>
-                    <li>Ukuran maksimal: 20MB</li>
-                    <li>Metadata harus lengkap dan terstruktur</li>
-                </ul>
             `;
             break;
 
@@ -717,22 +706,24 @@ function updateFormFields() {
             guidelinesContent.innerHTML = `
                 <div class="text-center py-3">
                     <i class="bi bi-file-earmark-text fs-3 text-muted mb-2"></i>
-                    <h6>Pilih Jenis Ciptaan</h6>
-                    <p class="text-muted mb-0">Silakan pilih jenis ciptaan terlebih dahulu untuk melihat persyaratan dokumen yang diperlukan.</p>
+                    <h6>Pilih Jenis Pengajuan</h6>
+                    <p class="text-muted mb-0">Silakan pilih jenis pengajuan terlebih dahulu untuk melihat persyaratan dokumen yang diperlukan.</p>
                 </div>
             `;
     }
+    
+    // Add file validation after creating fields
+    addFileValidation();
 }
 
 function addFileValidation() {
-    // File size validation for different types
-    const fileInputs = document.querySelectorAll('input[type="file"]');
+    const fileInputs = document.querySelectorAll('input[type="file"]:not([name*="[ktp]"])');
     
     fileInputs.forEach(input => {
         input.addEventListener('change', function() {
-            const maxSize = input.accept.includes('video') || input.id === 'metadata_file' || input.id === 'manual_document' || input.id === 'ebook_file' ? 20 * 1024 * 1024 : // 20MB for videos, PDFs, ebooks
-                            input.accept.includes('image') || input.id.includes('photo') || input.id.includes('image') ? 1 * 1024 * 1024 : // 1MB for images
-                            5 * 1024 * 1024; // 5MB for others
+            const maxSize = input.accept.includes('video') || input.id === 'metadata_file' || input.id === 'manual_document' || input.id === 'ebook_file' ? 20 * 1024 * 1024 : // 20MB
+                            input.accept.includes('image') || input.id.includes('photo') || input.id.includes('image') ? 1 * 1024 * 1024 : // 1MB
+                            5 * 1024 * 1024; // 5MB default
             
             if (this.files.length > 0) {
                 for (let file of this.files) {

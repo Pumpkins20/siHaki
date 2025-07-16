@@ -105,7 +105,7 @@
                     </h6>
                 </div>
                 <div class="card-body">
-                    <form method="GET" action="{{ route('user.history') }}" id="filterForm">
+                    <form method="GET" action="{{ route('user.history.index') }}" id="filterForm">
                         <div class="row g-3">
                             <div class="col-md-2">
                                 <label for="year" class="form-label">Tahun</label>
@@ -167,7 +167,7 @@
                                 <button type="submit" class="btn btn-primary me-2">
                                     <i class="bi bi-search"></i> Cari
                                 </button>
-                                <a href="{{ route('user.history') }}" class="btn btn-outline-secondary">
+                                <a href="{{ route('user.history.index') }}" class="btn btn-outline-secondary">
                                     <i class="bi bi-arrow-clockwise"></i> Reset
                                 </a>
                             </div>

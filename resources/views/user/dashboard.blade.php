@@ -14,16 +14,28 @@
                             <h4 class="card-title">Selamat Datang, {{ Auth::user()->nama }}!</h4>
                             <p class="card-text">Kelola submission HKI Anda dan pantau progresnya di sini.</p>
                         </div>
-                        <div class="col-md-4 text-end">
-                            <a href="{{ route('user.submissions.create') }}" class="btn btn-light btn-lg">
-                                <i class="bi bi-plus-circle"></i> Ajukan HKI Baru
-                            </a>
-                        </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+
+    @if(session('warning'))
+        <div class="row mb-4">
+            <div class="col-12">
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Perhatian!</strong> {{ session('warning') }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    <div class="mt-2">
+                        <a href="#" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                            <i class="bi bi-key me-1"></i>Ganti Password Sekarang
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 
     <div class="row">
         <!-- Progress Bar Pengajuan -->
@@ -33,16 +45,6 @@
                     <h6 class="m-0 font-weight-bold text-success">Progress Pengajuan</h6>
                 </div>
                 <div class="card-body text-center">
-                    <div class="progress-ring">
-                        <svg class="progress-ring" width="120" height="120">
-                            <circle class="progress-ring__circle" stroke="#28a745" stroke-width="4" fill="transparent" r="45" cx="60" cy="60"/>
-                        </svg>
-                        <div class="position-absolute" style="top: 50%; left: 50%; transform: translate(-50%, -50%);">
-                            <h4 class="text-success">{{ $progress }}%</h4>
-                            <small class="text-muted">Completion</small>
-                        </div>
-                    </div>
-                    
                     <div class="mt-3">
                         <div class="row text-center">
                             <div class="col-6">
@@ -66,72 +68,84 @@
         <!-- Statistics Cards -->
         <div class="col-xl-8 col-lg-6">
             <div class="row">
+                {{-- ✅ UPDATED: Card 1 - Menunggu Persetujuan (kuning/warning) --}}
                 <div class="col-md-6 mb-4">
-                    <div class="card border-start border-primary border-4 shadow h-100">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                        Total Pengajuan
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_submissions'] }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <i class="bi bi-file-earmark-text fs-2 text-gray-300"></i>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="col-md-6 mb-4">
-                    <div class="card border-start border-warning border-4 shadow h-100">
+                    <div class="card shadow h-100" style="border-left: 4px solid #ffc107;">
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col">
                                     <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Draft
+                                        Menunggu Persetujuan
                                     </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['draft_submissions'] }}</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pending_submissions'] }}</div>
                                 </div>
                                 <div class="col-auto">
-                                    <i class="bi bi-file-earmark-edit fs-2 text-gray-300"></i>
+                                    <div class="icon-square bg-warning text-white rounded">
+                                        <i class="bi bi-clock-history fs-2"></i>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                {{-- ✅ UPDATED: Card 2 - Diterima (hijau/success) --}}
                 <div class="col-md-6 mb-4">
-                    <div class="card border-start border-info border-4 shadow h-100">
+                    <div class="card shadow h-100" style="border-left: 4px solid #28a745;">
+                        <div class="card-body">
+                            <div class="row align-items-center">
+                                <div class="col">
+                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                        Diterima
+                                    </div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['approved_submissions'] }}</div>
+                                </div>
+                                <div class="col-auto">
+                                    <div class="icon-square bg-success text-white rounded">
+                                        <i class="bi bi-check-circle fs-2"></i>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- ✅ UPDATED: Card 3 - Sertifikat Diterima (biru/info) --}}
+                <div class="col-md-6 mb-4">
+                    <div class="card shadow h-100" style="border-left: 4px solid #17a2b8;">
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col">
                                     <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                        Under Review
+                                        Sertifikat Diterima
                                     </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['review_submissions'] }}</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['certificate_received'] ?? 0 }}</div>
                                 </div>
                                 <div class="col-auto">
-                                    <i class="bi bi-hourglass-split fs-2 text-gray-300"></i>
+                                    <div class="icon-square bg-info text-white rounded">
+                                        <i class="bi bi-file-earmark-check fs-2"></i>
+                                    </div>
                                 </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
+                {{-- ✅ UPDATED: Card 4 - Ditolak (merah/danger) --}}
                 <div class="col-md-6 mb-4">
-                    <div class="card border-start border-danger border-4 shadow h-100">
+                    <div class="card shadow h-100" style="border-left: 4px solid #dc3545;">
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col">
                                     <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                        Perlu Revisi
+                                        Ditolak
                                     </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['revision_submissions'] }}</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['rejected_submissions'] ?? 0 }}</div>
                                 </div>
                                 <div class="col-auto">
-                                    <i class="bi bi-arrow-clockwise fs-2 text-gray-300"></i>
+                                    <div class="icon-square bg-danger text-white rounded">
+                                        <i class="bi bi-x-circle fs-2"></i>
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -147,7 +161,7 @@
             <div class="card shadow">
                 <div class="card-header py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 font-weight-bold text-primary">Riwayat Terbaru</h6>
-                    <a href="{{ route('user.history') }}" class="btn btn-sm btn-primary">
+                    <a href="{{ route('user.history.index') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-eye"></i> Lihat Semua
                     </a>
                 </div>
@@ -200,7 +214,7 @@
                         <a href="{{ route('user.submissions.create') }}" class="btn btn-success">
                             <i class="bi bi-plus-circle"></i> Ajukan HKI
                         </a>
-                        <a href="{{ route('user.panduan') }}" class="btn btn-info">
+                        <a href="{{ route('user.panduan.index') }}" class="btn btn-info">
                             <i class="bi bi-book"></i> Lihat Panduan
                         </a>
                         <a href="#" class="btn btn-warning" data-bs-toggle="modal" data-bs-target="#contactModal">
@@ -308,6 +322,40 @@
     </div>
 </div>
 
+<!-- Change Password Modal -->
+<div class="modal fade" id="changePasswordModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ganti Password</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form action="{{ route('user.change-password') }}" method="POST">
+                @csrf
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="current_password" class="form-label">Password Saat Ini</label>
+                        <input type="password" class="form-control" id="current_password" name="current_password" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password" class="form-label">Password Baru</label>
+                        <input type="password" class="form-control" id="new_password" name="new_password" required minlength="6">
+                        <div class="form-text">Minimal 6 karakter</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="new_password_confirmation" class="form-label">Konfirmasi Password Baru</label>
+                        <input type="password" class="form-control" id="new_password_confirmation" name="new_password_confirmation" required>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                    <button type="submit" class="btn btn-primary">Ganti Password</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -330,10 +378,53 @@ document.addEventListener('DOMContentLoaded', function() {
 @push('styles')
 <style>
     .bg-gradient-success {
-        background: linear-gradient(87deg, #2dce89 0%, #2dcecc 100%);
+        background: linear-gradient(87deg, #1292DD 0%, #1292DD 100%);
     }
-    .progress-ring {
-        position: relative;
+    
+    /* ✅ NEW: Icon square styling */
+    .icon-square {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 8px;
+    }
+    
+    /* Card hover effects */
+    .card:hover {
+        transform: translateY(-2px);
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+    }
+    
+    /* Icon colors match the border */
+    .bg-warning .bi {
+        color: white;
+    }
+    
+    .bg-success .bi {
+        color: white;
+    }
+    
+    .bg-info .bi {
+        color: white;
+    }
+    
+    .bg-danger .bi {
+        color: white;
+    }
+    
+    /* Responsive adjustments */
+    @media (max-width: 768px) {
+        .icon-square {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .icon-square .bi {
+            font-size: 1.5rem;
+        }
     }
 </style>
 @endpush

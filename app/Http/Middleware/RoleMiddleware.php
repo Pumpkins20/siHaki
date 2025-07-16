@@ -20,8 +20,15 @@ class RoleMiddleware
             return redirect('/login');
         }
 
-        if (auth()->user()->role !== $role) {
-            abort(403, 'Unauthorized access');
+        $user = auth()->user();
+
+        if ($user->role !== $role) {
+            // Redirect based on actual role
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard');
+            } else {
+                return redirect()->route('user.dashboard');
+            }
         }
 
         return $next($request);

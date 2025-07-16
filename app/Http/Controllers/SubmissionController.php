@@ -9,6 +9,8 @@ use App\Models\SubmissionHistory;
 use App\Models\SubmissionMember;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
 
 class SubmissionController extends Controller
 {
@@ -41,20 +43,54 @@ class SubmissionController extends Controller
 
     public function store(Request $request)
     {
-        // Base validation
+        // Update validation rules
         $rules = [
             'title' => 'required|string|max:255',
             'creation_type' => 'required|in:program_komputer,sinematografi,buku,poster_fotografi,alat_peraga,basis_data',
-            'description' => 'required|string|min:50|max:1000',
+            'description' => 'required|string|max:1000',
             'member_count' => 'required|integer|min:2|max:5',
-            
-            // Member validation
-            'members' => 'required|array|min:2|max:5',
+            'members' => 'required|array',
             'members.*.name' => 'required|string|max:255',
-            'members.*.whatsapp' => 'required|string|regex:/^[0-9]{10,13}$/',
-            'members.*.email' => 'required|email|max:255',
-            'members.*.ktp' => 'required|string|size:16|regex:/^[0-9]{16}$/',
+            'members.*.whatsapp' => 'required|regex:/^[0-9]{10,13}$/',
+            'members.*.email' => 'required|email',
+            'members.*.ktp' => 'required|file|mimes:jpg,jpeg|max:2048', // ✅ CHANGED: File upload validation
         ];
+
+        // Update error messages
+        $request->validate($rules, [
+            'members.*.name.required' => 'Nama pencipta harus diisi',
+            'members.*.whatsapp.required' => 'No WhatsApp pencipta harus diisi',
+            'members.*.whatsapp.regex' => 'No WhatsApp harus berupa 10-13 digit angka',
+            'members.*.email.required' => 'Email pencipta harus diisi',
+            'members.*.email.email' => 'Format email tidak valid',
+            'members.*.ktp.required' => 'Scan foto KTP harus diupload',
+            'members.*.ktp.mimes' => 'Foto KTP harus berformat JPG atau JPEG',
+            'members.*.ktp.max' => 'Ukuran foto KTP maksimal 2MB',
+            
+            'manual_document.required' => 'Manual penggunaan program harus diupload',
+            'manual_document.mimes' => 'Manual penggunaan harus berformat PDF',
+            'manual_document.max' => 'Ukuran manual penggunaan maksimal 20MB',
+            
+            'video_file.required' => 'File video harus diupload',
+            'video_file.mimes' => 'Video harus berformat MP4',
+            'video_file.max' => 'Ukuran video maksimal 20MB',
+            
+            'ebook_file.required' => 'File e-book harus diupload',
+            'ebook_file.mimes' => 'E-book harus berformat PDF',
+            'ebook_file.max' => 'Ukuran e-book maksimal 20MB',
+            
+            'image_file.required' => 'File gambar harus diupload',
+            'image_file.mimes' => 'Gambar harus berformat JPG, JPEG, atau PNG',
+            'image_file.max' => 'Ukuran gambar maksimal 1MB',
+            
+            'tool_photo.required' => 'Foto alat peraga harus diupload',
+            'tool_photo.mimes' => 'Foto harus berformat JPG, JPEG, atau PNG',
+            'tool_photo.max' => 'Ukuran foto maksimal 1MB',
+            
+            'metadata_file.required' => 'File metadata harus diupload',
+            'metadata_file.mimes' => 'Metadata harus berformat PDF',
+            'metadata_file.max' => 'Ukuran metadata maksimal 20MB',
+        ]);   
 
         // Validate member count matches actual members
         $memberCount = $request->input('member_count');
@@ -69,8 +105,6 @@ class SubmissionController extends Controller
         switch($request->creation_type) {
             case 'program_komputer':
                 $rules = array_merge($rules, [
-                    'cover_document' => 'required|file|mimes:pdf,jpg,jpeg,png|max:5120',
-                    'screenshot_document' => 'required|file|mimes:jpg,jpeg,png|max:5120',
                     'manual_document' => 'required|file|mimes:pdf|max:20480',
                     'program_link' => 'required|url',
                 ]);
@@ -78,16 +112,13 @@ class SubmissionController extends Controller
 
             case 'sinematografi':
                 $rules = array_merge($rules, [
-                    'video_file' => 'required|file|mimes:mp4|max:20480',
-                    'video_description' => 'nullable|string|max:500',
+                    'video_link' => 'required|url',
                 ]);
                 break;
 
             case 'buku':
                 $rules = array_merge($rules, [
                     'ebook_file' => 'required|file|mimes:pdf|max:20480',
-                    'isbn' => 'nullable|string|max:20',
-                    'page_count' => 'nullable|integer|min:1',
                 ]);
                 break;
 
@@ -95,8 +126,6 @@ class SubmissionController extends Controller
                 $rules = array_merge($rules, [
                     'image_file' => 'required|file|mimes:jpg,jpeg,png|max:1024',
                     'image_type' => 'required|in:poster,fotografi,seni_gambar,karakter_animasi',
-                    'width' => 'nullable|integer|min:1',
-                    'height' => 'nullable|integer|min:1',
                 ]);
                 break;
 
@@ -104,17 +133,12 @@ class SubmissionController extends Controller
                 $rules = array_merge($rules, [
                     'tool_photo' => 'required|file|mimes:jpg,jpeg,png|max:1024',
                     'additional_photos.*' => 'nullable|file|mimes:jpg,jpeg,png|max:1024',
-                    'materials' => 'nullable|string|max:500',
-                    'usage_instructions' => 'nullable|string|max:500',
                 ]);
                 break;
 
             case 'basis_data':
                 $rules = array_merge($rules, [
                     'metadata_file' => 'required|file|mimes:pdf|max:20480',
-                    'database_type' => 'required|in:relational,nosql,research_data,other',
-                    'record_count' => 'nullable|integer|min:1',
-                    'database_purpose' => 'nullable|string|max:500',
                 ]);
                 break;
         }
@@ -130,51 +154,68 @@ class SubmissionController extends Controller
             'members.*.ktp.regex' => 'No KTP harus berupa 16 digit angka',
         ]);
 
-        // Create submission
-        $submission = HkiSubmission::create([
-            'user_id' => Auth::id(),
-            'title' => $request->title,
-            'type' => 'copyright', // All are copyright for now
-            'creation_type' => $request->creation_type,
-            'description' => $request->description,
-            'status' => $request->has('save_as_draft') ? 'draft' : 'submitted',
-            'submission_date' => $request->has('save_as_draft') ? null : now(),
-            'additional_data' => json_encode($this->getAdditionalData($request)),
-            'member_count' => $memberCount,
-        ]);
+        DB::beginTransaction();
 
-        // Save members
-        foreach ($request->input('members') as $index => $memberData) {
-            SubmissionMember::create([
-                'submission_id' => $submission->id,
-                'name' => $memberData['name'],
-                'whatsapp' => $memberData['whatsapp'],
-                'email' => $memberData['email'],
-                'ktp' => $memberData['ktp'],
-                'position' => $index + 1, // 1 = ketua, 2+ = anggota
-                'is_leader' => $index === 0, // Index pertama adalah ketua
+        try {
+            // Create submission record (always submitted, no more draft)
+            $submission = HkiSubmission::create([
+                'user_id' => Auth::id(),
+                'title' => $request->title,
+                'type' => 'copyright', // Default type
+                'creation_type' => $request->creation_type,
+                'description' => $request->description,
+                'member_count' => $request->member_count,
+                'status' => 'submitted', // ✅ Always submitted now
+                'submission_date' => now(),
             ]);
+
+            // Save members with KTP files
+            foreach ($request->input('members') as $index => $memberData) {
+                // Handle KTP file upload
+                $ktpPath = null;
+                if ($request->hasFile("members.{$index}.ktp")) {
+                    $ktpFile = $request->file("members.{$index}.ktp");
+                    $ktpFileName = 'ktp_' . $submission->id . '_member_' . ($index + 1) . '_' . time() . '.' . $ktpFile->getClientOriginalExtension();
+                    $ktpPath = $ktpFile->storeAs('ktp_scans', $ktpFileName, 'public');
+                }
+
+                SubmissionMember::create([
+                    'submission_id' => $submission->id,
+                    'name' => $memberData['name'],
+                    'whatsapp' => $memberData['whatsapp'],
+                    'email' => $memberData['email'],
+                    'ktp' => $ktpPath, // ✅ CHANGED: Store file path instead of number
+                    'position' => $index + 1,
+                    'is_leader' => $index === 0,
+                ]);
+            }
+
+            // Handle file uploads based on creation type
+            $this->handleFileUploads($request, $submission);
+
+            // Create history record
+            SubmissionHistory::create([
+                'submission_id' => $submission->id,
+                'user_id' => Auth::id(),
+                'action' => 'Submitted',
+                'previous_status' => null,
+                'new_status' => $submission->status,
+                'notes' => 'Submission submitted for review',
+            ]);
+
+            DB::commit();
+
+            return redirect()->route('user.submissions.show', $submission)
+                ->with('success', 'Submission berhasil disubmit untuk review');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            Log::error('Submission creation failed: ' . $e->getMessage());
+            
+            return back()
+                ->withInput()
+                ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan submission. Silakan coba lagi.']);
         }
-
-        // Handle file uploads based on creation type
-        $this->handleFileUploads($request, $submission);
-
-        // Create history record
-        SubmissionHistory::create([
-            'submission_id' => $submission->id,
-            'user_id' => Auth::id(),
-            'action' => $request->has('save_as_draft') ? 'Draft Created' : 'Submitted',
-            'previous_status' => null,
-            'new_status' => $submission->status,
-            'notes' => $request->has('save_as_draft') ? 'Submission saved as draft' : 'Submission submitted for review',
-        ]);
-
-        $message = $request->has('save_as_draft') 
-            ? 'Submission berhasil disimpan sebagai draft' 
-            : 'Submission berhasil diajukan';
-
-        return redirect()->route('user.submissions.index')
-            ->with('success', $message);
     }
 
     private function getAdditionalData($request)
@@ -219,25 +260,51 @@ class SubmissionController extends Controller
     private function handleFileUploads($request, $submission)
     {
         $fileFields = [
-            'program_komputer' => ['cover_document', 'screenshot_document', 'manual_document'],
-            'sinematografi' => ['video_file'],
-            'buku' => ['ebook_file'],
-            'poster_fotografi' => ['image_file'],
-            'alat_peraga' => ['tool_photo', 'additional_photos'],
-            'basis_data' => ['metadata_file'],
+            'program_komputer' => [
+                'main' => ['manual_document'], // Main required files
+                'supporting' => [] // Optional supporting files
+            ],
+            'sinematografi' => [
+                'main' => ['video_file'],
+                'supporting' => []
+            ],
+            'buku' => [
+                'main' => ['ebook_file'],
+                'supporting' => []
+            ],
+            'poster_fotografi' => [
+                'main' => ['image_file'],
+                'supporting' => []
+            ],
+            'alat_peraga' => [
+                'main' => ['tool_photo'],
+                'supporting' => ['additional_photos']
+            ],
+            'basis_data' => [
+                'main' => ['metadata_file'],
+                'supporting' => []
+            ],
         ];
 
-        $fields = $fileFields[$request->creation_type] ?? [];
+        $creationType = $request->creation_type;
+        $fields = $fileFields[$creationType] ?? ['main' => [], 'supporting' => []];
 
-        foreach ($fields as $field) {
+        // Handle main documents
+        foreach ($fields['main'] as $field) {
+            if ($request->hasFile($field)) {
+                $this->uploadDocument($request->file($field), $submission, $field);
+            }
+        }
+
+        // Handle supporting documents
+        foreach ($fields['supporting'] as $field) {
             if ($request->hasFile($field)) {
                 if ($field === 'additional_photos') {
                     // Handle multiple files
                     foreach ($request->file($field) as $index => $file) {
-                        $this->uploadDocument($file, $submission, $field . '_' . $index, $index);
+                        $this->uploadDocument($file, $submission, $field, $index);
                     }
                 } else {
-                    // Handle single file
                     $this->uploadDocument($request->file($field), $submission, $field);
                 }
             }
@@ -250,9 +317,11 @@ class SubmissionController extends Controller
         $fileName = time() . '_' . $prefix . '_' . $file->getClientOriginalName();
         $filePath = $file->storeAs('submissions/' . $submission->id, $fileName, 'public');
 
+        $documentType = $this->mapToDocumentType($type);
+
         SubmissionDocument::create([
             'submission_id' => $submission->id,
-            'document_type' => $type,
+            'document_type' => $documentType,
             'file_name' => $fileName,
             'file_path' => $filePath,
             'file_size' => $file->getSize(),
@@ -260,11 +329,32 @@ class SubmissionController extends Controller
         ]);
     }
 
+    private function mapToDocumentType($type)
+    {
+        // List of main document types (required files)
+        $mainDocumentTypes = [
+            'manual_document',
+            'video_file', 
+            'ebook_file',
+            'image_file',
+            'tool_photo',
+            'metadata_file'
+        ];
+
+        // If it's a main required document, return 'main_document'
+        if (in_array($type, $mainDocumentTypes)) {
+            return 'main_document';
+        }
+
+        // Everything else is supporting document
+        return 'supporting_document';
+    }
+
     public function show(HkiSubmission $submission)
     {
         $this->authorize('view', $submission);
         
-        $submission->load(['documents', 'histories.user', 'reviewer']);
+        // $submission->load(['documents', 'histories.user', 'reviewer']);
         
         return view('user.submissions.show', compact('submission'));
     }
@@ -430,4 +520,27 @@ class SubmissionController extends Controller
         return back()->with('success', 'Dokumen berhasil dihapus');
     }
 
+    public function downloadKtp(HkiSubmission $submission, SubmissionMember $member)
+    {
+        // Authorize user can only download their own submission KTPs
+        $this->authorize('view', $submission);
+        
+        if ($member->submission_id !== $submission->id) {
+            abort(404, 'KTP tidak ditemukan.');
+        }
+        
+        if (!$member->ktp) {
+            abort(404, 'File KTP tidak tersedia.');
+        }
+        
+        $filePath = storage_path('app/public/' . $member->ktp);
+        
+        if (!file_exists($filePath)) {
+            abort(404, 'File KTP tidak ditemukan di server.');
+        }
+        
+        $fileName = 'KTP_' . str_replace(' ', '_', $member->name) . '_' . $submission->id . '.jpg';
+        
+        return response()->download($filePath, $fileName);
+    }
 }

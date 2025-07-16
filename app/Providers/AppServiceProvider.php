@@ -2,6 +2,11 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\Schema;
+use Doctrine\DBAL\Types\Type;
+use Doctrine\DBAL\Types\StringType;
+use Doctrine\DBAL\Types\Types;
+use Illuminate\Database\Connection;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -23,6 +28,14 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
-        //
+        // Cek jika DBAL aktif & enum belum diregister
+        if (class_exists(\Doctrine\DBAL\Types\Type::class)) {
+            /** @var \Illuminate\Database\Connection $connection */
+            $connection = Schema::getConnection();
+            $platform = $connection->getDoctrineSchemaManager()->getDatabasePlatform();
+
+            // Mapping 'enum' ke 'string'
+            $platform->registerDoctrineTypeMapping('enum', 'string');
+        }
     }
 }

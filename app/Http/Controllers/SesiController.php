@@ -13,41 +13,45 @@ class SesiController extends Controller
 
     function login(Request $request){
         $request->validate([
-            'username' => 'required',
+            'nidn' => 'required',
             'password' => 'required'
         ],[
-            'username.required' => 'Username harus diisi',
+            'nidn.required' => 'NIDN harus diisi',
             'password.required' => 'Password harus diisi'   
         ]);
 
         $infologin = [
-            'username' => $request->username,  
+            'nidn' => $request->nidn,  
             'password' => $request->password
         ];
 
         if(Auth::attempt($infologin)) {
             $user = Auth::user();
             
-            // Redirect based on role
-            switch($user->role) {
-                case 'admin':
-                    return redirect()->route('admin.dashboard');
-                case 'reviewer':
-                    return redirect()->route('reviewer.dashboard');
-                case 'user':
-                    return redirect()->route('user.dashboard');
-                case 'pengguna':
-                    return redirect('/pengguna'); // Legacy route
-                default:
-                    return redirect('/');
+            // ✅ NEW: Check if using default password (NIDN = password)
+            if($request->password === $request->nidn) {
+                session()->flash('warning', 'Anda menggunakan password default. Silakan ganti password untuk keamanan.');
             }
-        } else {
-            return redirect('sesi')->withErrors('Username atau password salah')->withInput();
+
+            // Redirect based on role
+            if ($user->role === 'admin') {
+                return redirect()->route('admin.dashboard')->with('success', 'Selamat Datang, Super Admin!');
+            } else {
+            return redirect()->route('user.dashboard')->with('Success', 'Selamat Datang, '. $user->nama. '!');
+            }
+        }else {
+            return redirect()->route('login')
+                ->withErrors('NIDN atau password salah')
+                ->withInput();
         }
     }
 
-    function logout(){
+    function logout(Request $request){
         Auth::logout();
-        return redirect('/sesi');
+        
+        $request->session()->invalidate();
+        $request->session()->regenerateToken();
+
+        return redirect()->route('login')->with('success','Logout Berhasil');
     }
 }

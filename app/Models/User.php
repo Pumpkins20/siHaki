@@ -67,10 +67,8 @@ class User extends Authenticatable
      * Constants for role values
      */
     const ROLE_OPTIONS = [
-        'admin' => 'Administrator',
-        'pengguna' => 'Pengguna',
-        'user' => 'User',
-        'reviewer' => 'Reviewer',
+        'admin' => 'Super Admin',
+        'user' => 'Dosen/User',
     ];
 
     public function department(): BelongsTo
@@ -91,5 +89,21 @@ class User extends Authenticatable
     public function submissionHistories(): HasMany
     {
         return $this->hasMany(SubmissionHistory::class);
+    }
+
+    // helper methods
+    public function isAdmin(): bool
+    {
+        return $this->role === 'admin';
+    }
+
+    public function isUser(): bool
+    {
+        return $this->role === 'user';
+    }
+
+    public function canReview(): bool
+    {
+        return $this->role === 'admin';
     }
 }
