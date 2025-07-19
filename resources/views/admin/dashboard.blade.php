@@ -1,4 +1,3 @@
-
 @extends('layouts.admin')
 
 @section('title', 'Admin Dashboard')
@@ -189,11 +188,11 @@
                         <a href="{{ route('admin.submissions.index', ['status' => 'submitted']) }}" class="btn btn-warning">
                             <i class="bi bi-file-earmark-check"></i> Review Pending
                         </a>
-                        <a href="{{ route('admin.departments.index') }}" class="btn btn-info">
-                            <i class="bi bi-building"></i> Manage Departments
+                        <a href="{{ route('admin.certificates.index') }}" class="btn btn-info">
+                            <i class="bi bi-award"></i> Kirim Sertifikat
                         </a>
-                        <a href="{{ route('admin.reports.index') }}" class="btn btn-secondary">
-                            <i class="bi bi-bar-chart"></i> Lihat Reports
+                        <a href="{{ route('admin.review-history.index') }}" class="btn btn-secondary">
+                            <i class="bi bi-clock-history"></i> Riwayat Peninjauan
                         </a>
                     </div>
                 </div>

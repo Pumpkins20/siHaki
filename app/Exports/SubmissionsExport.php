@@ -86,6 +86,7 @@ class SubmissionsExport implements FromQuery, WithHeadings, WithMapping, WithSty
             'Jenis HKI',
             'Jenis Ciptaan',
             'Status',
+            'Tanggal Publikasi Pertama', // ✅ Add this
             'Nama User',
             'NIDN',
             'Email',
@@ -113,6 +114,7 @@ class SubmissionsExport implements FromQuery, WithHeadings, WithMapping, WithSty
             $this->formatType($submission->type),
             $this->formatCreationType($submission->creation_type),
             $this->formatStatus($submission->status),
+            $submission->first_publication_date ? $submission->first_publication_date->format('d/m/Y') : '-', // ✅ Add this
             $submission->user->nama,
             $submission->user->nidn,
             $submission->user->email,

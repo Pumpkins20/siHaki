@@ -69,6 +69,23 @@
                             @enderror
                         </div>
 
+                        <!-- Tanggal publish -->
+                        <div class="mb-3">
+                            <label for="first_publication_date" class="form-label">
+                                Tanggal Pertama Kali Diumumkan/Digunakan/Dipublikasikan <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" class="form-control @error('first_publication_date') is-invalid @enderror" 
+                                id="first_publication_date" name="first_publication_date" 
+                                value="{{ old('first_publication_date', $submission->first_publication_date?->format('Y-m-d')) }}" required>
+                            @error('first_publication_date')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="form-text">
+                                <i class="bi bi-info-circle text-primary me-1"></i>
+                                Tanggal pertama kali karya ini diumumkan, digunakan, atau dipublikasikan secara umum
+                            </div>
+                        </div>
+
                         <!-- Description -->
                         <div class="mb-3">
                             <label for="description" class="form-label">Deskripsi <span class="text-danger">*</span></label>

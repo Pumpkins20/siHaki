@@ -7,6 +7,7 @@
     <hr>
     
     <ul class="nav nav-pills flex-column mb-auto">
+        <!-- Dashboard -->
         <li class="nav-item">
             <a href="{{ route('admin.dashboard') }}" class="nav-link text-white {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <i class="bi bi-speedometer2 me-2"></i>
@@ -14,31 +15,35 @@
             </a>
         </li>
         
+        <!-- Kelola Users -->
         <li class="nav-item">
             <a href="{{ route('admin.users.index') }}" class="nav-link text-white {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                 <i class="bi bi-people me-2"></i>
-                Kelola User
+                Kelola Users
             </a>
         </li>
         
+        <!-- Review Submissions -->
         <li class="nav-item">
             <a href="{{ route('admin.submissions.index') }}" class="nav-link text-white {{ request()->routeIs('admin.submissions.*') ? 'active' : '' }}">
-                <i class="bi bi-file-earmark-text me-2"></i>
-                Kelola Submission
+                <i class="bi bi-file-earmark-check me-2"></i>
+                Review Submissions
             </a>
         </li>
         
+        <!-- ✅ NEW: Kirim Sertifikat (menggantikan Kelola Departemen) -->
         <li class="nav-item">
-            <a href="{{ route('admin.departments.index') }}" class="nav-link text-white {{ request()->routeIs('admin.departments.*') ? 'active' : '' }}">
-                <i class="bi bi-building me-2"></i>
-                Kelola Departemen
+            <a href="{{ route('admin.certificates.index') }}" class="nav-link text-white {{ request()->routeIs('admin.certificates.*') ? 'active' : '' }}">
+                <i class="bi bi-award me-2"></i>
+                Kirim Sertifikat
             </a>
         </li>
         
+        <!-- ✅ UPDATED: Riwayat Peninjauan (menggantikan Laporan) -->
         <li class="nav-item">
-            <a href="{{ route('admin.reports.index') }}" class="nav-link text-white {{ request()->routeIs('admin.reports.*') ? 'active' : '' }}">
-                <i class="bi bi-bar-chart me-2"></i>
-                Laporan
+            <a href="{{ route('admin.review-history.index') }}" class="nav-link text-white {{ request()->routeIs('admin.review-history.*') ? 'active' : '' }}">
+                <i class="bi bi-clock-history me-2"></i>
+                Riwayat Peninjauan
             </a>
         </li>
     </ul>

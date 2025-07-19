@@ -70,3 +70,71 @@
     @stack('scripts')
 </body>
 </html>
+
+{{-- Update bagian sidebar navigation: --}}
+<ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+    <!-- Sidebar Brand -->
+    <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{{ route('admin.dashboard') }}">
+        <div class="sidebar-brand-icon rotate-n-15">
+            <i class="bi bi-shield-check"></i>
+        </div>
+        <div class="sidebar-brand-text mx-3">SiHaki Admin</div>
+    </a>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider my-0">
+
+    <!-- Nav Item - Dashboard -->
+    <li class="nav-item {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.dashboard') }}">
+            <i class="bi bi-speedometer2"></i>
+            <span>Dashboard</span>
+        </a>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider">
+
+    <!-- Heading -->
+    <div class="sidebar-heading">Management</div>
+
+    <!-- Nav Item - Users -->
+    <li class="nav-item {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.users.index') }}">
+            <i class="bi bi-people"></i>
+            <span>Kelola Users</span>
+        </a>
+    </li>
+
+    <!-- Nav Item - Submissions -->
+    <li class="nav-item {{ request()->routeIs('admin.submissions.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.submissions.index') }}">
+            <i class="bi bi-file-earmark-check"></i>
+            <span>Review Submissions</span>
+        </a>
+    </li>
+
+    <!-- ✅ NEW: Nav Item - Kirim Sertifikat -->
+    <li class="nav-item {{ request()->routeIs('admin.certificates.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.certificates.index') }}">
+            <i class="bi bi-award"></i>
+            <span>Kirim Sertifikat</span>
+        </a>
+    </li>
+
+    <!-- ✅ UPDATED: Nav Item - Riwayat Peninjauan -->
+    <li class="nav-item {{ request()->routeIs('admin.review-history.*') ? 'active' : '' }}">
+        <a class="nav-link" href="{{ route('admin.review-history.index') }}">
+            <i class="bi bi-clock-history"></i>
+            <span>Riwayat Peninjauan</span>
+        </a>
+    </li>
+
+    <!-- Divider -->
+    <hr class="sidebar-divider d-none d-md-block">
+
+    <!-- Sidebar Toggler (Sidebar) -->
+    <div class="text-center d-none d-md-inline">
+        <button class="rounded-circle border-0" id="sidebarToggle"></button>
+    </div>
+</ul>

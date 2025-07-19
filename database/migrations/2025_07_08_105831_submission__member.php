@@ -17,9 +17,9 @@ return new class extends Migration
             $table->id();
             $table->foreignId('submission_id')->constrained('hki_submissions')->onDelete('cascade');
             $table->string('name');
-            $table->string('whatsapp', 15);
             $table->string('email');
-            $table->string('ktp', 16);
+            $table->string('whatsapp', 15);
+            $table->string('ktp')->nullable(); // File path untuk KTP
             $table->integer('position'); // 1, 2, 3, dst
             $table->boolean('is_leader')->default(false);
             $table->timestamps();

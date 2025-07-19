@@ -21,10 +21,80 @@ class SubmissionMember extends Model
 
     protected $casts = [
         'is_leader' => 'boolean',
+        'position' => 'integer',
     ];
 
+    /**
+     * Relationship dengan HkiSubmission
+     */
     public function submission()
     {
-        return $this->belongsTo(HkiSubmission::class);
+        return $this->belongsTo(HkiSubmission::class, 'submission_id');
+    }
+
+    /**
+     * Get KTP file path
+     */
+    public function getKtpPathAttribute()
+    {
+        if (!$this->ktp) {
+            return null;
+        }
+        // ✅ FIX: Update path sesuai dengan storage actual
+        return storage_path('app/public/' . $this->ktp);
+    }
+
+    /**
+     * Check if KTP file exists
+     */
+    public function ktpExists()
+    {
+        return $this->ktp && file_exists($this->ktp_path);
+    }
+
+    /**
+     * Get KTP public URL (if accessible via storage link)
+     */
+    public function getKtpUrlAttribute()
+    {
+        if (!$this->ktp) {
+            return null;
+        }
+        return asset('storage/' . $this->ktp);
+    }
+
+    /**
+     * Get formatted WhatsApp number for URL
+     */
+    public function getWhatsappUrlAttribute()
+    {
+        return 'https://wa.me/62' . ltrim($this->whatsapp, '0');
+    }
+
+    /**
+     * Get position label
+     */
+    public function getPositionLabelAttribute()
+    {
+        if ($this->is_leader) {
+            return 'Ketua';
+        }
+        return 'Anggota ' . $this->position;
+    }
+
+    /**
+     * Scope untuk leader
+     */
+    public function scopeLeader($query)
+    {
+        return $query->where('is_leader', true);
+    }
+
+    /**
+     * Scope untuk members (non-leader)
+     */
+    public function scopeMembers($query)
+    {
+        return $query->where('is_leader', false);
     }
 }

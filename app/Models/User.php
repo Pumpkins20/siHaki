@@ -106,4 +106,23 @@ class User extends Authenticatable
     {
         return $this->role === 'admin';
     }
+
+    /**
+     * Get unread notifications count
+     */
+    public function getUnreadNotificationsCountAttribute()
+    {
+        return $this->unreadNotifications->count();
+    }
+
+    /**
+     * Get recent notifications
+     */
+    public function getRecentNotificationsAttribute()
+    {
+        return $this->notifications()
+                    ->orderBy('created_at', 'desc')
+                    ->limit(5)
+                    ->get();
+    }
 }

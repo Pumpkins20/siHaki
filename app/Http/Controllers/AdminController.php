@@ -7,11 +7,17 @@ use App\Models\User;
 use App\Models\HkiSubmission;
 use App\Models\Department;
 use App\Models\SubmissionHistory;
+use App\Models\SubmissionDocument;
+use App\Models\SubmissionMember;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Storage;
 use App\Exports\SubmissionsExport;
 use Maatwebsite\Excel\Facades\Excel;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use App\Notifications\SubmissionStatusChanged;
+use App\Notifications\CertificateSent;
 
 class AdminController extends Controller
 {
@@ -320,32 +326,6 @@ class AdminController extends Controller
     }
 
     /**
-     * Assign submission to current admin for review
-     */
-    public function assignToSelf(HkiSubmission $submission)
-    {
-        if ($submission->status !== 'submitted') {
-            return back()->withErrors(['error' => 'Submission ini tidak dapat di-assign karena statusnya sudah berubah.']);
-        }
-
-        $submission->update([
-            'status' => 'under_review',
-            'reviewer_id' => Auth::id(),
-            'assigned_at' => now()
-        ]);
-
-        // Create history
-        $submission->histories()->create([
-            'user_id' => Auth::id(),
-            'action' => 'Assigned for Review',
-            'notes' => 'Submission di-assign ke ' . Auth::user()->nama . ' untuk review',
-            'status' => 'under_review'
-        ]);
-
-        return back()->with('success', 'Submission berhasil di-assign untuk Anda review.');
-    }
-
-    /**
      * Approve submission
      */
     public function approveSubmission(Request $request, HkiSubmission $submission)
@@ -363,24 +343,34 @@ class AdminController extends Controller
             return back()->withErrors(['error' => 'Anda tidak memiliki akses untuk approve submission ini.']);
         }
 
+        $previousStatus = $submission->status;
+
         $submission->update([
             'status' => 'approved',
             'review_notes' => $request->review_notes,
             'reviewed_at' => now()
         ]);
 
-        // Create history
-        $submission->histories()->create([
+        // Create history record
+        SubmissionHistory::create([
+            'submission_id' => $submission->id,
             'user_id' => Auth::id(),
             'action' => 'Approved',
-            'notes' => $request->review_notes,
-            'status' => 'approved'
+            'previous_status' => $previousStatus,
+            'new_status' => 'approved',
+            'notes' => $request->review_notes
         ]);
 
-        // TODO: Send notification email to user
+        // ✅ Send notification to user
+        $submission->user->notify(new SubmissionStatusChanged(
+            $submission, 
+            $previousStatus, 
+            'approved', 
+            $request->review_notes
+        ));
 
         return redirect()->route('admin.submissions.index')
-            ->with('success', "Submission '{$submission->title}' berhasil diapprove.");
+            ->with('success', "Submission '{$submission->title}' berhasil diapprove dan notifikasi telah dikirim.");
     }
 
     /**
@@ -401,24 +391,34 @@ class AdminController extends Controller
             return back()->withErrors(['error' => 'Anda tidak memiliki akses untuk request revision submission ini.']);
         }
 
+        $previousStatus = $submission->status;
+
         $submission->update([
             'status' => 'revision_needed',
             'review_notes' => $request->review_notes,
             'reviewed_at' => now()
         ]);
 
-        // Create history
-        $submission->histories()->create([
+        // Create history record
+        SubmissionHistory::create([
+            'submission_id' => $submission->id,
             'user_id' => Auth::id(),
             'action' => 'Revision Requested',
-            'notes' => $request->review_notes,
-            'status' => 'revision_needed'
+            'previous_status' => $previousStatus,
+            'new_status' => 'revision_needed',
+            'notes' => $request->review_notes
         ]);
 
-        // TODO: Send notification email to user
+        // ✅ Send notification to user
+        $submission->user->notify(new SubmissionStatusChanged(
+            $submission, 
+            $previousStatus, 
+            'revision_needed', 
+            $request->review_notes
+        ));
 
         return redirect()->route('admin.submissions.index')
-            ->with('success', "Revision berhasil di-request untuk submission '{$submission->title}'.");
+            ->with('success', "Revision berhasil di-request dan notifikasi telah dikirim.");
     }
 
     /**
@@ -439,24 +439,63 @@ class AdminController extends Controller
             return back()->withErrors(['error' => 'Anda tidak memiliki akses untuk reject submission ini.']);
         }
 
+        $previousStatus = $submission->status;
+
         $submission->update([
             'status' => 'rejected',
             'review_notes' => $request->review_notes,
             'reviewed_at' => now()
         ]);
 
-        // Create history
-        $submission->histories()->create([
+        // Create history record
+        SubmissionHistory::create([
+            'submission_id' => $submission->id,
             'user_id' => Auth::id(),
             'action' => 'Rejected',
-            'notes' => $request->review_notes,
-            'status' => 'rejected'
+            'previous_status' => $previousStatus,
+            'new_status' => 'rejected',
+            'notes' => $request->review_notes
         ]);
 
-        // TODO: Send notification email to user
+        // ✅ Send notification to user
+        $submission->user->notify(new SubmissionStatusChanged(
+            $submission, 
+            $previousStatus, 
+            'rejected', 
+            $request->review_notes
+        ));
 
         return redirect()->route('admin.submissions.index')
-            ->with('success', "Submission '{$submission->title}' berhasil ditolak.");
+            ->with('success', "Submission '{$submission->title}' berhasil ditolak dan notifikasi telah dikirim.");
+    }
+
+    /**
+     * Assign submission to current admin for review
+     */
+    public function assignToSelf(HkiSubmission $submission)
+    {
+        if ($submission->status !== 'submitted') {
+            return back()->withErrors(['error' => 'Submission ini tidak dapat di-assign karena statusnya sudah berubah.']);
+        }
+
+        $previousStatus = $submission->status;
+
+        $submission->update([
+            'status' => 'under_review',
+            'reviewer_id' => Auth::id(),
+        ]);
+
+        // ✅ FIX: Create history with correct field names
+        SubmissionHistory::create([
+            'submission_id' => $submission->id,
+            'user_id' => Auth::id(),
+            'action' => 'Assigned for Review',
+            'previous_status' => $previousStatus,   // ✅ Add this
+            'new_status' => 'under_review',        // ✅ Fix field name
+            'notes' => 'Submission di-assign ke ' . Auth::user()->nama . ' untuk review'
+        ]);
+
+        return back()->with('success', 'Submission berhasil di-assign untuk Anda review.');
     }
 
     /**
@@ -469,10 +508,26 @@ class AdminController extends Controller
             abort(404);
         }
 
-        $filePath = storage_path('app/private/submissions/' . $document->file_path);
+        // ✅ FIX: Update path sesuai dengan storage actual
+        $filePath = storage_path('app/public/' . $document->file_path);
         
         if (!file_exists($filePath)) {
-            return back()->withErrors(['error' => 'File tidak ditemukan.']);
+            // Try alternative paths
+            $alternativePaths = [
+                storage_path('app/private/' . $document->file_path),
+                storage_path('app/' . $document->file_path),
+            ];
+            
+            foreach ($alternativePaths as $altPath) {
+                if (file_exists($altPath)) {
+                    $filePath = $altPath;
+                    break;
+                }
+            }
+            
+            if (!file_exists($filePath)) {
+                return back()->withErrors(['error' => 'File tidak ditemukan.']);
+            }
         }
 
         return response()->download($filePath, $document->file_name);
@@ -483,50 +538,157 @@ class AdminController extends Controller
      */
     public function previewDocument(HkiSubmission $submission, SubmissionDocument $document)
     {
+        Log::info('Preview document called', [
+            'submission_id' => $submission->id,
+            'document_id' => $document->id,
+            'document_path' => $document->file_path
+        ]);
+
         // Verify document belongs to submission
         if ($document->submission_id !== $submission->id) {
-            abort(404);
+            Log::error('Document does not belong to submission', [
+                'document_submission_id' => $document->submission_id,
+                'expected_submission_id' => $submission->id
+            ]);
+            abort(404, 'Document not found');
         }
 
-        $filePath = storage_path('app/private/submissions/' . $document->file_path);
+        // ✅ FIX: Remove duplicate 'submissions/' from path
+        $filePath = storage_path('app/public/' . $document->file_path);
+        
+        Log::info('Fixed file path check', [
+            'original_file_path' => storage_path('app/private/submissions/' . $document->file_path),
+            'fixed_file_path' => $filePath,
+            'file_exists' => file_exists($filePath),
+            'document_file_path' => $document->file_path
+        ]);
         
         if (!file_exists($filePath)) {
-            abort(404);
+            // Try alternative paths
+            $alternativePaths = [
+                storage_path('app/private/' . $document->file_path),
+                storage_path('app/' . $document->file_path),
+            ];
+            
+            foreach ($alternativePaths as $altPath) {
+                Log::info('Trying alternative path', [
+                    'path' => $altPath,
+                    'exists' => file_exists($altPath)
+                ]);
+                
+                if (file_exists($altPath)) {
+                    $filePath = $altPath;
+                    break;
+                }
+            }
+            
+            if (!file_exists($filePath)) {
+                Log::error('File not found in any location', [
+                    'tried_paths' => array_merge([$filePath], $alternativePaths)
+                ]);
+                abort(404, 'File not found on server');
+            }
+        }
+
+        $mimeType = mime_content_type($filePath);
+        $extension = strtolower(pathinfo($document->file_name, PATHINFO_EXTENSION));
+        
+        // For PDF files, display directly in browser
+        if ($extension === 'pdf' || $mimeType === 'application/pdf') {
+            return response()->file($filePath, [
+                'Content-Type' => 'application/pdf',
+                'Content-Disposition' => 'inline; filename="' . $document->file_name . '"'
+            ]);
+        }
+
+        // For image files
+        if (in_array($extension, ['jpg', 'jpeg', 'png', 'gif']) || strpos($mimeType, 'image/') === 0) {
+            return response()->file($filePath, [
+                'Content-Type' => $mimeType,
+                'Content-Disposition' => 'inline; filename="' . $document->file_name . '"'
+            ]);
+        }
+        
+        // For other file types, show a preview page
+        return $this->showDocumentPreviewPage($submission, $document, $filePath, $mimeType);
+}
+
+    /**
+     * Preview member KTP
+     */
+    public function previewMemberKtp(HkiSubmission $submission, SubmissionMember $member)
+    {
+        Log::info('Preview KTP called', [
+            'submission_id' => $submission->id,
+            'member_id' => $member->id,
+            'ktp_file' => $member->ktp
+        ]);
+
+        // Verify member belongs to submission
+        if ($member->submission_id !== $submission->id) {
+            abort(404, 'Member not found');
+        }
+
+        if (!$member->ktp) {
+            abort(404, 'KTP file not available');
+        }
+
+        // ✅ FIX: Update path sesuai dengan storage actual
+        $filePath = storage_path('app/public/' . $member->ktp);
+        
+        Log::info('KTP file path check', [
+            'expected_path' => $filePath,
+            'file_exists' => file_exists($filePath),
+            'ktp_value' => $member->ktp
+        ]);
+        
+        if (!file_exists($filePath)) {
+            Log::error('KTP file not found', [
+                'expected_path' => $filePath,
+                'member_ktp' => $member->ktp
+            ]);
+            abort(404, 'KTP file not found on server');
         }
 
         $mimeType = mime_content_type($filePath);
         
+        // KTP should be image, display inline
         return response()->file($filePath, [
             'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="' . $document->file_name . '"'
+            'Content-Disposition' => 'inline; filename="KTP_' . str_replace(' ', '_', $member->name) . '.jpg"'
         ]);
     }
 
     /**
-     * View member KTP
+     * Enhanced view member KTP with better error handling
      */
     public function viewMemberKtp(HkiSubmission $submission, SubmissionMember $member)
     {
         // Verify member belongs to submission
         if ($member->submission_id !== $submission->id) {
-            abort(404);
+            abort(404, 'Member not found');
         }
 
         if (!$member->ktp) {
-            abort(404, 'KTP tidak tersedia');
+            return back()->withErrors(['error' => 'KTP file not available for this member']);
         }
 
-        $filePath = storage_path('app/private/ktp/' . $member->ktp);
+        // ✅ FIX: Update path sesuai dengan storage actual
+        $filePath = storage_path('app/public/' . $member->ktp);
         
         if (!file_exists($filePath)) {
-            abort(404);
+            Log::error('KTP download - file not found', [
+                'expected_path' => $filePath,
+                'member_ktp' => $member->ktp
+            ]);
+            return back()->withErrors(['error' => 'KTP file not found on server']);
         }
 
         $mimeType = mime_content_type($filePath);
         
         return response()->file($filePath, [
             'Content-Type' => $mimeType,
-            'Content-Disposition' => 'inline; filename="KTP_' . $member->name . '"'
+            'Content-Disposition' => 'attachment; filename="KTP_' . str_replace(' ', '_', $member->name) . '.jpg"'
         ]);
     }
 
@@ -844,5 +1006,224 @@ class AdminController extends Controller
             'draft' => '#6c757d',
             default => '#6c757d'
         };
+    }
+
+    /**
+     * Certificate Management - Index
+     */
+    public function certificatesIndex(Request $request)
+    {
+        $query = HkiSubmission::with(['user', 'documents', 'reviewer'])
+            ->where('status', 'approved');
+
+        // Filter berdasarkan pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('nama', 'like', "%{$search}%")
+                               ->orWhere('nidn', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        // Filter berdasarkan status sertifikat
+        if ($request->filled('certificate_status')) {
+            if ($request->certificate_status === 'sent') {
+                $query->whereHas('documents', function($q) {
+                    $q->where('document_type', 'certificate');
+                });
+            } elseif ($request->certificate_status === 'pending') {
+                $query->whereDoesntHave('documents', function($q) {
+                    $q->where('document_type', 'certificate');
+                });
+            }
+        }
+
+        $submissions = $query->orderBy('reviewed_at', 'desc')->paginate(15);
+
+        $stats = [
+            'total_approved' => HkiSubmission::where('status', 'approved')->count(),
+            'certificates_sent' => HkiSubmission::whereHas('documents', function($q) {
+                $q->where('document_type', 'certificate');
+            })->count(),
+            'certificates_pending' => HkiSubmission::where('status', 'approved')
+                ->whereDoesntHave('documents', function($q) {
+                    $q->where('document_type', 'certificate');
+                })->count(),
+        ];
+
+        return view('admin.certificates.index', compact('submissions', 'stats'));
+    }
+
+    /**
+     * Certificate Management - Show
+     */
+    public function certificatesShow(HkiSubmission $submission)
+    {
+        if ($submission->status !== 'approved') {
+            return back()->withErrors(['error' => 'Sertifikat hanya dapat dikirim untuk submission yang sudah approved.']);
+        }
+
+        $submission->load([
+            'user',
+            'documents',
+            'members',
+            'reviewer',
+            'histories.user'
+        ]);
+
+        // Check if certificate already sent
+        $certificateSent = $submission->documents()->where('document_type', 'certificate')->exists();
+
+        return view('admin.certificates.show', compact('submission', 'certificateSent'));
+    }
+
+    /**
+     * Send Certificate
+     */
+    public function sendCertificate(Request $request, HkiSubmission $submission)
+    {
+        $request->validate([
+            'certificate_file' => 'required|file|mimes:pdf|max:10240', // Max 10MB
+            'notes' => 'nullable|string|max:500'
+        ], [
+            'certificate_file.required' => 'File sertifikat harus diupload',
+            'certificate_file.mimes' => 'File sertifikat harus dalam format PDF',
+            'certificate_file.max' => 'Ukuran file sertifikat maksimal 10MB'
+        ]);
+
+        if ($submission->status !== 'approved') {
+            return back()->withErrors(['error' => 'Sertifikat hanya dapat dikirim untuk submission yang sudah approved.']);
+        }
+
+        try {
+            DB::beginTransaction();
+
+            // Upload certificate file
+            $file = $request->file('certificate_file');
+            $fileName = 'certificate_' . $submission->id . '_' . time() . '.pdf';
+            $filePath = $file->storeAs('certificates', $fileName, 'public');
+
+            // Create document record
+            $certificate = SubmissionDocument::create([
+                'submission_id' => $submission->id,
+                'document_type' => 'certificate',
+                'file_name' => 'Sertifikat_' . $submission->title . '.pdf',
+                'file_path' => $filePath,
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'uploaded_at' => now(),
+            ]);
+
+            // Create history record
+            SubmissionHistory::create([
+                'submission_id' => $submission->id,
+                'user_id' => Auth::id(),
+                'action' => 'Certificate Sent',
+                'previous_status' => 'approved',
+                'new_status' => 'approved',
+                'notes' => $request->notes ?: 'Sertifikat HKI telah dikirim ke user'
+            ]);
+
+            // ✅ Send notification to user
+            $submission->user->notify(new CertificateSent(
+                $submission, 
+                $certificate, 
+                $request->notes
+            ));
+
+            DB::commit();
+
+            return redirect()->route('admin.certificates.index')
+                ->with('success', "Sertifikat berhasil dikirim dan notifikasi telah dikirim ke user.");
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Certificate sending failed: ' . $e->getMessage());
+            return back()->withErrors(['error' => 'Terjadi kesalahan saat mengirim sertifikat. Silakan coba lagi.']);
+        }
+    }
+
+    /**
+     * Download submission document for certificate management
+     */
+    public function downloadSubmissionDocument(HkiSubmission $submission, SubmissionDocument $document)
+    {
+        if ($document->submission_id !== $submission->id) {
+            abort(404);
+        }
+
+        $filePath = storage_path('app/public/' . $document->file_path);
+        
+        if (!file_exists($filePath)) {
+            return back()->withErrors(['error' => 'File tidak ditemukan.']);
+        }
+
+        return response()->download($filePath, $document->file_name);
+    }
+
+    /**
+     * Review History - Index
+     */
+    public function reviewHistoryIndex(Request $request)
+    {
+        $query = HkiSubmission::with(['user', 'reviewer'])
+            ->whereNotNull('reviewed_at')
+            ->whereIn('status', ['approved', 'rejected']);
+
+        // Filter berdasarkan reviewer
+        if ($request->filled('reviewer_id')) {
+            $query->where('reviewer_id', $request->reviewer_id);
+        }
+
+        // Filter berdasarkan status
+        if ($request->filled('status')) {
+            $query->where('status', $request->status);
+        }
+
+        // Filter berdasarkan tanggal
+        if ($request->filled('date_from')) {
+            $query->whereDate('reviewed_at', '>=', $request->date_from);
+        }
+        
+        if ($request->filled('date_to')) {
+            $query->whereDate('reviewed_at', '<=', $request->date_to);
+        }
+
+        // Filter berdasarkan pencarian
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('title', 'like', "%{$search}%")
+                  ->orWhereHas('user', function($userQuery) use ($search) {
+                      $userQuery->where('nama', 'like', "%{$search}%");
+                  });
+            });
+        }
+
+        $submissions = $query->orderBy('reviewed_at', 'desc')->paginate(20);
+
+        // Get reviewers for filter
+        $reviewers = User::where('role', 'admin')->get();
+
+        $stats = [
+            'total_reviewed' => HkiSubmission::whereNotNull('reviewed_at')->count(),
+            'approved_count' => HkiSubmission::where('status', 'approved')->count(),
+            'rejected_count' => HkiSubmission::where('status', 'rejected')->count(),
+            'my_reviews' => HkiSubmission::where('reviewer_id', Auth::id())->whereNotNull('reviewed_at')->count(),
+        ];
+
+        return view('admin.review-history.index', compact('submissions', 'reviewers', 'stats'));
+    }
+
+    /**
+     * Export Review History
+     */
+    public function exportReviewHistory(Request $request)
+    {
+        return Excel::download(new ReviewHistoryExport($request->all()), 
+            'review-history-' . date('Y-m-d') . '.xlsx');
     }
 }

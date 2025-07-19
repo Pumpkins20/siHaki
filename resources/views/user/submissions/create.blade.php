@@ -51,8 +51,8 @@
                             <div class="mb-3">
                                 <label for="title" class="form-label">Judul HKI <span class="text-danger">*</span></label>
                                 <input type="text" class="form-control @error('title') is-invalid @enderror" 
-                                       id="title" name="title" value="{{ old('title') }}" 
-                                       placeholder="Masukkan judul HKI Anda" required>
+                                    id="title" name="title" value="{{ old('title') }}" 
+                                    placeholder="Masukkan judul HKI Anda" required>
                                 @error('title')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -77,12 +77,29 @@
                                 @enderror
                             </div>
 
+                            <!-- ✅ NEW: Tanggal Pertama Kali Diumumkan/Digunakan/Dipublikasikan -->
+                            <div class="mb-3">
+                                <label for="first_publication_date" class="form-label">
+                                    Tanggal Pertama Kali Diumumkan/Digunakan/Dipublikasikan <span class="text-danger">*</span>
+                                </label>
+                                <input type="date" class="form-control @error('first_publication_date') is-invalid @enderror" 
+                                    id="first_publication_date" name="first_publication_date" 
+                                    value="{{ old('first_publication_date') }}" required>
+                                @error('first_publication_date')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">
+                                    <i class="bi bi-info-circle text-primary me-1"></i>
+                                    Tanggal pertama kali karya ini diumumkan, digunakan, atau dipublikasikan secara umum
+                                </div>
+                            </div>
+
                             <!-- Description -->
                             <div class="mb-3">
                                 <label for="description" class="form-label">Deskripsi <span class="text-danger">*</span></label>
                                 <textarea class="form-control @error('description') is-invalid @enderror" 
-                                          id="description" name="description" rows="4" 
-                                          placeholder="Jelaskan secara detail tentang HKI yang akan diajukan" required>{{ old('description') }}</textarea>
+                                        id="description" name="description" rows="4" 
+                                        placeholder="Jelaskan secara detail tentang HKI yang akan diajukan" required>{{ old('description') }}</textarea>
                                 @error('description')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
@@ -274,6 +291,25 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // ✅ NEW: Initialize form with old values if available
     initializeFormWithOldValues();
+
+    // ✅ NEW: Date validation for first publication date
+    const firstPublicationDate = document.getElementById('first_publication_date');
+    
+    // Set max date to today
+    const today = new Date().toISOString().split('T')[0];
+    firstPublicationDate.setAttribute('max', today);
+    
+    // Validate date input
+    firstPublicationDate.addEventListener('change', function() {
+        const selectedDate = new Date(this.value);
+        const currentDate = new Date();
+        
+        if (selectedDate > currentDate) {
+            alert('Tanggal tidak boleh lebih dari hari ini');
+            this.value = '';
+            this.focus();
+        }
+    });
 });
 
 // ✅ NEW: Function to initialize form with old values

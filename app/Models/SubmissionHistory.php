@@ -18,14 +18,34 @@ class SubmissionHistory extends Model
         'notes',
     ];
 
+    /**
+     * Relationship dengan HkiSubmission
+     */
     public function submission()
     {
-        // Perbaikan: Spesifikasi foreign key yang benar
         return $this->belongsTo(HkiSubmission::class, 'submission_id');
     }
 
+    /**
+     * Relationship dengan User
+     */
     public function user()
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get action color for UI
+     */
+    public function getActionColorAttribute()
+    {
+        return match($this->action) {
+            'Approved' => 'success',
+            'Rejected' => 'danger',
+            'Revision Requested' => 'warning',
+            'Submitted' => 'info',
+            'Assigned for Review' => 'primary',
+            default => 'secondary'
+        };
     }
 }

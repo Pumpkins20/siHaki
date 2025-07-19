@@ -119,12 +119,14 @@ Route::middleware(['auth'])->group(function () {
             
             // Bulk actions - Add these new routes
             Route::post('/bulk-assign', [AdminController::class, 'bulkAssignToSelf'])->name('bulk-assign');
-            Route::get('/export', [AdminController::class, 'exportSubmissions'])->name('export');
+
             
-            // Document management
             Route::get('/{submission}/documents/{document}/download', [AdminController::class, 'downloadDocument'])->name('document-download');
             Route::get('/{submission}/documents/{document}/preview', [AdminController::class, 'previewDocument'])->name('document-preview');
+       
             Route::get('/{submission}/members/{member}/ktp', [AdminController::class, 'viewMemberKtp'])->name('member-ktp');
+            Route::get('/{submission}/members/{member}/ktp/preview', [AdminController::class, 'previewMemberKtp'])->name('member-ktp-preview');
+
             
             // Export
             Route::get('/export/excel', [AdminController::class, 'exportSubmissions'])->name('export');
@@ -145,6 +147,20 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [AdminController::class, 'reports'])->name('index');
             Route::get('/export', [AdminController::class, 'exportReports'])->name('export');
             Route::get('/analytics-api', [AdminController::class, 'analyticsApi'])->name('analytics-api');
+        });
+        
+        // Certificate Management
+        Route::prefix('certificates')->name('certificates.')->group(function () {
+            Route::get('/', [AdminController::class, 'certificatesIndex'])->name('index');
+            Route::get('/{submission}', [AdminController::class, 'certificatesShow'])->name('show');
+            Route::post('/{submission}/send', [AdminController::class, 'sendCertificate'])->name('send');
+            Route::get('/{submission}/documents/{document}/download', [AdminController::class, 'downloadSubmissionDocument'])->name('document-download');
+        });
+        
+        // Review History
+        Route::prefix('review-history')->name('review-history.')->group(function () {
+            Route::get('/', [AdminController::class, 'reviewHistoryIndex'])->name('index');
+            Route::get('/export', [AdminController::class, 'exportReviewHistory'])->name('export');
         });
     });
 });

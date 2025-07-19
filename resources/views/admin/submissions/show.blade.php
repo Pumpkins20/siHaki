@@ -104,6 +104,14 @@
                                     </td>
                                 </tr>
                                 <tr>
+                                    <td><strong>Tanggal Publikasi Pertama:</strong></td>
+                                    <td>
+                                        <i class="bi bi-calendar-event text-primary me-1"></i>
+                                        {{ $submission->first_publication_date_formatted }}
+                                        <br><small class="text-muted">Pertama kali diumumkan/digunakan/dipublikasikan</small>
+                                    </td>
+                                </tr>
+                                <tr>
                                     <td><strong>Jumlah Anggota:</strong></td>
                                     <td>{{ $submission->member_count }} orang</td>
                                 </tr>
@@ -269,12 +277,14 @@
                                     </td>
                                     <td>
                                         @if($member->ktp)
-                                            <a href="{{ route('admin.submissions.member-ktp', [$submission, $member]) }}" 
-                                               class="btn btn-sm btn-outline-primary" target="_blank" title="Lihat KTP">
-                                                <i class="bi bi-eye"></i> KTP
-                                            </a>
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ route('admin.submissions.member-ktp-preview', [$submission, $member]) }}" 
+                                                   class="btn btn-sm btn-outline-primary" target="_blank" title="Preview KTP">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            </div>
                                         @else
-                                            <span class="text-muted">-</span>
+                                            <span class="text-muted">No KTP</span>
                                         @endif
                                     </td>
                                 </tr>
@@ -330,10 +340,23 @@
                                                class="btn btn-sm btn-outline-success" title="Download">
                                                 <i class="bi bi-download"></i>
                                             </a>
-                                            <a href="{{ route('admin.submissions.document-preview', [$submission, $document]) }}" 
-                                               class="btn btn-sm btn-outline-primary" target="_blank" title="Preview">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
+                                            
+                                            @php
+                                                $extension = strtolower(pathinfo($document->file_name, PATHINFO_EXTENSION));
+                                                $previewableTypes = ['pdf', 'jpg', 'jpeg', 'png', 'gif'];
+                                            @endphp
+                                            
+                                            @if(in_array($extension, $previewableTypes))
+                                                <a href="{{ route('admin.submissions.document-preview', [$submission, $document]) }}" 
+                                                   class="btn btn-sm btn-outline-primary" target="_blank" title="Preview">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                            @else
+                                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                                        title="Preview not available for this file type" disabled>
+                                                    <i class="bi bi-eye-slash"></i>
+                                                </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
@@ -627,6 +650,29 @@
     </div>
 </div>
 
+<!-- Document Preview Modal -->
+<div class="modal fade" id="documentPreviewModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Document Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body text-center">
+                <div id="previewContent">
+                    <!-- Content will be loaded here -->
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <a href="#" id="downloadLink" class="btn btn-success">
+                    <i class="bi bi-download"></i> Download
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 // Modal functions
@@ -738,6 +784,72 @@ function printSubmission() {
     
     printWindow.document.close();
     printWindow.print();
+}
+
+// Document preview function
+function previewDocument(submissionId, documentId, fileName, downloadUrl) {
+    const modal = new bootstrap.Modal(document.getElementById('documentPreviewModal'));
+    const previewContent = document.getElementById('previewContent');
+    const downloadLink = document.getElementById('downloadLink');
+    
+    // Update modal title
+    document.querySelector('#documentPreviewModal .modal-title').textContent = 'Preview: ' + fileName;
+    
+    // Update download link
+    downloadLink.href = downloadUrl;
+    
+    // Show loading
+    previewContent.innerHTML = `
+        <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+        </div>
+    `;
+    
+    // Get file extension
+    const extension = fileName.split('.').pop().toLowerCase();
+    const previewUrl = `/admin/submissions/${submissionId}/documents/${documentId}/preview`;
+    
+    if (['pdf'].includes(extension)) {
+        previewContent.innerHTML = `
+            <iframe src="${previewUrl}" width="100%" height="600px" class="border"></iframe>
+        `;
+    } else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
+        previewContent.innerHTML = `
+            <img src="${previewUrl}" class="img-fluid" style="max-height: 600px;">
+        `;
+    } else {
+        previewContent.innerHTML = `
+            <div class="alert alert-info">
+                <i class="bi bi-info-circle fs-1 mb-3"></i>
+                <h5>Preview Not Available</h5>
+                <p>This file type cannot be previewed. Please download to view.</p>
+            </div>
+        `;
+    }
+    
+    modal.show();
+}
+
+function previewKtp(submissionId, memberId, memberName) {
+    const modal = new bootstrap.Modal(document.getElementById('documentPreviewModal'));
+    const previewContent = document.getElementById('previewContent');
+    const downloadLink = document.getElementById('downloadLink');
+    
+    // Update modal title
+    document.querySelector('#documentPreviewModal .modal-title').textContent = 'KTP: ' + memberName;
+    
+    // Update download link
+    downloadLink.href = `/admin/submissions/${submissionId}/members/${memberId}/ktp`;
+    
+    // Show KTP image
+    const previewUrl = `/admin/submissions/${submissionId}/members/${memberId}/ktp/preview`;
+    previewContent.innerHTML = `
+        <img src="${previewUrl}" class="img-fluid border rounded" style="max-height: 600px;" alt="KTP ${memberName}">
+    `;
+    
+    modal.show();
 }
 
 // Form validation

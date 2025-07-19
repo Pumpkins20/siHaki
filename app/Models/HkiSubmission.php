@@ -11,22 +11,24 @@ class HkiSubmission extends Model
 
     protected $fillable = [
         'user_id',
-        'reviewer_id',
         'title',
         'type',
         'creation_type',
         'description',
+        'first_publication_date',
+        'member_count',
         'status',
         'submission_date',
+        'reviewer_id',
         'reviewed_at',
         'review_notes',
         'additional_data',
-        'member_count',
     ];
 
     protected $casts = [
         'submission_date' => 'datetime',
         'reviewed_at' => 'datetime',
+        'first_publication_date' => 'date',
         'additional_data' => 'array',
     ];
 
@@ -79,6 +81,33 @@ class HkiSubmission extends Model
         return $this->hasOne(SubmissionMember::class)->where('is_leader', true);
     }
 
+    /**
+     * Get main document
+     */
+    public function mainDocument()
+    {
+        return $this->hasOne(SubmissionDocument::class, 'submission_id')
+                    ->where('document_type', 'main_document');
+    }
+
+    /**
+     * Get supporting documents
+     */
+    public function supportingDocuments()
+    {
+        return $this->hasMany(SubmissionDocument::class, 'submission_id')
+                    ->where('document_type', 'supporting_document');
+    }
+
+    /**
+     * Get certificate
+     */
+    public function certificate()
+    {
+        return $this->hasOne(SubmissionDocument::class, 'submission_id')
+                    ->where('document_type', 'certificate');
+    }
+
     // Accessors
     public function getCreationTypeNameAttribute()
     {
@@ -112,5 +141,10 @@ class HkiSubmission extends Model
     public function getFormattedReviewedAtAttribute()
     {
         return $this->reviewed_at ? $this->reviewed_at->format('d M Y H:i') : '-';
+    }
+
+    public function getFirstPublicationDateFormattedAttribute()
+    {
+        return $this->first_publication_date ? $this->first_publication_date->format('d M Y') : '-';
     }
 }

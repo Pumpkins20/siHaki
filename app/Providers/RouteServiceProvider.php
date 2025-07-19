@@ -46,6 +46,10 @@ class RouteServiceProvider extends ServiceProvider
             Route::middleware('web')
                 ->namespace($this->namespace)
                 ->group(base_path('routes/web.php'));
+
+            Route::model('submission', \App\Models\HkiSubmission::class);
+        Route::model('document', \App\Models\SubmissionDocument::class);  
+        Route::model('member', \App\Models\SubmissionMember::class);
         });
     }
 

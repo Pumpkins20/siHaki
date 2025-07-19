@@ -41,7 +41,23 @@ class UserDashboardController extends Controller
 
         // Sample reminders and notifications
         $reminders = collect([]);
-        $notifications = collect([]);
+        $notifications = $user->notifications()
+                          ->orderBy('created_at', 'desc')
+                          ->limit(5)
+                          ->get()
+                          ->map(function($notification) {
+                              $data = $notification->data;
+                              return (object) [
+                                  'id' => $notification->id,
+                                  'title' => $data['title'] ?? 'Notifikasi',
+                                  'message' => $data['message'] ?? '',
+                                  'type' => $data['type'] ?? 'info',
+                                  'icon' => $data['icon'] ?? 'bell',
+                                  'action_url' => $data['action_url'] ?? '#',
+                                  'created_at' => $notification->created_at,
+                                  'read_at' => $notification->read_at,
+                              ];
+                          });
 
         return view('user.dashboard', compact(
             'stats', 

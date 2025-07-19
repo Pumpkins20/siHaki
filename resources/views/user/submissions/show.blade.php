@@ -50,9 +50,23 @@
                                     <td>{{ $submission->title }}</td>
                                 </tr>
                                 <tr>
-                                    <td><strong>Jenis:</strong></td>
+                                    <td><strong>Jenis HKI:</strong></td>
                                     <td>
                                         <span class="badge bg-info">{{ ucfirst($submission->type) }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Jenis Ciptaan:</strong></td>
+                                    <td>
+                                        <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Tanggal Publikasi:</strong></td>
+                                    <td>
+                                        <i class="bi bi-calendar-event text-primary me-1"></i>
+                                        {{ $submission->first_publication_date_formatted }}
+                                        <br><small class="text-muted">Pertama kali diumumkan/digunakan/dipublikasikan</small>
                                     </td>
                                 </tr>
                                 <tr>
