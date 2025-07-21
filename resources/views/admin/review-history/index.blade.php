@@ -1,7 +1,10 @@
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 
 =======
 >>>>>>> backend
+=======
+>>>>>>> Stashed changes
 @extends('layouts.admin')
 
 @section('title', 'Riwayat Peninjauan')
@@ -179,14 +182,20 @@
                                 </thead>
                                 <tbody>
                                     @foreach($submissions as $index => $submission)
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> Stashed changes
                                     @php
                                         $statusColor = StatusHelper::getStatusColor($submission->status);
                                         $statusIcon = StatusHelper::getStatusIcon($submission->status);
                                         $statusName = StatusHelper::getStatusName($submission->status);
                                     @endphp
+<<<<<<< Updated upstream
 >>>>>>> backend
+=======
+>>>>>>> Stashed changes
                                     <tr>
                                         <td>{{ $submissions->firstItem() + $index }}</td>
                                         <td>
@@ -203,6 +212,7 @@
                                             <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</span>
                                         </td>
                                         <td>
+<<<<<<< Updated upstream
 <<<<<<< HEAD
                                             @if($submission->status === 'approved')
                                                 <span class="badge bg-success">Approved</span>
@@ -214,6 +224,11 @@
                                                 <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
                                             </span>
 >>>>>>> backend
+=======
+                                            <span class="badge bg-{{ $statusColor }}">
+                                                <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
+                                            </span>
+>>>>>>> Stashed changes
                                         </td>
                                         <td>
                                             <div>
