@@ -1,5 +1,3 @@
-{{-- filepath: resources/views/admin/submissions/show.blade.php --}}
-
 @extends('layouts.admin')
 
 @section('title', 'Detail Submission')
@@ -477,12 +475,12 @@
                     @endphp
 
                     <!-- Status Badge -->
-                    <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2">
+                    <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2 mb-3">
                         <i class="bi bi-{{ $statusIcon }} me-2"></i>{{ $statusName }}
                     </span>
 
                     <!-- Status Timeline -->
-                    <div class="status-timeline">
+                    <div class="status-timeline mt-3">
                         <div class="status-step {{ in_array($submission->status, ['draft', 'submitted', 'under_review', 'revision_needed', 'approved', 'rejected']) ? 'active' : '' }}">
                             <div class="status-icon">
                                 <i class="bi bi-file-earmark-text"></i>

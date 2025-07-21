@@ -146,7 +146,46 @@ class SubmissionController extends Controller
         }
     }
 
-    private function getAdditionalData($request)
+    /**
+     * ✅ FIX: Complete getAdditionalData method
+     */
+    private function getAdditionalData(Request $request)
+    {
+        $data = [];
+        
+        switch ($request->creation_type) {
+            case 'program_komputer':
+                $data['program_link'] = $request->program_link;
+                break;
+                
+            case 'sinematografi':
+                $data['video_link'] = $request->video_link;
+                break;
+                
+            case 'buku':
+                $data['isbn'] = $request->isbn;
+                $data['page_count'] = $request->page_count;
+                break;
+                
+            case 'poster_fotografi':
+                $data['image_type'] = $request->image_type;
+                $data['width'] = $request->width;
+                $data['height'] = $request->height;
+                break;
+                
+            case 'alat_peraga':
+                $data['subject'] = $request->subject;
+                $data['education_level'] = $request->education_level;
+                break;
+                
+            case 'basis_data':
+                $data['database_type'] = $request->database_type;
+                $data['record_count'] = $request->record_count;
+                break;
+        }
+        
+        return $data;
+    }
 
     /**
      * Display submission detail
@@ -164,6 +203,23 @@ class SubmissionController extends Controller
             'histories.user',
             'reviewer'
         ]);
+
+        // ✅ Add debug logging
+        Log::info('Submission show accessed', [
+            'submission_id' => $submission->id,
+            'user_id' => Auth::id(),
+            'documents_count' => $submission->documents->count(),
+            'documents' => $submission->documents->map(function($doc) {
+                return [
+                    'id' => $doc->id,
+                    'type' => $doc->document_type,
+                    'name' => $doc->file_name,
+                    'uploaded_at' => $doc->uploaded_at ? $doc->uploaded_at->format('Y-m-d H:i:s') : null,
+                    'file_exists' => file_exists(storage_path('app/public/' . $doc->file_path))
+                ];
+            })
+        ]);
+
         return view('user.submissions.show', compact('submission'));
     }
 
@@ -181,6 +237,7 @@ class SubmissionController extends Controller
             return back()->withErrors(['error' => 'Submission ini tidak dapat diedit karena statusnya sudah ' . $submission->status]);
         }
 
+        // ✅ Load relationships and log for debugging
         $submission->load(['documents', 'members']);
 
         Log::info('Edit form accessed', [
@@ -290,7 +347,6 @@ class SubmissionController extends Controller
             ]);
             return back()->withErrors(['error' => 'Terjadi kesalahan saat mengupdate submission. Silakan coba lagi.'])->withInput();
         }
-
     }
 
     /**
@@ -358,51 +414,6 @@ class SubmissionController extends Controller
                 $rules['documentation_file'] = 'required|file|mimes:pdf|max:20480'; // 20MB
                 break;
         }
-    }
-
-    /**
-     * Get additional data based on creation type
-     */
-    private function getAdditionalData(Request $request)
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
->>>>>>> backend
-    {
-        $data = [];
-        
-        switch ($request->creation_type) {
-            case 'program_komputer':
-                $data['program_link'] = $request->program_link;
-                break;
-                
-            case 'sinematografi':
-                $data['video_link'] = $request->video_link;
-                break;
-                
-            case 'buku':
-                $data['isbn'] = $request->isbn;
-                $data['page_count'] = $request->page_count;
-                break;
-                
-            case 'poster_fotografi':
-                $data['image_type'] = $request->image_type;
-                $data['width'] = $request->width;
-                $data['height'] = $request->height;
-                break;
-                
-            case 'alat_peraga':
-                $data['subject'] = $request->subject;
-                $data['education_level'] = $request->education_level;
-                break;
-                
-            case 'basis_data':
-                $data['database_type'] = $request->database_type;
-                $data['record_count'] = $request->record_count;
-                break;
-        }
-        
-        return $data;
     }
 
     /**
@@ -573,7 +584,7 @@ class SubmissionController extends Controller
     }
 
     /**
-     * Add missing download document method
+     * Download document method
      */
     public function downloadDocument(SubmissionDocument $document)
     {
