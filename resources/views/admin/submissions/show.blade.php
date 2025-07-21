@@ -90,16 +90,13 @@
                                     <td><strong>Status:</strong></td>
                                     <td>
                                         @php
-                                            $statusColors = [
-                                                'submitted' => 'warning',
-                                                'under_review' => 'info',
-                                                'revision_needed' => 'secondary',
-                                                'approved' => 'success',
-                                                'rejected' => 'danger'
-                                            ];
+                                            use App\Helpers\StatusHelper;
+                                            $statusColor = StatusHelper::getStatusColor($submission->status);
+                                            $statusIcon = StatusHelper::getStatusIcon($submission->status);
+                                            $statusName = StatusHelper::getStatusName($submission->status);
                                         @endphp
-                                        <span class="badge bg-{{ $statusColors[$submission->status] ?? 'secondary' }}">
-                                            {{ ucfirst(str_replace('_', ' ', $submission->status)) }}
+                                        <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2">
+                                            <i class="bi bi-{{ $statusIcon }} me-2"></i>{{ $statusName }}
                                         </span>
                                     </td>
                                 </tr>
@@ -107,7 +104,7 @@
                                     <td><strong>Tanggal Publikasi Pertama:</strong></td>
                                     <td>
                                         <i class="bi bi-calendar-event text-primary me-1"></i>
-                                        {{ $submission->first_publication_date_formatted }}
+                                        {{ $submission->first_publication_date ? $submission->first_publication_date->format('d M Y') : '-' }}
                                         <br><small class="text-muted">Pertama kali diumumkan/digunakan/dipublikasikan</small>
                                     </td>
                                 </tr>
@@ -139,21 +136,20 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Tanggal Submit:</strong></td>
-                                    <td>{{ $submission->submission_date ? $submission->submission_date->format('d M Y H:i') : '-' }}</td>
+                                    <td>{{ $submission->submission_date ? $submission->submission_date->setTimezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '-' }}</td>
                                 </tr>
+                                @if($submission->reviewed_at)
                                 <tr>
-                                    <td><strong>Reviewer:</strong></td>
+                                    <td><strong>Tanggal Review:</strong></td>
+                                    <td>{{ $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB</td>
+                                </tr>
+                                @endif
+                                <tr>
+                                    <td><strong>Dibuat Pada:</strong></td>
                                     <td>
-                                        @if($submission->reviewer)
-                                            <div>
-                                                <strong>{{ $submission->reviewer->nama }}</strong>
-                                                @if($submission->reviewer_id === Auth::id())
-                                                    <br><span class="badge bg-primary">Anda</span>
-                                                @endif
-                                            </div>
-                                        @else
-                                            <span class="text-muted">Belum di-assign</span>
-                                        @endif
+                                        <small class="text-muted">
+                                            {{ $submission->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
+                                        </small>
                                     </td>
                                 </tr>
                             </table>
@@ -175,11 +171,11 @@
                         <div class="col-12">
                             <h6><strong>Catatan Review:</strong></h6>
                             <div class="alert alert-{{ $submission->status === 'approved' ? 'success' : ($submission->status === 'rejected' ? 'danger' : 'warning') }}">
+                                <i class="bi bi-{{ $submission->status === 'approved' ? 'check-circle' : ($submission->status === 'rejected' ? 'x-circle' : 'exclamation-triangle') }} me-2"></i>
                                 {{ $submission->review_notes }}
                                 @if($submission->reviewed_at)
-                                    <br><small class="text-muted">
-                                        <i class="bi bi-clock"></i> {{ $submission->reviewed_at->format('d M Y H:i') }}
-                                        oleh {{ $submission->reviewer->nama }}
+                                    <br><small class="text-muted mt-2">
+                                        <i class="bi bi-clock"></i> {{ $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
                                     </small>
                                 @endif
                             </div>
@@ -193,12 +189,24 @@
                         <div class="row">
                             <div class="col-12">
                                 <h6><strong>Informasi Tambahan:</strong></h6>
-                                @php $additionalData = is_string($submission->additional_data) ? json_decode($submission->additional_data, true) : $submission->additional_data; @endphp
+                                @php 
+                                    $additionalData = is_string($submission->additional_data) ? 
+                                                    json_decode($submission->additional_data, true) : 
+                                                    $submission->additional_data; 
+                                @endphp
                                 
                                 @if($submission->creation_type === 'program_komputer' && isset($additionalData['program_link']))
                                     <p><strong>Link Program:</strong> 
                                         <a href="{{ $additionalData['program_link'] }}" target="_blank" class="btn btn-sm btn-outline-primary">
                                             <i class="bi bi-link-45deg"></i> Akses Program
+                                        </a>
+                                    </p>
+                                @endif
+
+                                @if($submission->creation_type === 'sinematografi' && isset($additionalData['video_link']))
+                                    <p><strong>Link Video:</strong> 
+                                        <a href="{{ $additionalData['video_link'] }}" target="_blank" class="btn btn-sm btn-outline-primary">
+                                            <i class="bi bi-play-circle"></i> Tonton Video
                                         </a>
                                     </p>
                                 @endif
@@ -212,12 +220,21 @@
                                     @endif
                                 @endif
 
-                                @if($submission->creation_type === 'poster_fotografi')
-                                    @if(isset($additionalData['image_type']))
-                                        <p><strong>Jenis Gambar:</strong> {{ ucfirst($additionalData['image_type']) }}</p>
+                                @if($submission->creation_type === 'alat_peraga')
+                                    @if(isset($additionalData['subject']))
+                                        <p><strong>Mata Pelajaran:</strong> {{ $additionalData['subject'] }}</p>
                                     @endif
-                                    @if(isset($additionalData['width']) && isset($additionalData['height']))
-                                        <p><strong>Dimensi:</strong> {{ $additionalData['width'] }} x {{ $additionalData['height'] }} px</p>
+                                    @if(isset($additionalData['education_level']))
+                                        <p><strong>Tingkat Pendidikan:</strong> {{ strtoupper($additionalData['education_level']) }}</p>
+                                    @endif
+                                @endif
+
+                                @if($submission->creation_type === 'basis_data')
+                                    @if(isset($additionalData['database_type']))
+                                        <p><strong>Jenis Database:</strong> {{ $additionalData['database_type'] }}</p>
+                                    @endif
+                                    @if(isset($additionalData['record_count']))
+                                        <p><strong>Jumlah Record:</strong> {{ number_format($additionalData['record_count']) }}</p>
                                     @endif
                                 @endif
                             </div>
@@ -264,8 +281,8 @@
                                     </td>
                                     <td>
                                         <a href="https://wa.me/62{{ ltrim($member->whatsapp, '0') }}" 
-                                           target="_blank" class="text-decoration-none">
-                                            {{ $member->whatsapp }}
+                                           target="_blank" class="text-decoration-none text-success">
+                                            <i class="bi bi-whatsapp"></i> {{ $member->whatsapp }}
                                         </a>
                                     </td>
                                     <td>
@@ -328,12 +345,14 @@
                                     <td>
                                         @if($document->document_type === 'main_document')
                                             <span class="badge bg-primary">Dokumen Utama</span>
+                                        @elseif($document->document_type === 'certificate')
+                                            <span class="badge bg-success">Sertifikat</span>
                                         @else
-                                            <span class="badge bg-secondary">{{ $document->getFileDisplayNameAttribute() }}</span>
+                                            <span class="badge bg-secondary">Dokumen Pendukung</span>
                                         @endif
                                     </td>
                                     <td>{{ number_format($document->file_size / 1024, 2) }} KB</td>
-                                    <td>{{ $document->uploaded_at->format('d M Y H:i') }}</td>
+                                    <td>{{ $document->uploaded_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB</td>
                                     <td>
                                         <div class="btn-group" role="group">
                                             <a href="{{ route('admin.submissions.document-download', [$submission, $document]) }}" 
@@ -388,7 +407,7 @@
                                 </p>
                                 <small class="text-muted">
                                     <i class="bi bi-person"></i> {{ $history->user->nama }} • 
-                                    <i class="bi bi-calendar"></i> {{ $history->created_at->format('d M Y H:i') }}
+                                    <i class="bi bi-calendar"></i> {{ $history->created_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
                                 </small>
                             </div>
                         </div>
@@ -458,12 +477,12 @@
                     @endphp
 
                     <!-- Status Badge -->
-                    <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2">
+                    <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2 mb-3">
                         <i class="bi bi-{{ $statusIcon }} me-2"></i>{{ $statusName }}
                     </span>
 
                     <!-- Status Timeline -->
-                    <div class="status-timeline">
+                    <div class="status-timeline mt-3">
                         <div class="status-step {{ in_array($submission->status, ['draft', 'submitted', 'under_review', 'revision_needed', 'approved', 'rejected']) ? 'active' : '' }}">
                             <div class="status-icon">
                                 <i class="bi bi-file-earmark-text"></i>
@@ -491,7 +510,7 @@
                             <div class="status-text">
                                 <strong>{{ StatusHelper::getStatusName($submission->status) }}</strong>
                                 @if($submission->reviewed_at)
-                                    <br><small>{{ $submission->reviewed_at->format('d M Y H:i') }}</small>
+                                    <br><small>{{ $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB</small>
                                 @endif
                             </div>
                         </div>
@@ -604,7 +623,6 @@
     </div>
 </div>
 
-
 <!-- Reject Modal -->
 <div class="modal fade" id="rejectModal" tabindex="-1">
     <div class="modal-dialog">
@@ -649,29 +667,6 @@
     </div>
 </div>
 
-<!-- Document Preview Modal -->
-<div class="modal fade" id="documentPreviewModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Document Preview</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body text-center">
-                <div id="previewContent">
-                    <!-- Content will be loaded here -->
-                </div>
-            </div>
-            <div class="modal-footer">
-                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                <a href="#" id="downloadLink" class="btn btn-success">
-                    <i class="bi bi-download"></i> Download
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
-
 @push('scripts')
 <script>
 // Modal functions
@@ -700,13 +695,12 @@ function printSubmission() {
         department: "{{ $submission->user->department->name ?? 'N/A' }}",
         type: "{{ ucfirst($submission->type) }}",
         creation_type: "{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}",
-        status: "{{ ucfirst(str_replace('_', ' ', $submission->status)) }}",
+        status: "{{ StatusHelper::getStatusName($submission->status) }}",
         member_count: "{{ $submission->member_count }}",
-        submission_date: "{{ $submission->submission_date ? $submission->submission_date->format('d M Y H:i') : '-' }}",
+        submission_date: "{{ $submission->submission_date ? $submission->submission_date->setTimezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '-' }}",
         description: "{{ $submission->description }}",
-        reviewer: "{{ $submission->reviewer->nama ?? 'Belum di-assign' }}",
         review_notes: "{{ $submission->review_notes ?? '' }}",
-        reviewed_at: "{{ $submission->reviewed_at ? $submission->reviewed_at->format('d M Y H:i') : '' }}"
+        reviewed_at: "{{ $submission->reviewed_at ? $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '' }}"
     };
     
     printWindow.document.write(`
@@ -721,14 +715,6 @@ function printSubmission() {
                 .label { font-weight: bold; display: inline-block; width: 150px; }
                 .value { display: inline-block; }
                 .status { padding: 3px 8px; border-radius: 3px; font-size: 12px; }
-                .status-approved { background: #d4edda; color: #155724; }
-                .status-rejected { background: #f8d7da; color: #721c24; }
-                .status-pending { background: #fff3cd; color: #856404; }
-                .members-table, .documents-table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-                .members-table th, .members-table td, .documents-table th, .documents-table td { 
-                    border: 1px solid #ddd; padding: 8px; text-align: left; 
-                }
-                .members-table th, .documents-table th { background-color: #f2f2f2; }
                 @media print { body { margin: 0; } }
             </style>
         </head>
@@ -744,7 +730,7 @@ function printSubmission() {
                 <div><span class="label">Judul:</span> <span class="value">${submissionData.title}</span></div>
                 <div><span class="label">Jenis HKI:</span> <span class="value">${submissionData.type}</span></div>
                 <div><span class="label">Jenis Ciptaan:</span> <span class="value">${submissionData.creation_type}</span></div>
-                <div><span class="label">Status:</span> <span class="value status">${submissionData.status}</span></div>
+                <div><span class="label">Status:</span> <span class="value">${submissionData.status}</span></div>
                 <div><span class="label">Tanggal Submit:</span> <span class="value">${submissionData.submission_date}</span></div>
             </div>
             
@@ -765,7 +751,6 @@ function printSubmission() {
             ${submissionData.review_notes ? `
             <div class="section">
                 <h3>Catatan Review</h3>
-                <p><strong>Reviewer:</strong> ${submissionData.reviewer}</p>
                 <p><strong>Tanggal Review:</strong> ${submissionData.reviewed_at}</p>
                 <p><strong>Catatan:</strong> ${submissionData.review_notes}</p>
             </div>
@@ -773,7 +758,7 @@ function printSubmission() {
             
             <div class="section">
                 <p style="text-align: center; margin-top: 30px; font-size: 12px; color: #666;">
-                    Dicetak pada: ${new Date().toLocaleString('id-ID')}
+                    Dicetak pada: ${new Date().toLocaleString('id-ID', {timeZone: 'Asia/Jakarta'})} WIB
                     <br>SiHaki - Sistem Informasi Hak Kekayaan Intelektual
                 </p>
             </div>
@@ -783,72 +768,6 @@ function printSubmission() {
     
     printWindow.document.close();
     printWindow.print();
-}
-
-// Document preview function
-function previewDocument(submissionId, documentId, fileName, downloadUrl) {
-    const modal = new bootstrap.Modal(document.getElementById('documentPreviewModal'));
-    const previewContent = document.getElementById('previewContent');
-    const downloadLink = document.getElementById('downloadLink');
-    
-    // Update modal title
-    document.querySelector('#documentPreviewModal .modal-title').textContent = 'Preview: ' + fileName;
-    
-    // Update download link
-    downloadLink.href = downloadUrl;
-    
-    // Show loading
-    previewContent.innerHTML = `
-        <div class="d-flex justify-content-center align-items-center" style="height: 400px;">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-        </div>
-    `;
-    
-    // Get file extension
-    const extension = fileName.split('.').pop().toLowerCase();
-    const previewUrl = `/admin/submissions/${submissionId}/documents/${documentId}/preview`;
-    
-    if (['pdf'].includes(extension)) {
-        previewContent.innerHTML = `
-            <iframe src="${previewUrl}" width="100%" height="600px" class="border"></iframe>
-        `;
-    } else if (['jpg', 'jpeg', 'png', 'gif'].includes(extension)) {
-        previewContent.innerHTML = `
-            <img src="${previewUrl}" class="img-fluid" style="max-height: 600px;">
-        `;
-    } else {
-        previewContent.innerHTML = `
-            <div class="alert alert-info">
-                <i class="bi bi-info-circle fs-1 mb-3"></i>
-                <h5>Preview Not Available</h5>
-                <p>This file type cannot be previewed. Please download to view.</p>
-            </div>
-        `;
-    }
-    
-    modal.show();
-}
-
-function previewKtp(submissionId, memberId, memberName) {
-    const modal = new bootstrap.Modal(document.getElementById('documentPreviewModal'));
-    const previewContent = document.getElementById('previewContent');
-    const downloadLink = document.getElementById('downloadLink');
-    
-    // Update modal title
-    document.querySelector('#documentPreviewModal .modal-title').textContent = 'KTP: ' + memberName;
-    
-    // Update download link
-    downloadLink.href = `/admin/submissions/${submissionId}/members/${memberId}/ktp`;
-    
-    // Show KTP image
-    const previewUrl = `/admin/submissions/${submissionId}/members/${memberId}/ktp/preview`;
-    previewContent.innerHTML = `
-        <img src="${previewUrl}" class="img-fluid border rounded" style="max-height: 600px;" alt="KTP ${memberName}">
-    `;
-    
-    modal.show();
 }
 
 // Form validation
@@ -905,14 +824,6 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
-    
-    // Auto-resize textareas
-    document.querySelectorAll('textarea').forEach(textarea => {
-        textarea.addEventListener('input', function() {
-            this.style.height = 'auto';
-            this.style.height = (this.scrollHeight) + 'px';
-        });
-    });
 });
 </script>
 @endpush
@@ -1035,65 +946,6 @@ document.addEventListener('DOMContentLoaded', function() {
     font-size: 0.75em;
 }
 
-/* Table Responsive */
-.table-responsive {
-    border-radius: 0.375rem;
-}
-
-.table th {
-    border-top: none;
-    font-weight: 600;
-    background-color: #f8f9fc;
-}
-
-/* Modal Styles */
-.modal-header {
-    background-color: #f8f9fc;
-    border-bottom: 1px solid #e3e6f0;
-}
-
-.modal-footer {
-    background-color: #f8f9fc;
-    border-top: 1px solid #e3e6f0;
-}
-
-/* Form Styles */
-.form-control:focus {
-    border-color: #80bdff;
-    box-shadow: 0 0 0 0.2rem rgba(0,123,255,.25);
-}
-
-.btn-group .btn {
-    margin-right: 2px;
-}
-
-.btn-group .btn:last-child {
-    margin-right: 0;
-}
-
-/* Alert Styles */
-.alert {
-    border: none;
-    border-radius: 0.375rem;
-    font-size: 0.875rem;
-}
-
-/* Print Styles */
-@media print {
-    .no-print {
-        display: none !important;
-    }
-    
-    .card {
-        box-shadow: none !important;
-        border: 1px solid #ddd !important;
-    }
-    
-    .btn {
-        display: none !important;
-    }
-}
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .d-flex.justify-content-between {
@@ -1123,48 +975,6 @@ document.addEventListener('DOMContentLoaded', function() {
         margin-right: 0;
         margin-bottom: 10px;
     }
-}
-
-/* Custom Scrollbar */
-.table-responsive::-webkit-scrollbar {
-    height: 8px;
-}
-
-.table-responsive::-webkit-scrollbar-track {
-    background: #f1f1f1;
-    border-radius: 10px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb {
-    background: #c1c1c1;
-    border-radius: 10px;
-}
-
-.table-responsive::-webkit-scrollbar-thumb:hover {
-    background: #a8a8a8;
-}
-
-/* Loading States */
-.btn.loading {
-    pointer-events: none;
-    opacity: 0.6;
-}
-
-.btn.loading::after {
-    content: '';
-    width: 16px;
-    height: 16px;
-    margin-left: 5px;
-    border: 2px solid transparent;
-    border-top: 2px solid currentColor;
-    border-radius: 50%;
-    display: inline-block;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
 }
 </style>
 @endpush
