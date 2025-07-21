@@ -146,12 +146,8 @@ class SubmissionController extends Controller
         }
     }
 
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
     private function getAdditionalData($request)
-=======
->>>>>>> backend
+
     /**
      * Display submission detail
      */
@@ -169,11 +165,7 @@ class SubmissionController extends Controller
             'reviewer'
         ]);
 
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-=======
-=======
->>>>>>> Stashed changes
+
         // ✅ Add debug logging
         Log::info('Submission show accessed', [
             'submission_id' => $submission->id,
@@ -190,10 +182,7 @@ class SubmissionController extends Controller
             })
         ]);
 
-<<<<<<< Updated upstream
->>>>>>> backend
-=======
->>>>>>> Stashed changes
+
         return view('user.submissions.show', compact('submission'));
     }
 
@@ -211,16 +200,11 @@ class SubmissionController extends Controller
             return back()->withErrors(['error' => 'Submission ini tidak dapat diedit karena statusnya sudah ' . $submission->status]);
         }
 
-<<<<<<< Updated upstream
-<<<<<<< HEAD
+
         $submission->load(['documents', 'members']);
-=======
+
         // ✅ Load relationships and log for debugging
         $submission->load(['documents', 'members']);
-=======
-        // ✅ Load relationships and log for debugging
-        $submission->load(['documents', 'members']);
->>>>>>> Stashed changes
         
         Log::info('Edit form accessed', [
             'submission_id' => $submission->id,
@@ -232,10 +216,7 @@ class SubmissionController extends Controller
             'supporting_documents_count' => $submission->documents->where('document_type', 'supporting_document')->count()
         ]);
         
-<<<<<<< Updated upstream
->>>>>>> backend
-=======
->>>>>>> Stashed changes
+
         return view('user.submissions.edit', compact('submission'));
     }
 
@@ -253,12 +234,7 @@ class SubmissionController extends Controller
             return back()->withErrors(['error' => 'Submission ini tidak dapat diedit karena statusnya sudah ' . $submission->status]);
         }
 
-<<<<<<< Updated upstream
-<<<<<<< HEAD
-        // Rest of update logic...
-=======
-=======
->>>>>>> Stashed changes
+
         // ✅ Base validation rules
         $rules = [
             'title' => 'required|string|max:255',
@@ -339,10 +315,7 @@ class SubmissionController extends Controller
             ]);
             return back()->withErrors(['error' => 'Terjadi kesalahan saat mengupdate submission. Silakan coba lagi.'])->withInput();
         }
-<<<<<<< Updated upstream
->>>>>>> backend
-=======
->>>>>>> Stashed changes
+
     }
 
     /**
