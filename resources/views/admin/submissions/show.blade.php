@@ -477,28 +477,12 @@
                     @endphp
 
                     <!-- Status Badge -->
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                    <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2 mb-3">
-=======
                     <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2">
->>>>>>> Stashed changes
-=======
-                    <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2">
->>>>>>> Stashed changes
                         <i class="bi bi-{{ $statusIcon }} me-2"></i>{{ $statusName }}
                     </span>
 
                     <!-- Status Timeline -->
-<<<<<<< Updated upstream
-<<<<<<< Updated upstream
-                    <div class="status-timeline mt-3">
-=======
                     <div class="status-timeline">
->>>>>>> Stashed changes
-=======
-                    <div class="status-timeline">
->>>>>>> Stashed changes
                         <div class="status-step {{ in_array($submission->status, ['draft', 'submitted', 'under_review', 'revision_needed', 'approved', 'rejected']) ? 'active' : '' }}">
                             <div class="status-icon">
                                 <i class="bi bi-file-earmark-text"></i>
