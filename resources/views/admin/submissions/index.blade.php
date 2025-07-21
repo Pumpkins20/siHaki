@@ -221,7 +221,7 @@
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    @foreach($submissions as $submission)
+                                    @foreach($submissions as $index => $submission)
                                     <tr class="submission-row" data-id="{{ $submission->id }}">
                                         <td>
                                             <input type="checkbox" class="form-check-input submission-checkbox" 
@@ -247,27 +247,17 @@
                                         </td>
                                         <td>
                                             @php
-                                                $statusColors = [
-                                                    'submitted' => 'warning',
-                                                    'under_review' => 'info',
-                                                    'revision_needed' => 'secondary',
-                                                    'approved' => 'success',
-                                                    'rejected' => 'danger'
-                                                ];
-                                                $statusIcons = [
-                                                    'submitted' => 'clock',
-                                                    'under_review' => 'eye',
-                                                    'revision_needed' => 'arrow-clockwise',
-                                                    'approved' => 'check-circle',
-                                                    'rejected' => 'x-circle'
-                                                ];
+                                                $statusColor = App\Helpers\StatusHelper::getStatusColor($submission->status);
+                                                $statusIcon = App\Helpers\StatusHelper::getStatusIcon($submission->status);
+                                                $statusName = App\Helpers\StatusHelper::getStatusName($submission->status);
                                             @endphp
-                                            <span class="badge bg-{{ $statusColors[$submission->status] ?? 'secondary' }}">
-                                                <i class="bi bi-{{ $statusIcons[$submission->status] ?? 'question-circle' }} me-1"></i>
-                                                {{ ucfirst(str_replace('_', ' ', $submission->status)) }}
+                                            <span class="badge bg-{{ $statusColor }}">
+                                                <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
                                             </span>
                                             @if($submission->status === 'submitted')
                                                 <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> Perlu action</small>
+                                            @elseif($submission->status === 'revision_needed')
+                                                <br><small class="text-warning"><i class="bi bi-clock"></i> Menunggu user</small>
                                             @endif
                                         </td>
                                         <td>

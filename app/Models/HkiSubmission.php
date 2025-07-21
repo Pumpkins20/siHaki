@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Helpers\DateTimeHelper;
 
 class HkiSubmission extends Model
 {
@@ -82,12 +83,20 @@ class HkiSubmission extends Model
     // Accessors
     public function getCreationTypeNameAttribute()
     {
-        return self::CREATION_TYPES[$this->creation_type] ?? $this->type ?? 'Unknown';
+        return match($this->creation_type) {
+            'program_komputer' => 'Program Komputer',
+            'sinematografi' => 'Sinematografi',
+            'buku' => 'Buku',
+            'poster_fotografi' => 'Poster/Fotografi/Seni Gambar',
+            'alat_peraga' => 'Alat Peraga',
+            'basis_data' => 'Basis Data',
+            default => ucfirst(str_replace('_', ' ', $this->creation_type))
+        };
     }
 
     public function getStatusNameAttribute()
     {
-        return self::STATUSES[$this->status] ?? 'Unknown';
+        return \App\Helpers\StatusHelper::getStatusName($this->status);
     }
 
     public function getStatusColorAttribute()
@@ -113,4 +122,41 @@ class HkiSubmission extends Model
     {
         return $this->reviewed_at ? $this->reviewed_at->format('d M Y H:i') : '-';
     }
+<<<<<<< Updated upstream
+=======
+
+    /**
+     * Get submission date in WIB format
+     */
+    public function getSubmissionDateWibAttribute()
+    {
+        return DateTimeHelper::formatWithWIB($this->submission_date);
+    }
+
+    /**
+     * Get reviewed date in WIB format
+     */
+    public function getReviewedAtWibAttribute()
+    {
+        return DateTimeHelper::formatWithWIB($this->reviewed_at);
+    }
+
+    /**
+     * Get created date in WIB format
+     */
+    public function getCreatedAtWibAttribute()
+    {
+        return DateTimeHelper::formatWithWIB($this->created_at);
+    }
+
+    /**
+     * Get first publication date formatted
+     */
+    public function getFirstPublicationDateFormattedAttribute()
+    {
+        return $this->first_publication_date ? 
+               $this->first_publication_date->setTimezone('Asia/Jakarta')->format('d M Y') : 
+               null;
+    }
+>>>>>>> Stashed changes
 }

@@ -7,7 +7,7 @@
     <!-- Welcome Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card bg-gradient-success text-white">
+            <div class="card bg-gradient-primary text-white">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col-md-8">
@@ -42,7 +42,7 @@
         <div class="col-xl-4 col-lg-6 mb-4">
             <div class="card shadow h-100">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-success">Progress Pengajuan</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Progress Pengajuan</h6>
                 </div>
                 <div class="card-body text-center">
                     <div class="mt-3">
@@ -68,20 +68,20 @@
         <!-- Statistics Cards -->
         <div class="col-xl-8 col-lg-6">
             <div class="row">
-                {{-- ✅ UPDATED: Card 1 - Menunggu Persetujuan (kuning/warning) --}}
+                {{-- ✅ UNIFIED: Card 1 - Menunggu Persetujuan (info/biru muda) --}}
                 <div class="col-md-6 mb-4">
-                    <div class="card shadow h-100" style="border-left: 4px solid #ffc107;">
+                    <div class="card shadow h-100" style="border-left: 4px solid #17a2b8;">
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Menunggu Persetujuan
+                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                        Menunggu Review
                                     </div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pending_submissions'] }}</div>
                                 </div>
                                 <div class="col-auto">
-                                    <div class="icon-square bg-warning text-white rounded">
-                                        <i class="bi bi-clock-history fs-2"></i>
+                                    <div class="icon-square bg-info text-white rounded">
+                                        <i class="bi bi-clock fs-2"></i>
                                     </div>
                                 </div>
                             </div>
@@ -89,14 +89,14 @@
                     </div>
                 </div>
 
-                {{-- ✅ UPDATED: Card 2 - Diterima (hijau/success) --}}
+                {{-- ✅ UNIFIED: Card 2 - Approved (success/hijau) --}}
                 <div class="col-md-6 mb-4">
                     <div class="card shadow h-100" style="border-left: 4px solid #28a745;">
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col">
                                     <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                        Diterima
+                                        Approved
                                     </div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['approved_submissions'] }}</div>
                                 </div>
@@ -110,20 +110,20 @@
                     </div>
                 </div>
 
-                {{-- ✅ UPDATED: Card 3 - Sertifikat Diterima (biru/info) --}}
+                {{-- ✅ UNIFIED: Card 3 - Revision Needed (warning/kuning) --}}
                 <div class="col-md-6 mb-4">
-                    <div class="card shadow h-100" style="border-left: 4px solid #17a2b8;">
+                    <div class="card shadow h-100" style="border-left: 4px solid #ffc107;">
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                        Sertifikat Diterima
+                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                        Perlu Revisi
                                     </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['certificate_received'] ?? 0 }}</div>
+                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['revision_needed'] ?? 0 }}</div>
                                 </div>
                                 <div class="col-auto">
-                                    <div class="icon-square bg-info text-white rounded">
-                                        <i class="bi bi-file-earmark-check fs-2"></i>
+                                    <div class="icon-square bg-warning text-white rounded">
+                                        <i class="bi bi-arrow-clockwise fs-2"></i>
                                     </div>
                                 </div>
                             </div>
@@ -131,14 +131,14 @@
                     </div>
                 </div>
 
-                {{-- ✅ UPDATED: Card 4 - Ditolak (merah/danger) --}}
+                {{-- ✅ UNIFIED: Card 4 - Rejected (danger/merah) --}}
                 <div class="col-md-6 mb-4">
                     <div class="card shadow h-100" style="border-left: 4px solid #dc3545;">
                         <div class="card-body">
                             <div class="row align-items-center">
                                 <div class="col">
                                     <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                        Ditolak
+                                        Rejected
                                     </div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['rejected_submissions'] ?? 0 }}</div>
                                 </div>
@@ -168,10 +168,15 @@
                 <div class="card-body">
                     @if($recent_submissions->count() > 0)
                         @foreach($recent_submissions as $submission)
+                        @php
+                            $statusColor = \App\Helpers\StatusHelper::getStatusColor($submission->status);
+                            $statusIcon = \App\Helpers\StatusHelper::getStatusIcon($submission->status);
+                            $statusName = \App\Helpers\StatusHelper::getStatusName($submission->status);
+                        @endphp
                         <div class="d-flex align-items-center border-bottom py-3">
                             <div class="flex-shrink-0">
-                                <div class="rounded-circle bg-{{ $submission->status === 'approved' ? 'success' : ($submission->status === 'rejected' ? 'danger' : 'warning') }} text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
-                                    <i class="bi bi-{{ $submission->status === 'approved' ? 'check' : ($submission->status === 'rejected' ? 'x' : 'clock') }}"></i>
+                                <div class="rounded-circle bg-{{ $statusColor }} text-white d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                    <i class="bi bi-{{ $statusIcon }}"></i>
                                 </div>
                             </div>
                             <div class="flex-grow-1 ms-3">
@@ -180,8 +185,8 @@
                                 <p class="mb-0 text-muted small">{{ $submission->created_at->diffForHumans() }}</p>
                             </div>
                             <div class="flex-shrink-0">
-                                <span class="badge bg-{{ $submission->status === 'approved' ? 'success' : ($submission->status === 'rejected' ? 'danger' : 'warning') }}">
-                                    {{ ucfirst(str_replace('_', ' ', $submission->status)) }}
+                                <span class="badge bg-{{ $statusColor }}">
+                                    <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
                                 </span>
                                 <a href="{{ route('user.submissions.show', $submission) }}" class="btn btn-sm btn-outline-primary ms-2">
                                     Detail
@@ -377,11 +382,10 @@ document.addEventListener('DOMContentLoaded', function() {
 
 @push('styles')
 <style>
-    .bg-gradient-success {
-        background: linear-gradient(87deg, #1292DD 0%, #1292DD 100%);
+    .bg-gradient-primary {
+        background: linear-gradient(87deg, #007bff 0%, #0056b3 100%);
     }
     
-    /* ✅ NEW: Icon square styling */
     .icon-square {
         width: 60px;
         height: 60px;
@@ -391,40 +395,11 @@ document.addEventListener('DOMContentLoaded', function() {
         border-radius: 8px;
     }
     
-    /* Card hover effects */
+    /* ✅ UNIFIED: Consistent hover effects */
     .card:hover {
         transform: translateY(-2px);
         transition: all 0.3s ease;
         box-shadow: 0 4px 20px rgba(0,0,0,0.1);
-    }
-    
-    /* Icon colors match the border */
-    .bg-warning .bi {
-        color: white;
-    }
-    
-    .bg-success .bi {
-        color: white;
-    }
-    
-    .bg-info .bi {
-        color: white;
-    }
-    
-    .bg-danger .bi {
-        color: white;
-    }
-    
-    /* Responsive adjustments */
-    @media (max-width: 768px) {
-        .icon-square {
-            width: 50px;
-            height: 50px;
-        }
-        
-        .icon-square .bi {
-            font-size: 1.5rem;
-        }
     }
 </style>
 @endpush

@@ -427,16 +427,27 @@
                     </h6>
                 </div>
                 <div class="card-body">
+                    @php
+                    use App\Helpers\StatusHelper;
+                    $statusColor = StatusHelper::getStatusColor($submission->status);
+                    $statusIcon = StatusHelper::getStatusIcon($submission->status);
+                    $statusName = StatusHelper::getStatusName($submission->status);
+                    @endphp
+
+                    <!-- Status Badge -->
+                    <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2">
+                        <i class="bi bi-{{ $statusIcon }} me-2"></i>{{ $statusName }}
+                    </span>
+
+                    <!-- Status Timeline -->
                     <div class="status-timeline">
-                        <div class="status-step {{ in_array($submission->status, ['submitted', 'under_review', 'revision_needed', 'approved', 'rejected']) ? 'active' : '' }}">
+                        <div class="status-step {{ in_array($submission->status, ['draft', 'submitted', 'under_review', 'revision_needed', 'approved', 'rejected']) ? 'active' : '' }}">
                             <div class="status-icon">
-                                <i class="bi bi-upload"></i>
+                                <i class="bi bi-file-earmark-text"></i>
                             </div>
                             <div class="status-text">
-                                <strong>Submitted</strong>
-                                @if($submission->submission_date)
-                                    <br><small>{{ $submission->submission_date->format('d M Y H:i') }}</small>
-                                @endif
+                                <strong>Draft/Submitted</strong>
+                                <br><small>Submission dibuat</small>
                             </div>
                         </div>
                         
@@ -446,28 +457,16 @@
                             </div>
                             <div class="status-text">
                                 <strong>Under Review</strong>
-                                @if($submission->reviewer)
-                                    <br><small>{{ $submission->reviewer->nama }}</small>
-                                @endif
+                                <br><small>Sedang direview</small>
                             </div>
                         </div>
                         
                         <div class="status-step {{ $submission->status === 'approved' ? 'active completed' : ($submission->status === 'rejected' ? 'active rejected' : ($submission->status === 'revision_needed' ? 'active revision' : '')) }}">
                             <div class="status-icon">
-                                <i class="bi bi-{{ $submission->status === 'approved' ? 'check-circle' : ($submission->status === 'rejected' ? 'x-circle' : ($submission->status === 'revision_needed' ? 'arrow-clockwise' : 'hourglass')) }}"></i>
+                                <i class="bi bi-{{ StatusHelper::getStatusIcon($submission->status) }}"></i>
                             </div>
                             <div class="status-text">
-                                <strong>
-                                    @if($submission->status === 'approved')
-                                        Approved
-                                    @elseif($submission->status === 'rejected')
-                                        Rejected
-                                    @elseif($submission->status === 'revision_needed')
-                                        Revision Needed
-                                    @else
-                                        Menunggu Keputusan
-                                    @endif
-                                </strong>
+                                <strong>{{ StatusHelper::getStatusName($submission->status) }}</strong>
                                 @if($submission->reviewed_at)
                                     <br><small>{{ $submission->reviewed_at->format('d M Y H:i') }}</small>
                                 @endif
@@ -888,7 +887,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
 .status-step.revision .status-icon {
     background-color: #ffc107;
-    color: #212529;
+    color: white;
+}
+
+.status-step.active .status-icon {
+    background-color: #17a2b8;
+    color: white;
 }
 
 .status-icon {

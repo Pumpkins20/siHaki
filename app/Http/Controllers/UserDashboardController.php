@@ -18,15 +18,15 @@ class UserDashboardController extends Controller
         // ✅ UPDATED: Statistics with new categories
         $stats = [
             'total_submissions' => $user->submissions()->count(),
-            'approved_submissions' => $user->submissions()->where('status', 'approved')->count(),
             'pending_submissions' => $user->submissions()->whereIn('status', ['submitted', 'under_review'])->count(),
+            'approved_submissions' => $user->submissions()->where('status', 'approved')->count(),
+            'revision_needed' => $user->submissions()->where('status', 'revision_needed')->count(), // ✅ Add this
             'rejected_submissions' => $user->submissions()->where('status', 'rejected')->count(),
-            'revision_submissions' => $user->submissions()->where('status', 'revision_needed')->count(),
             // ✅ NEW: Certificate received (approved submissions that have certificate)
             'certificate_received' => $user->submissions()
-                ->where('status', 'approved')
-                ->whereNotNull('certificate_path') // Assuming you have certificate_path column
-                ->count(),
+                ->whereHas('documents', function($q) {
+                    $q->where('document_type', 'certificate');
+                })->count(),
         ];
 
         // Progress calculation (approved / total)
