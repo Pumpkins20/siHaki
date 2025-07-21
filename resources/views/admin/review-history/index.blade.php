@@ -1,4 +1,7 @@
+<<<<<<< HEAD
 
+=======
+>>>>>>> backend
 @extends('layouts.admin')
 
 @section('title', 'Riwayat Peninjauan')
@@ -176,6 +179,14 @@
                                 </thead>
                                 <tbody>
                                     @foreach($submissions as $index => $submission)
+<<<<<<< HEAD
+=======
+                                    @php
+                                        $statusColor = StatusHelper::getStatusColor($submission->status);
+                                        $statusIcon = StatusHelper::getStatusIcon($submission->status);
+                                        $statusName = StatusHelper::getStatusName($submission->status);
+                                    @endphp
+>>>>>>> backend
                                     <tr>
                                         <td>{{ $submissions->firstItem() + $index }}</td>
                                         <td>
@@ -192,11 +203,17 @@
                                             <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</span>
                                         </td>
                                         <td>
+<<<<<<< HEAD
                                             @if($submission->status === 'approved')
                                                 <span class="badge bg-success">Approved</span>
                                             @else
                                                 <span class="badge bg-danger">Rejected</span>
                                             @endif
+=======
+                                            <span class="badge bg-{{ $statusColor }}">
+                                                <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
+                                            </span>
+>>>>>>> backend
                                         </td>
                                         <td>
                                             <div>

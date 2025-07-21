@@ -131,18 +131,30 @@
                                 </thead>
                                 <tbody>
                                     @foreach($recent_submissions as $submission)
+                                    @php
+                                        // ✅ UNIFIED: Gunakan StatusHelper untuk konsistensi
+                                        $statusColor = App\Helpers\StatusHelper::getStatusColor($submission->status);
+                                        $statusIcon = App\Helpers\StatusHelper::getStatusIcon($submission->status);
+                                        $statusName = App\Helpers\StatusHelper::getStatusName($submission->status);
+                                    @endphp
                                     <tr>
                                         <td>
                                             <strong>{{ Str::limit($submission->title, 30) }}</strong>
                                         </td>
                                         <td>{{ $submission->user->nama }}</td>
                                         <td>
-                                            <span class="badge bg-secondary">{{ ucfirst($submission->creation_type) }}</span>
+                                            <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</span>
                                         </td>
                                         <td>
-                                            <span class="badge bg-{{ $submission->status === 'submitted' ? 'warning' : ($submission->status === 'under_review' ? 'info' : 'success') }}">
-                                                {{ ucfirst(str_replace('_', ' ', $submission->status)) }}
+                                            {{-- ✅ UNIFIED: Status dengan warna dan icon konsisten --}}
+                                            <span class="badge bg-{{ $statusColor }}">
+                                                <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
                                             </span>
+                                            @if($submission->status === 'submitted')
+                                                <br><small class="text-warning"><i class="bi bi-exclamation-triangle"></i> Perlu action</small>
+                                            @elseif($submission->status === 'revision_needed')
+                                                <br><small class="text-warning"><i class="bi bi-clock"></i> Menunggu user</small>
+                                            @endif
                                         </td>
                                         <td>{{ $submission->submission_date->format('d M Y') }}</td>
                                         <td>
@@ -217,6 +229,68 @@
                 </div>
             </div>
 
+            <!-- Status Summary - ✅ NEW: Tambahan ringkasan status dengan warna konsisten -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Ringkasan Status</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-2">
+                        {{-- Approved --}}
+                        <div class="col-6">
+                            <div class="d-flex align-items-center p-2 bg-light rounded">
+                                <div class="icon-circle bg-success text-white me-2">
+                                    <i class="bi bi-check-circle"></i>
+                                </div>
+                                <div>
+                                    <div class="h6 mb-0">{{ $stats['approved'] ?? 0 }}</div>
+                                    <small class="text-success">Approved</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {{-- Rejected --}}
+                        <div class="col-6">
+                            <div class="d-flex align-items-center p-2 bg-light rounded">
+                                <div class="icon-circle bg-danger text-white me-2">
+                                    <i class="bi bi-x-circle"></i>
+                                </div>
+                                <div>
+                                    <div class="h6 mb-0">{{ $stats['rejected'] ?? 0 }}</div>
+                                    <small class="text-danger">Rejected</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {{-- Revision Needed --}}
+                        <div class="col-6">
+                            <div class="d-flex align-items-center p-2 bg-light rounded">
+                                <div class="icon-circle bg-warning text-white me-2">
+                                    <i class="bi bi-arrow-clockwise"></i>
+                                </div>
+                                <div>
+                                    <div class="h6 mb-0">{{ $stats['revision_needed'] ?? 0 }}</div>
+                                    <small class="text-warning">Revision</small>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        {{-- Submitted --}}
+                        <div class="col-6">
+                            <div class="d-flex align-items-center p-2 bg-light rounded">
+                                <div class="icon-circle bg-primary text-white me-2">
+                                    <i class="bi bi-clock"></i>
+                                </div>
+                                <div>
+                                    <div class="h6 mb-0">{{ $stats['submitted'] ?? 0 }}</div>
+                                    <small class="text-primary">Submitted</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- System Info -->
             <div class="card shadow">
                 <div class="card-header py-3">
@@ -226,7 +300,7 @@
                     <div class="small">
                         <p class="mb-1"><strong>Laravel Version:</strong> {{ app()->version() }}</p>
                         <p class="mb-1"><strong>PHP Version:</strong> {{ phpversion() }}</p>
-                        <p class="mb-1"><strong>Server Time:</strong> {{ now()->format('d M Y H:i:s') }}</p>
+                        <p class="mb-1"><strong>Server Time:</strong> {{ now()->setTimezone('Asia/Jakarta')->format('d M Y H:i:s') }} WIB</p>
                         <p class="mb-0"><strong>Database:</strong> {{ config('database.default') }}</p>
                     </div>
                 </div>
@@ -261,6 +335,42 @@
     transform: translateY(-2px);
     transition: all 0.3s ease;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
+}
+
+/* ✅ UNIFIED: Icon circle untuk status summary */
+.icon-circle {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+}
+
+/* ✅ UNIFIED: Badge konsisten dengan StatusHelper */
+.badge {
+    font-size: 0.75em;
+    padding: 0.5em 0.75em;
+}
+
+.badge i {
+    margin-right: 0.25rem;
+}
+
+/* ✅ UNIFIED: Table hover effect yang konsisten */
+.table-hover tbody tr:hover {
+    background-color: rgba(0,0,0,.075);
+}
+
+/* ✅ UNIFIED: Status badge sizing */
+.badge.bg-success,
+.badge.bg-danger,
+.badge.bg-warning,
+.badge.bg-info,
+.badge.bg-primary,
+.badge.bg-secondary {
+    font-weight: 500;
 }
 </style>
 @endpush

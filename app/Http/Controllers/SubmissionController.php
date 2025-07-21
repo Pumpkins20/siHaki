@@ -17,22 +17,26 @@ class SubmissionController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Auth::user()->submissions();
+        $query = HkiSubmission::with(['reviewer'])
+            ->where('user_id', Auth::id())
+            ->latest();
 
-        // Apply filters
+        // Filter berdasarkan status
         if ($request->filled('status')) {
             $query->where('status', $request->status);
         }
 
-        if ($request->filled('type')) {
-            $query->where('type', $request->type);
+        // ✅ NEW: Filter berdasarkan creation_type (replace type filter)
+        if ($request->filled('creation_type')) {
+            $query->where('creation_type', $request->creation_type);
         }
 
+        // Search berdasarkan judul
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
-        $submissions = $query->latest()->paginate(10);
+        $submissions = $query->paginate(10);
 
         return view('user.submissions.index', compact('submissions'));
     }
@@ -142,6 +146,12 @@ class SubmissionController extends Controller
         }
     }
 
+<<<<<<< HEAD
+=======
+<<<<<<< Updated upstream
+    private function getAdditionalData($request)
+=======
+>>>>>>> backend
     /**
      * Display submission detail
      */
@@ -159,6 +169,25 @@ class SubmissionController extends Controller
             'reviewer'
         ]);
 
+<<<<<<< HEAD
+=======
+        // ✅ Add debug logging
+        Log::info('Submission show accessed', [
+            'submission_id' => $submission->id,
+            'user_id' => Auth::id(),
+            'documents_count' => $submission->documents->count(),
+            'documents' => $submission->documents->map(function($doc) {
+                return [
+                    'id' => $doc->id,
+                    'type' => $doc->document_type,
+                    'name' => $doc->file_name,
+                    'uploaded_at' => $doc->uploaded_at ? $doc->uploaded_at->format('Y-m-d H:i:s') : null,
+                    'file_exists' => file_exists(storage_path('app/public/' . $doc->file_path))
+                ];
+            })
+        ]);
+
+>>>>>>> backend
         return view('user.submissions.show', compact('submission'));
     }
 
@@ -176,7 +205,23 @@ class SubmissionController extends Controller
             return back()->withErrors(['error' => 'Submission ini tidak dapat diedit karena statusnya sudah ' . $submission->status]);
         }
 
+<<<<<<< HEAD
         $submission->load(['documents', 'members']);
+=======
+        // ✅ Load relationships and log for debugging
+        $submission->load(['documents', 'members']);
+        
+        Log::info('Edit form accessed', [
+            'submission_id' => $submission->id,
+            'user_id' => Auth::id(),
+            'status' => $submission->status,
+            'creation_type' => $submission->creation_type,
+            'documents_count' => $submission->documents->count(),
+            'main_documents_count' => $submission->documents->where('document_type', 'main_document')->count(),
+            'supporting_documents_count' => $submission->documents->where('document_type', 'supporting_document')->count()
+        ]);
+        
+>>>>>>> backend
         return view('user.submissions.edit', compact('submission'));
     }
 
@@ -194,7 +239,90 @@ class SubmissionController extends Controller
             return back()->withErrors(['error' => 'Submission ini tidak dapat diedit karena statusnya sudah ' . $submission->status]);
         }
 
+<<<<<<< HEAD
         // Rest of update logic...
+=======
+        // ✅ Base validation rules
+        $rules = [
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
+            'first_publication_date' => 'required|date|before_or_equal:today',
+        ];
+
+        // ✅ Dynamic validation based on existing creation_type (tidak bisa diubah)
+        $this->addDynamicValidationForUpdate($rules, $submission->creation_type);
+
+        $customMessages = [
+            'title.required' => 'Judul HKI harus diisi',
+            'description.required' => 'Deskripsi harus diisi',
+            'description.max' => 'Deskripsi maksimal 1000 karakter',
+            'first_publication_date.required' => 'Tanggal pertama kali diumumkan/digunakan/dipublikasikan harus diisi',
+            'first_publication_date.date' => 'Format tanggal tidak valid',
+            'first_publication_date.before_or_equal' => 'Tanggal tidak boleh lebih dari hari ini',
+        ];
+
+        $request->validate($rules, $customMessages);
+
+        try {
+            DB::beginTransaction();
+
+            // Store old status for history
+            $oldStatus = $submission->status;
+
+            // Update basic submission data
+            $submission->update([
+                'title' => $request->title,
+                'description' => $request->description,
+                'first_publication_date' => $request->first_publication_date,
+                'additional_data' => $this->getAdditionalDataForUpdate($request, $submission->creation_type),
+                'status' => $request->has('save_as_draft') ? 'draft' : 'submitted',
+                'submission_date' => $request->has('save_as_draft') ? null : now(),
+            ]);
+
+            // ✅ FIX: Handle file uploads using submission's creation_type
+            $this->handleFileUploadsForUpdate($request, $submission);
+
+            // Create history record
+            SubmissionHistory::create([
+                'submission_id' => $submission->id,
+                'user_id' => Auth::id(),
+                'action' => $request->has('save_as_draft') ? 'Updated as Draft' : 'Updated and Resubmitted',
+                'previous_status' => $oldStatus,
+                'new_status' => $request->has('save_as_draft') ? 'draft' : 'submitted',
+                'notes' => $request->has('save_as_draft') ? 'Submission updated and saved as draft' : 'Submission updated and resubmitted for review'
+            ]);
+
+            // Send notification jika status berubah ke submitted
+            if (!$request->has('save_as_draft')) {
+                Auth::user()->notify(new SubmissionStatusChanged(
+                    $submission,
+                    $oldStatus,
+                    'submitted',
+                    $oldStatus === 'revision_needed' ? 
+                        'Revisi Anda telah diterima dan submission akan direview kembali.' :
+                        'Update submission Anda berhasil diterima dan menunggu review.'
+                ));
+            }
+
+            DB::commit();
+
+            $message = $request->has('save_as_draft') ? 
+                'Submission berhasil diupdate dan disimpan sebagai draft.' :
+                'Submission berhasil diupdate dan dikirim untuk review!';
+
+            return redirect()->route('user.submissions.show', $submission)
+                ->with('success', $message);
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Submission update failed: ' . $e->getMessage(), [
+                'submission_id' => $submission->id,
+                'user_id' => Auth::id(),
+                'error' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'Terjadi kesalahan saat mengupdate submission. Silakan coba lagi.'])->withInput();
+        }
+>>>>>>> backend
     }
 
     /**
@@ -268,6 +396,10 @@ class SubmissionController extends Controller
      * Get additional data based on creation type
      */
     private function getAdditionalData(Request $request)
+<<<<<<< HEAD
+=======
+>>>>>>> Stashed changes
+>>>>>>> backend
     {
         $data = [];
         
@@ -524,6 +656,234 @@ class SubmissionController extends Controller
                 'error' => $e->getMessage()
             ]);
             return back()->withErrors(['error' => 'Terjadi kesalahan saat menghapus dokumen.']);
+        }
+    }
+
+    /**
+     * ✅ NEW: Add dynamic validation rules for update (without required on existing docs)
+     */
+    private function addDynamicValidationForUpdate(&$rules, $creationType)
+    {
+        switch ($creationType) {
+            case 'program_komputer':
+                $rules['program_link'] = 'required|url';
+                $rules['manual_document'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
+                break;
+                
+            case 'sinematografi':
+                $rules['video_link'] = 'required|url';
+                $rules['metadata_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
+                break;
+                
+            case 'buku':
+                $rules['isbn'] = 'nullable|string|max:20';
+                $rules['page_count'] = 'required|integer|min:1';
+                $rules['ebook_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
+                break;
+                
+            case 'poster_fotografi':
+                $rules['image_files'] = 'nullable|array';
+                $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
+                break;
+                
+            case 'alat_peraga':
+                $rules['subject'] = 'required|string|max:255';
+                $rules['education_level'] = 'required|in:sd,smp,sma,kuliah';
+                $rules['photo_files'] = 'nullable|array';
+                $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
+                break;
+                
+            case 'basis_data':
+                $rules['database_type'] = 'required|string|max:100';
+                $rules['record_count'] = 'required|integer|min:1';
+                $rules['documentation_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
+                break;
+        }
+    }
+
+    /**
+     * ✅ NEW: Get additional data for update
+     */
+    private function getAdditionalDataForUpdate(Request $request, $creationType)
+    {
+        $data = [];
+        
+        switch ($creationType) {
+            case 'program_komputer':
+                $data['program_link'] = $request->program_link;
+                break;
+                
+            case 'sinematografi':
+                $data['video_link'] = $request->video_link;
+                break;
+                
+            case 'buku':
+                $data['isbn'] = $request->isbn;
+                $data['page_count'] = $request->page_count;
+                break;
+                
+            case 'alat_peraga':
+                $data['subject'] = $request->subject;
+                $data['education_level'] = $request->education_level;
+                break;
+                
+            case 'basis_data':
+                $data['database_type'] = $request->database_type;
+                $data['record_count'] = $request->record_count;
+                break;
+        }
+        
+        return $data;
+    }
+
+    /**
+     * ✅ NEW: Handle file uploads for update (using submission's creation_type)
+     */
+    private function handleFileUploadsForUpdate(Request $request, HkiSubmission $submission)
+    {
+        switch ($submission->creation_type) { // ✅ Use submission's creation_type, not request
+            case 'program_komputer':
+                if ($request->hasFile('manual_document')) {
+                    // Delete old main document first
+                    $this->deleteExistingDocuments($submission, 'main_document');
+                    $this->uploadDocumentForUpdate($request, $submission, 'manual_document', 'main_document');
+                }
+                break;
+                
+            case 'sinematografi':
+                if ($request->hasFile('metadata_file')) {
+                    $this->deleteExistingDocuments($submission, 'main_document');
+                    $this->uploadDocumentForUpdate($request, $submission, 'metadata_file', 'main_document');
+                }
+                break;
+                
+            case 'buku':
+                if ($request->hasFile('ebook_file')) {
+                    $this->deleteExistingDocuments($submission, 'main_document');
+                    $this->uploadDocumentForUpdate($request, $submission, 'ebook_file', 'main_document');
+                }
+                break;
+                
+            case 'poster_fotografi':
+                if ($request->hasFile('image_files')) {
+                    $this->deleteExistingDocuments($submission, 'supporting_document');
+                    foreach ($request->file('image_files') as $index => $file) {
+                        $this->uploadDocumentForUpdate($request, $submission, 'image_files', 'supporting_document', $file, $index);
+                    }
+                }
+                break;
+                
+            case 'alat_peraga':
+                if ($request->hasFile('photo_files')) {
+                    $this->deleteExistingDocuments($submission, 'supporting_document');
+                    foreach ($request->file('photo_files') as $index => $file) {
+                        $this->uploadDocumentForUpdate($request, $submission, 'photo_files', 'supporting_document', $file, $index);
+                    }
+                }
+                break;
+                
+            case 'basis_data':
+                if ($request->hasFile('documentation_file')) {
+                    $this->deleteExistingDocuments($submission, 'main_document');
+                    $this->uploadDocumentForUpdate($request, $submission, 'documentation_file', 'main_document');
+                }
+                break;
+        }
+    }
+
+    /**
+     * ✅ NEW: Upload document for update
+     */
+    private function uploadDocumentForUpdate(Request $request, HkiSubmission $submission, $fieldName, $documentType, $file = null, $index = null)
+    {
+        if ($file === null) {
+            $file = $request->file($fieldName);
+        }
+
+        if (!$file || !$file->isValid()) {
+            Log::warning('Invalid file upload attempted', [
+                'submission_id' => $submission->id,
+                'field_name' => $fieldName,
+                'file_valid' => $file ? $file->isValid() : false
+            ]);
+            return;
+        }
+
+        // Generate unique filename
+        $timestamp = time();
+        $originalName = pathinfo($file->getClientOriginalName(), PATHINFO_FILENAME);
+        $extension = $file->getClientOriginalExtension();
+        $indexSuffix = $index !== null ? '_' . ($index + 1) : '';
+        
+        $fileName = 'updated_' . $submission->id . '/' . $timestamp . '_' . $fieldName . $indexSuffix . '_' . $originalName . '.' . $extension;
+        
+        try {
+            // Store file
+            $filePath = $file->storeAs('submissions', $fileName, 'public');
+            
+            // Create document record
+            $document = SubmissionDocument::create([
+                'submission_id' => $submission->id,
+                'document_type' => $documentType,
+                'file_name' => $file->getClientOriginalName(),
+                'file_path' => $filePath,
+                'file_size' => $file->getSize(),
+                'mime_type' => $file->getMimeType(),
+                'uploaded_at' => now(),
+            ]);
+
+            Log::info('Document uploaded successfully during update', [
+                'submission_id' => $submission->id,
+                'document_id' => $document->id,
+                'field_name' => $fieldName,
+                'file_name' => $fileName,
+                'file_path' => $filePath,
+                'file_size' => $file->getSize()
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to upload document during update', [
+                'submission_id' => $submission->id,
+                'field_name' => $fieldName,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * ✅ NEW: Delete existing documents of specific type
+     */
+    private function deleteExistingDocuments(HkiSubmission $submission, $documentType)
+    {
+        try {
+            $documents = $submission->documents()->where('document_type', $documentType)->get();
+            
+            foreach ($documents as $document) {
+                // Delete physical file
+                $filePath = storage_path('app/public/' . $document->file_path);
+                if (file_exists($filePath)) {
+                    unlink($filePath);
+                    Log::info('Old document file deleted', ['file_path' => $filePath]);
+                }
+                
+                // Delete database record
+                $document->delete();
+            }
+            
+            Log::info('Existing documents deleted', [
+                'submission_id' => $submission->id,
+                'document_type' => $documentType,
+                'count' => $documents->count()
+            ]);
+            
+        } catch (\Exception $e) {
+            Log::error('Error deleting existing documents', [
+                'submission_id' => $submission->id,
+                'document_type' => $documentType,
+                'error' => $e->getMessage()
+            ]);
+            // Don't throw here, let the upload continue
         }
     }
 }

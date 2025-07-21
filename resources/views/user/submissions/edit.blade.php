@@ -1,3 +1,5 @@
+{{-- filepath: resources/views/user/submissions/edit.blade.php --}}
+
 @extends('layouts.user')
 
 @section('title', 'Edit Submission')
@@ -56,17 +58,15 @@
                             <div class="form-text">Gunakan judul yang jelas dan deskriptif</div>
                         </div>
 
-                        <!-- Type -->
+                        {{-- ✅ REMOVED: Jenis HKI field - tidak perlu diedit --}}
+                        {{-- Show current creation type as read-only info --}}
                         <div class="mb-3">
-                            <label for="type" class="form-label">Jenis HKI <span class="text-danger">*</span></label>
-                            <select class="form-select @error('type') is-invalid @enderror" id="type" name="type" required>
-                                <option value="">Pilih Jenis HKI</option>
-                                <option value="copyright" {{ old('type', $submission->type) == 'copyright' ? 'selected' : '' }}>Hak Cipta (Copyright)</option>
-                                <option value="patent" {{ old('type', $submission->type) == 'patent' ? 'selected' : '' }}>Paten</option>
-                            </select>
-                            @error('type')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
+                            <label class="form-label">Jenis Pengajuan</label>
+                            <div class="alert alert-light border">
+                                <i class="bi bi-info-circle text-primary me-2"></i>
+                                <strong>{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</strong>
+                                <br><small class="text-muted">Jenis pengajuan tidak dapat diubah setelah submission dibuat</small>
+                            </div>
                         </div>
 
                         <!-- Tanggal publish -->
@@ -95,7 +95,7 @@
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
-                            <div class="form-text">Minimal 50 karakter, maksimal 1000 karakter</div>
+                            <div class="form-text">Maksimal 1000 karakter</div>
                         </div>
 
                         <!-- Reviewer Notes (if any) -->
@@ -160,41 +160,255 @@
                         </div>
                         @endif
 
-                        <!-- Replace Main Document -->
-                        <div class="mb-3">
-                            <label for="main_document" class="form-label">
-                                {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti Dokumen Utama' : 'Dokumen Utama' }}
-                                @if($submission->documents->where('document_type', 'main_document')->count() == 0)
-                                    <span class="text-danger">*</span>
-                                @endif
-                            </label>
-                            <input type="file" class="form-control @error('main_document') is-invalid @enderror" 
-                                   id="main_document" name="main_document" accept=".pdf,.doc,.docx"
-                                   {{ $submission->documents->where('document_type', 'main_document')->count() == 0 ? 'required' : '' }}>
-                            @error('main_document')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">
-                                Format yang diterima: PDF, DOC, DOCX. Maksimal 10MB.
-                                @if($submission->documents->where('document_type', 'main_document')->count() > 0)
-                                    <br><strong>Catatan:</strong> Jika Anda upload file baru, dokumen lama akan diganti.
-                                @endif
-                            </div>
-                        </div>
+                        <!-- Document Upload Section - ✅ UPDATED: Sesuaikan dengan creation_type -->
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-secondary mb-3">
+                                <i class="bi bi-file-earmark-arrow-up me-2"></i>Update Dokumen
+                            </h6>
 
-                        <!-- Additional Supporting Documents -->
-                        <div class="mb-3">
-                            <label for="supporting_documents" class="form-label">Tambah Dokumen Pendukung (Opsional)</label>
-                            <input type="file" class="form-control @error('supporting_documents.*') is-invalid @enderror" 
-                                   id="supporting_documents" name="supporting_documents[]" 
-                                   accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" multiple>
-                            @error('supporting_documents.*')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">
-                                Anda dapat mengupload beberapa file sekaligus. Format: PDF, DOC, DOCX, JPG, PNG. Maksimal 5MB per file.
-                                <br><strong>Catatan:</strong> File ini akan ditambahkan ke dokumen yang sudah ada.
-                            </div>
+                            <!-- Dynamic Document Fields berdasarkan creation_type -->
+                            @if($submission->creation_type === 'program_komputer')
+                                <!-- Manual Document -->
+                                <div class="mb-3">
+                                    <label for="manual_document" class="form-label">
+                                        {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti Manual Penggunaan Program (PDF)' : 'Upload Manual Penggunaan Program (PDF)' }}
+                                        @if($submission->documents->where('document_type', 'main_document')->count() == 0)
+                                            <span class="text-danger">*</span>
+                                        @endif
+                                    </label>
+                                    <input type="file" class="form-control @error('manual_document') is-invalid @enderror" 
+                                           id="manual_document" name="manual_document" accept=".pdf"
+                                           {{ $submission->documents->where('document_type', 'main_document')->count() == 0 ? 'required' : '' }}>
+                                    @error('manual_document')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">
+                                        Format: PDF. Cover, screenshot, dan manual dalam 1 file PDF. Maksimal 20MB.
+                                        @if($submission->documents->where('document_type', 'main_document')->count() > 0)
+                                            <br><small class="text-info"><i class="bi bi-info-circle"></i> File baru akan mengganti file yang sudah ada.</small>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- Program Link -->
+                                <div class="mb-3">
+                                    <label for="program_link" class="form-label">Link Program <span class="text-danger">*</span></label>
+                                    <input type="url" class="form-control @error('program_link') is-invalid @enderror" 
+                                           id="program_link" name="program_link" 
+                                           value="{{ old('program_link', $submission->additional_data['program_link'] ?? '') }}" 
+                                           placeholder="https://github.com/username/repository" required>
+                                    @error('program_link')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Link GitHub, GitLab, atau repositori lainnya</div>
+                                </div>
+
+                            @elseif($submission->creation_type === 'sinematografi')
+                                <!-- Metadata File -->
+                                <div class="mb-3">
+                                    <label for="metadata_file" class="form-label">
+                                        {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti File Metadata Video (PDF)' : 'Upload File Metadata Video (PDF)' }}
+                                        @if($submission->documents->where('document_type', 'main_document')->count() == 0)
+                                            <span class="text-danger">*</span>
+                                        @endif
+                                    </label>
+                                    <input type="file" class="form-control @error('metadata_file') is-invalid @enderror" 
+                                           id="metadata_file" name="metadata_file" accept=".pdf"
+                                           {{ $submission->documents->where('document_type', 'main_document')->count() == 0 ? 'required' : '' }}>
+                                    @error('metadata_file')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">
+                                        Format: PDF. Metadata lengkap video. Maksimal 20MB.
+                                        @if($submission->documents->where('document_type', 'main_document')->count() > 0)
+                                            <br><small class="text-info"><i class="bi bi-info-circle"></i> File baru akan mengganti file yang sudah ada.</small>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- Video Link -->
+                                <div class="mb-3">
+                                    <label for="video_link" class="form-label">Link Video <span class="text-danger">*</span></label>
+                                    <input type="url" class="form-control @error('video_link') is-invalid @enderror" 
+                                           id="video_link" name="video_link" 
+                                           value="{{ old('video_link', $submission->additional_data['video_link'] ?? '') }}" 
+                                           placeholder="https://youtube.com/watch?v=..." required>
+                                    @error('video_link')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Link YouTube, Vimeo, atau platform video lainnya</div>
+                                </div>
+
+                            @elseif($submission->creation_type === 'buku')
+                                <!-- E-book File -->
+                                <div class="mb-3">
+                                    <label for="ebook_file" class="form-label">
+                                        {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti File E-book (PDF)' : 'Upload File E-book (PDF)' }}
+                                        @if($submission->documents->where('document_type', 'main_document')->count() == 0)
+                                            <span class="text-danger">*</span>
+                                        @endif
+                                    </label>
+                                    <input type="file" class="form-control @error('ebook_file') is-invalid @enderror" 
+                                           id="ebook_file" name="ebook_file" accept=".pdf"
+                                           {{ $submission->documents->where('document_type', 'main_document')->count() == 0 ? 'required' : '' }}>
+                                    @error('ebook_file')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">
+                                        Format: PDF. File lengkap buku. Maksimal 20MB.
+                                        @if($submission->documents->where('document_type', 'main_document')->count() > 0)
+                                            <br><small class="text-info"><i class="bi bi-info-circle"></i> File baru akan mengganti file yang sudah ada.</small>
+                                        @endif
+                                    </div>
+                                </div>
+
+                                <!-- ISBN -->
+                                <div class="mb-3">
+                                    <label for="isbn" class="form-label">ISBN (Opsional)</label>
+                                    <input type="text" class="form-control @error('isbn') is-invalid @enderror" 
+                                           id="isbn" name="isbn" 
+                                           value="{{ old('isbn', $submission->additional_data['isbn'] ?? '') }}" 
+                                           placeholder="978-3-16-148410-0">
+                                    @error('isbn')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Jika sudah memiliki ISBN</div>
+                                </div>
+
+                                <!-- Page Count -->
+                                <div class="mb-3">
+                                    <label for="page_count" class="form-label">Jumlah Halaman <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control @error('page_count') is-invalid @enderror" 
+                                           id="page_count" name="page_count" min="1"
+                                           value="{{ old('page_count', $submission->additional_data['page_count'] ?? '') }}" required>
+                                    @error('page_count')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                            @elseif($submission->creation_type === 'poster_fotografi')
+                                <!-- Image Files -->
+                                <div class="mb-3">
+                                    <label for="image_files" class="form-label">
+                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Tambah/Ganti File Gambar (JPG/PNG)' : 'File Gambar (JPG/PNG)' }}
+                                        @if($submission->documents->where('document_type', 'supporting_document')->count() == 0)
+                                            <span class="text-danger">*</span>
+                                        @endif
+                                    </label>
+                                    <input type="file" class="form-control @error('image_files.*') is-invalid @enderror" 
+                                           id="image_files" name="image_files[]" accept=".jpg,.jpeg,.png" multiple
+                                           {{ $submission->documents->where('document_type', 'supporting_document')->count() == 0 ? 'required' : '' }}>
+                                    @error('image_files.*')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 1MB per file.</div>
+                                </div>
+
+                            @elseif($submission->creation_type === 'alat_peraga')
+                                <!-- Photo Files -->
+                                <div class="mb-3">
+                                    <label for="photo_files" class="form-label">
+                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Tambah/Ganti Foto Alat Peraga (JPG/PNG)' : 'Foto Alat Peraga (JPG/PNG)' }}
+                                        @if($submission->documents->where('document_type', 'supporting_document')->count() == 0)
+                                            <span class="text-danger">*</span>
+                                        @endif
+                                    </label>
+                                    <input type="file" class="form-control @error('photo_files.*') is-invalid @enderror" 
+                                           id="photo_files" name="photo_files[]" accept=".jpg,.jpeg,.png" multiple
+                                           {{ $submission->documents->where('document_type', 'supporting_document')->count() == 0 ? 'required' : '' }}>
+                                    @error('photo_files.*')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 1MB per file.</div>
+                                </div>
+
+                                <!-- Subject -->
+                                <div class="mb-3">
+                                    <label for="subject" class="form-label">Mata Pelajaran <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('subject') is-invalid @enderror" 
+                                           id="subject" name="subject" 
+                                           value="{{ old('subject', $submission->additional_data['subject'] ?? '') }}" 
+                                           placeholder="Matematika, Fisika, etc." required>
+                                    @error('subject')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <!-- Education Level -->
+                                <div class="mb-3">
+                                    <label for="education_level" class="form-label">Tingkat Pendidikan <span class="text-danger">*</span></label>
+                                    <select class="form-select @error('education_level') is-invalid @enderror" 
+                                            id="education_level" name="education_level" required>
+                                        <option value="">Pilih Tingkat</option>
+                                        <option value="sd" {{ old('education_level', $submission->additional_data['education_level'] ?? '') == 'sd' ? 'selected' : '' }}>SD</option>
+                                        <option value="smp" {{ old('education_level', $submission->additional_data['education_level'] ?? '') == 'smp' ? 'selected' : '' }}>SMP</option>
+                                        <option value="sma" {{ old('education_level', $submission->additional_data['education_level'] ?? '') == 'sma' ? 'selected' : '' }}>SMA</option>
+                                        <option value="kuliah" {{ old('education_level', $submission->additional_data['education_level'] ?? '') == 'kuliah' ? 'selected' : '' }}>Kuliah</option>
+                                    </select>
+                                    @error('education_level')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                            @elseif($submission->creation_type === 'basis_data')
+                                <!-- Documentation File -->
+                                <div class="mb-3">
+                                    <label for="documentation_file" class="form-label">
+                                        {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti Dokumentasi Basis Data (PDF)' : 'Dokumentasi Basis Data (PDF)' }}
+                                        @if($submission->documents->where('document_type', 'main_document')->count() == 0)
+                                            <span class="text-danger">*</span>
+                                        @endif
+                                    </label>
+                                    <input type="file" class="form-control @error('documentation_file') is-invalid @enderror" 
+                                           id="documentation_file" name="documentation_file" accept=".pdf"
+                                           {{ $submission->documents->where('document_type', 'main_document')->count() == 0 ? 'required' : '' }}>
+                                    @error('documentation_file')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Format: PDF. Dokumentasi lengkap basis data. Maksimal 20MB.</div>
+                                </div>
+
+                                <!-- Database Type -->
+                                <div class="mb-3">
+                                    <label for="database_type" class="form-label">Jenis Database <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('database_type') is-invalid @enderror" 
+                                           id="database_type" name="database_type" 
+                                           value="{{ old('database_type', $submission->additional_data['database_type'] ?? '') }}" 
+                                           placeholder="MySQL, PostgreSQL, MongoDB, etc." required>
+                                    @error('database_type')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                                <!-- Record Count -->
+                                <div class="mb-3">
+                                    <label for="record_count" class="form-label">Jumlah Record <span class="text-danger">*</span></label>
+                                    <input type="number" class="form-control @error('record_count') is-invalid @enderror" 
+                                           id="record_count" name="record_count" min="1"
+                                           value="{{ old('record_count', $submission->additional_data['record_count'] ?? '') }}" required>
+                                    @error('record_count')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                </div>
+
+                            @else
+                                <!-- Generic main document upload untuk creation_type lainnya -->
+                                <div class="mb-3">
+                                    <label for="main_document" class="form-label">
+                                        {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti Dokumen Utama' : 'Dokumen Utama' }}
+                                        @if($submission->documents->where('document_type', 'main_document')->count() == 0)
+                                            <span class="text-danger">*</span>
+                                        @endif
+                                    </label>
+                                    <input type="file" class="form-control @error('main_document') is-invalid @enderror" 
+                                           id="main_document" name="main_document" accept=".pdf,.doc,.docx"
+                                           {{ $submission->documents->where('document_type', 'main_document')->count() == 0 ? 'required' : '' }}>
+                                    @error('main_document')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Format: PDF, DOC, DOCX. Maksimal 10MB.</div>
+                                </div>
+                            @endif
                         </div>
 
                         <!-- Submit Buttons -->
@@ -247,15 +461,40 @@
                         @if($submission->submission_date)
                             <div class="small text-muted">
                                 <strong>Tanggal Submit:</strong><br>
-                                {{ $submission->submission_date->format('d M Y H:i') }}
+                                {{ $submission->submission_date->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
                             </div>
                         @endif
                         
                         @if($submission->reviewed_at)
                             <div class="small text-muted mt-2">
                                 <strong>Tanggal Review:</strong><br>
-                                {{ $submission->reviewed_at->format('d M Y H:i') }}
+                                {{ $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
                             </div>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Creation Type Info -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informasi Pengajuan</h6>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <p class="mb-2">
+                            <strong>Jenis Pengajuan:</strong><br>
+                            <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</span>
+                        </p>
+                        <p class="mb-2">
+                            <strong>Jenis HKI:</strong><br>
+                            <span class="badge bg-info">{{ ucfirst($submission->type) }}</span>
+                        </p>
+                        @if($submission->member_count)
+                            <p class="mb-0">
+                                <strong>Jumlah Anggota:</strong><br>
+                                {{ $submission->member_count }} orang
+                            </p>
                         @endif
                     </div>
                 </div>
@@ -305,7 +544,7 @@
                         </p>
                         <p class="mb-0">
                             <i class="bi bi-clock"></i> 
-                            Senin-Jumat: 08:00-16:00
+                            Senin-Jumat: 08:00-16:00 WIB
                         </p>
                     </div>
                 </div>
@@ -332,22 +571,41 @@ document.addEventListener('DOMContentLoaded', function() {
     description.addEventListener('input', updateCounter);
     updateCounter();
 
-    // File size validation
-    document.getElementById('main_document').addEventListener('change', function() {
-        const file = this.files[0];
-        if (file && file.size > 10 * 1024 * 1024) {
-            alert('Ukuran file terlalu besar. Maksimal 10MB.');
-            this.value = '';
-        }
-    });
+    // File size validation for different file types
+    const fileInputs = {
+        'manual_document': 20 * 1024 * 1024, // 20MB
+        'metadata_file': 20 * 1024 * 1024,   // 20MB
+        'ebook_file': 20 * 1024 * 1024,      // 20MB
+        'documentation_file': 20 * 1024 * 1024, // 20MB
+        'image_files': 1 * 1024 * 1024,      // 1MB per file
+        'photo_files': 1 * 1024 * 1024,      // 1MB per file
+        'main_document': 10 * 1024 * 1024    // 10MB
+    };
 
-    document.getElementById('supporting_documents').addEventListener('change', function() {
-        for (let file of this.files) {
-            if (file.size > 5 * 1024 * 1024) {
-                alert('Ukuran file ' + file.name + ' terlalu besar. Maksimal 5MB per file.');
-                this.value = '';
-                break;
-            }
+    Object.keys(fileInputs).forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input) {
+            input.addEventListener('change', function() {
+                const maxSize = fileInputs[inputId];
+                
+                if (this.multiple) {
+                    // For multiple files
+                    for (let file of this.files) {
+                        if (file.size > maxSize) {
+                            alert(`Ukuran file ${file.name} terlalu besar. Maksimal ${maxSize / (1024 * 1024)}MB per file.`);
+                            this.value = '';
+                            break;
+                        }
+                    }
+                } else {
+                    // For single file
+                    const file = this.files[0];
+                    if (file && file.size > maxSize) {
+                        alert(`Ukuran file terlalu besar. Maksimal ${maxSize / (1024 * 1024)}MB.`);
+                        this.value = '';
+                    }
+                }
+            });
         }
     });
 

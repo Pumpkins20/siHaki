@@ -26,20 +26,30 @@ class AdminController extends Controller
     public function dashboard()
     {
         $stats = [
-            'total_users' => User::where('role','user')->count(),
+            'total_users' => User::count(),
             'total_submissions' => HkiSubmission::count(),
-            'pending_reviews' => HkiSubmission::where('status','submitted')->count(),
-            'under_review' => HkiSubmission::where('status','under_review')->count(),
-            'approved_today' => HkiSubmission::where('status','approved')
-                ->whereDate('reviewed_at', today())->count(),
-            'my_reviews' => HkiSubmission::where('reviewer_id', Auth::id())->count()
+            'pending_reviews' => HkiSubmission::where('status', 'submitted')->count(),
+            'under_review' => HkiSubmission::where('status', 'under_review')->count(),
+            
+            // ✅ UNIFIED: Tambah statistik untuk semua status
+            'approved' => HkiSubmission::where('status', 'approved')->count(),
+            'rejected' => HkiSubmission::where('status', 'rejected')->count(),
+            'revision_needed' => HkiSubmission::where('status', 'revision_needed')->count(),
+            'submitted' => HkiSubmission::where('status', 'submitted')->count(),
+            
+            // Today's activity
+            'approved_today' => HkiSubmission::where('status', 'approved')
+                                       ->whereDate('reviewed_at', today())
+                                       ->count(),
+            'my_reviews' => HkiSubmission::where('reviewer_id', Auth::id())
+                                    ->whereNotNull('reviewed_at')
+                                    ->count(),
         ];
 
-        // Recent submissions for review
         $recent_submissions = HkiSubmission::with(['user'])
             ->whereIn('status', ['submitted', 'under_review'])
-            ->latest()
-            ->limit(5)
+            ->orderBy('submission_date', 'desc')
+            ->limit(10)
             ->get();
 
         return view('admin.dashboard', compact('stats', 'recent_submissions'));

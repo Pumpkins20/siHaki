@@ -68,9 +68,16 @@ class SubmissionStatusChanged extends Notification implements ShouldQueue
         $message = (new MailMessage)
             ->subject('Update Status Pengajuan HKI - ' . $this->submission->title)
             ->greeting('Halo ' . $notifiable->nama . '!')
-            ->line('Ada update status untuk pengajuan HKI Anda:')
+            ->line('Pengajuan HKI Anda telah diupdate:')
             ->line('**Judul:** ' . $this->submission->title)
-            ->line('**Status Baru:** ' . ucfirst(str_replace('_', ' ', $this->newStatus)));
+            ->line('**Status Baru:** ' . ucfirst($this->newStatus))
+            ->line('**Waktu Update:** ' . now()->setTimezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB')
+            ->when($this->message, function($mail) {
+                return $mail->line($this->message);
+            })
+            ->action('Lihat Detail', route('user.submissions.show', $this->submission))
+            ->line('Terima kasih telah menggunakan SiHaki!')
+            ->salutation('Salam, Tim SiHaki AMIKOM Surakarta');
 
         if ($this->notes) {
             $message->line('**Catatan Admin:** ' . $this->notes);

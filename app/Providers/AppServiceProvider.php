@@ -8,6 +8,8 @@ use Doctrine\DBAL\Types\StringType;
 use Doctrine\DBAL\Types\Types;
 use Illuminate\Database\Connection;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Support\Facades\View;
+use App\Helpers\StatusHelper;
 
 class AppServiceProvider extends ServiceProvider
 {
@@ -37,5 +39,8 @@ class AppServiceProvider extends ServiceProvider
             // Mapping 'enum' ke 'string'
             $platform->registerDoctrineTypeMapping('enum', 'string');
         }
+
+        // Make StatusHelper available in all views
+        View::share('StatusHelper', StatusHelper::class);
     }
 }
