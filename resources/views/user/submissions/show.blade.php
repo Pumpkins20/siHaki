@@ -72,12 +72,17 @@
                                     <td>
                                         <i class="bi bi-calendar-event text-primary me-1"></i>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
                                         {{ $submission->first_publication_date_formatted }}
 =======
                                         {{-- ✅ TIMEZONE: Format dengan WIB --}}
                                         {{ $submission->first_publication_date ? $submission->first_publication_date->setTimezone('Asia/Jakarta')->format('d M Y') : '-' }}
 >>>>>>> backend
+=======
+                                        {{-- ✅ TIMEZONE: Format dengan WIB --}}
+                                        {{ $submission->first_publication_date ? $submission->first_publication_date->setTimezone('Asia/Jakarta')->format('d M Y') : '-' }}
+>>>>>>> Stashed changes
 =======
                                         {{-- ✅ TIMEZONE: Format dengan WIB --}}
                                         {{ $submission->first_publication_date ? $submission->first_publication_date->setTimezone('Asia/Jakarta')->format('d M Y') : '-' }}

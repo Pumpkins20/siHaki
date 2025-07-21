@@ -478,7 +478,11 @@
 
                     <!-- Status Badge -->
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2 mb-3">
+=======
+                    <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2">
+>>>>>>> Stashed changes
 =======
                     <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2">
 >>>>>>> Stashed changes
@@ -487,7 +491,11 @@
 
                     <!-- Status Timeline -->
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
                     <div class="status-timeline mt-3">
+=======
+                    <div class="status-timeline">
+>>>>>>> Stashed changes
 =======
                     <div class="status-timeline">
 >>>>>>> Stashed changes

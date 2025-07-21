@@ -1,8 +1,11 @@
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 
 =======
 >>>>>>> backend
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
 @extends('layouts.admin')
@@ -183,8 +186,11 @@
                                 <tbody>
                                     @foreach($submissions as $index => $submission)
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
 =======
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                                     @php
@@ -193,7 +199,10 @@
                                         $statusName = StatusHelper::getStatusName($submission->status);
                                     @endphp
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 >>>>>>> backend
+=======
+>>>>>>> Stashed changes
 =======
 >>>>>>> Stashed changes
                                     <tr>
@@ -213,6 +222,7 @@
                                         </td>
                                         <td>
 <<<<<<< Updated upstream
+<<<<<<< Updated upstream
 <<<<<<< HEAD
                                             @if($submission->status === 'approved')
                                                 <span class="badge bg-success">Approved</span>
@@ -224,6 +234,11 @@
                                                 <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
                                             </span>
 >>>>>>> backend
+=======
+                                            <span class="badge bg-{{ $statusColor }}">
+                                                <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
+                                            </span>
+>>>>>>> Stashed changes
 =======
                                             <span class="badge bg-{{ $statusColor }}">
                                                 <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
