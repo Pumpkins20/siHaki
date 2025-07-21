@@ -88,10 +88,9 @@
                                     <td><strong>Status:</strong></td>
                                     <td>
                                         @php
-                                            use App\Helpers\StatusHelper;
-                                            $statusColor = StatusHelper::getStatusColor($submission->status);
-                                            $statusIcon = StatusHelper::getStatusIcon($submission->status);
-                                            $statusName = StatusHelper::getStatusName($submission->status);
+                                            $statusColor = \App\Helpers\StatusHelper::getStatusColor($submission->status);
+                                            $statusIcon = \App\Helpers\StatusHelper::getStatusIcon($submission->status);
+                                            $statusName = \App\Helpers\StatusHelper::getStatusName($submission->status);
                                         @endphp
                                         <span class="badge bg-{{ $statusColor }} fs-6 px-3 py-2">
                                             <i class="bi bi-{{ $statusIcon }} me-2"></i>{{ $statusName }}
