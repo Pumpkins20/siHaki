@@ -210,6 +210,23 @@ class SubmissionController extends Controller
             'histories.user',
             'reviewer'
         ]);
+
+        // ✅ Add debug logging
+        Log::info('Submission show accessed', [
+            'submission_id' => $submission->id,
+            'user_id' => Auth::id(),
+            'documents_count' => $submission->documents->count(),
+            'documents' => $submission->documents->map(function($doc) {
+                return [
+                    'id' => $doc->id,
+                    'type' => $doc->document_type,
+                    'name' => $doc->file_name,
+                    'uploaded_at' => $doc->uploaded_at ? $doc->uploaded_at->format('Y-m-d H:i:s') : null,
+                    'file_exists' => file_exists(storage_path('app/public/' . $doc->file_path))
+                ];
+            })
+        ]);
+
         return view('user.submissions.show', compact('submission'));
     }
 
@@ -227,8 +244,9 @@ class SubmissionController extends Controller
             return back()->withErrors(['error' => 'Submission ini tidak dapat diedit karena statusnya sudah ' . $submission->status]);
         }
 
+        // ✅ Load relationships and log for debugging
         $submission->load(['documents', 'members']);
-
+        
         Log::info('Edit form accessed', [
             'submission_id' => $submission->id,
             'user_id' => Auth::id(),
@@ -336,7 +354,6 @@ class SubmissionController extends Controller
             ]);
             return back()->withErrors(['error' => 'Terjadi kesalahan saat mengupdate submission. Silakan coba lagi.'])->withInput();
         }
-
     }
 
     /**
@@ -712,19 +729,16 @@ class SubmissionController extends Controller
                 $rules['ebook_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
                 break;
                 
-            case 'poster':
-            case 'fotografi':
-            case 'seni_gambar':
-            case 'karakter_animasi':
+            case 'poster_fotografi':
                 $rules['image_files'] = 'nullable|array';
-                $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:2048'; // Optional untuk update
+                $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
                 break;
                 
             case 'alat_peraga':
                 $rules['subject'] = 'required|string|max:255';
                 $rules['education_level'] = 'required|in:sd,smp,sma,kuliah';
                 $rules['photo_files'] = 'nullable|array';
-                $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:2048'; // Optional untuk update
+                $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
                 break;
                 
             case 'basis_data':
@@ -798,10 +812,7 @@ class SubmissionController extends Controller
                 }
                 break;
                 
-            case 'poster':
-            case 'fotografi':
-            case 'seni_gambar':
-            case 'karakter_animasi':
+            case 'poster_fotografi':
                 if ($request->hasFile('image_files')) {
                     $this->deleteExistingDocuments($submission, 'supporting_document');
                     foreach ($request->file('image_files') as $index => $file) {
