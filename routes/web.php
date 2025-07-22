@@ -117,6 +117,9 @@ Route::middleware(['auth'])->group(function () {
             Route::post('/{submission}/revision', [AdminController::class, 'revisionSubmission'])->name('revision');
             Route::post('/{submission}/reject', [AdminController::class, 'rejectSubmission'])->name('reject');
             
+            // Template generation routes
+            Route::post('/{submission}/generate-template', [AdminController::class, 'generateTemplate'])->name('generate-template');
+
             // Bulk actions - Add these new routes
             Route::post('/bulk-assign', [AdminController::class, 'bulkAssignToSelf'])->name('bulk-assign');
 

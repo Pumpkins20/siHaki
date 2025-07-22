@@ -18,6 +18,8 @@ use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
 use App\Notifications\SubmissionStatusChanged;
 use App\Notifications\CertificateSent;
+use PhpOffice\PhpWord\TemplateProcessor;
+use PhpOffice\PhpWord\IOFactory;
 
 class AdminController extends Controller
 {
@@ -1235,5 +1237,738 @@ class AdminController extends Controller
     {
         return Excel::download(new ReviewHistoryExport($request->all()), 
             'review-history-' . date('Y-m-d') . '.xlsx');
+    }
+
+    /**
+     * ✅ ADDED: Generate document template for approved submission
+     */
+    public function generateTemplate(Request $request, HkiSubmission $submission)
+    {
+        $request->validate([
+            'template_type' => 'required|in:surat_ktp,surat_pengalihan,surat_pernyataan'
+        ]);
+
+        if ($submission->status !== 'approved') {
+            return back()->withErrors(['error' => 'Template hanya dapat dibuat untuk submission yang sudah approved.']);
+        }
+
+        try {
+            $templateType = $request->template_type;
+            $templateData = $this->prepareTemplateData($submission);
+            
+            switch ($templateType) {
+                case 'surat_ktp':
+                    $filePath = $this->generateSuratKtpTemplate($submission, $templateData);
+                    break;
+                case 'surat_pengalihan':
+                    $filePath = $this->generateSuratPengalihanTemplate($submission, $templateData);
+                    break;
+                case 'surat_pernyataan':
+                    $filePath = $this->generateSuratPernyataanTemplate($submission, $templateData);
+                    break;
+                default:
+                    return back()->withErrors(['error' => 'Template tidak valid.']);
+            }
+
+            return response()->download($filePath)->deleteFileAfterSend(true);
+
+        } catch (\Exception $e) {
+            Log::error('Template generation failed: ' . $e->getMessage(), [
+                'submission_id' => $submission->id,
+                'template_type' => $templateType ?? 'unknown'
+            ]);
+            return back()->withErrors(['error' => 'Terjadi kesalahan saat membuat template: ' . $e->getMessage()]);
+        }
+    }
+
+    /**
+     * ✅ ADDED: Prepare template data from submission
+     */
+    private function prepareTemplateData(HkiSubmission $submission)
+    {
+        // ✅ UPDATED: Sort members dengan leader first, kemudian by position
+        $members = $submission->members->sortBy(function($member) {
+            return $member->is_leader ? 0 : $member->position;
+        })->values(); // Reset array keys
+        
+        $leader = $members->first(); // Leader is always first after sorting
+        
+        return [
+            'submission_id' => str_pad($submission->id, 4, '0', STR_PAD_LEFT),
+            'title' => $submission->title,
+            'description' => $submission->description,
+            'type' => ucfirst($submission->type),
+            'creation_type' => ucfirst(str_replace('_', ' ', $submission->creation_type)),
+            'user_name' => $submission->user->nama,
+            'user_nidn' => $submission->user->nidn,
+            'user_email' => $submission->user->email,
+            'user_program_studi' => $submission->user->program_studi,
+            'user_department' => $submission->user->department->name ?? 'N/A',
+            'member_count' => $submission->member_count,
+            'leader_name' => $leader ? $leader->name : $submission->user->nama,
+            'leader_email' => $leader ? $leader->email : $submission->user->email,
+            'leader_whatsapp' => $leader ? $leader->whatsapp : '',
+            'submission_date' => $submission->submission_date->format('d M Y'),
+            'reviewed_at' => $submission->reviewed_at->format('d M Y'),
+            'current_date' => now()->format('d M Y'),
+            'current_year' => now()->format('Y'),
+            'members_list' => $members->map(function($member, $index) {
+                return [
+                    'no' => $index + 1,
+                    'name' => $member->name,
+                    'email' => $member->email,
+                    'whatsapp' => $member->whatsapp,
+                    'role' => $index === 0 ? 'Ketua Tim/Pencipta Utama' : "Anggota Pencipta " . ($index + 1),
+                    'position_number' => $index + 1
+                ];
+            })->toArray()
+        ];
+    }
+
+    /**
+     * ✅ UPDATED: Generate Surat KTP Template dengan urutan pencipta yang benar
+     */
+    private function generateSuratKtpTemplate(HkiSubmission $submission, $templateData)
+    {
+        $phpWord = new \PhpOffice\PhpWord\PhpWord();
+        
+        // ✅ Define table style tanpa border
+        $phpWord->addTableStyle('CleanTable', [
+            'borderSize' => null,
+            'borderColor' => 'ffffff',
+            'cellMargin' => 100,
+            'alignment' => \PhpOffice\PhpWord\SimpleType\JcTable::CENTER,
+        ], [
+            'borderSize' => null,
+            'borderColor' => 'ffffff',
+        ]);
+
+        // Set page orientation to landscape for better layout
+        $section = $phpWord->addSection([
+            'orientation' => 'landscape',
+            'marginLeft' => 720,
+            'marginRight' => 720,
+            'marginTop' => 720,
+            'marginBottom' => 720,
+        ]);
+
+        $headerTable = $section->addTable('CleanTable');
+
+        // ✅ UPDATED: Ambil members dengan urutan yang benar (leader first, then by position)
+        $allMembers = $submission->members->sortBy(function($member) {
+            // Leader selalu di posisi pertama (0), anggota lain berdasarkan position
+            return $member->is_leader ? 0 : $member->position;
+        })->values(); // Reset array keys
+
+        // Header dengan info submission
+        $headerTable = $section->addTable([
+            'width' => 100 * 50,
+            'borderSize' => null,
+        ]);
+        $headerTable->addRow();
+
+        $section->addTextBreak(2);
+
+        // ✅ UPDATED: Layout dengan urutan yang benar
+        // Pencipta Utama (Pencipta 1) di atas
+        $this->addPenciptaUtama($section, $allMembers->first());
+        
+        // Add spacing
+        $section->addTextBreak(1);
+        
+        // Pencipta 2-5 dalam format 2x2 grid
+        $this->addPenciptaGrid($section, $allMembers->slice(1)); // Skip first member (leader)
+
+        // Footer
+        $section->addTextBreak(2);
+        $section->addText('Generated by SiHaki System - ' . now()->format('d M Y H:i'), 
+            ['size' => 8, 'italic' => true, 'color' => '666666'], 
+            ['alignment' => 'center']
+        );
+
+        // Save file
+        $fileName = 'Layout_KTP_' . $templateData['submission_id'] . '_' . time() . '.docx';
+        $filePath = storage_path('app/temp/' . $fileName);
+        
+        if (!file_exists(storage_path('app/temp'))) {
+            mkdir(storage_path('app/temp'), 0755, true);
+        }
+        
+        $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+        $objWriter->save($filePath);
+        
+        return $filePath;
+    }
+
+    /**
+     * ✅ UPDATED: Add Pencipta Utama (Pencipta 1) section
+     */
+    private function addPenciptaUtama($section, $pencipta1)
+    {
+        // Container table untuk pencipta utama
+        $ketuaTable = $section->addTable([
+            'borderSize' => null, 
+            'borderColor' => 'ffffff',
+            'width' => 100 * 50,
+            'unit' => 'pct'
+        ]);
+        
+        $ketuaTable->addRow();
+        $ketuaCell = $ketuaTable->addCell(12000, [
+            'alignment' => 'center',
+            'bgColor' => 'f8f9fa',
+            'borderSize' => null
+        ]);
+        
+        // ✅ UPDATED: Title yang konsisten
+        $ketuaCell->addText('KTP Pencipta Utama', 
+            ['bold' => true, 'size' => 14], 
+            ['alignment' => 'center']);
+        
+        if ($pencipta1) {
+            $ketuaCell->addText($pencipta1->name, 
+                ['bold' => true, 'size' => 12], 
+                ['alignment' => 'center']);
+            $ketuaCell->addTextBreak(1);
+            
+            // Insert KTP image atau placeholder
+            $this->insertKtpImageOrPlaceholder($ketuaCell, $pencipta1, 400, 250);
+            
+        } else {
+            $ketuaCell->addTextBreak(1);
+            $ketuaCell->addText('[ FOTO KTP ]', 
+                ['bold' => true, 'size' => 20, 'color' => 'cccccc'], 
+                ['alignment' => 'center']);
+            $ketuaCell->addText('Data pencipta utama tidak tersedia', 
+                ['italic' => true, 'color' => 'red'], 
+                ['alignment' => 'center']);
+        }
+    }
+
+    /**
+     * ✅ UPDATED: Add Pencipta 2-5 dalam grid 2x2
+     */
+    private function addPenciptaGrid($section, $anggotaCollection)
+    {
+        $anggota = $anggotaCollection->values()->all(); // Reset keys
+        
+        // Buat grid 2x2 untuk pencipta 2-5 (4 slot)
+        for ($row = 0; $row < 2; $row++) {
+            $gridTable = $section->addTable([
+                'borderSize' => null,
+                'borderColor' => 'ffffff',
+                'width' => 100 * 50,
+                'unit' => 'pct'
+            ]);
+            
+            $gridTable->addRow();
+            
+            // Kolom kiri
+            $leftIndex = ($row * 2);
+            $leftCell = $gridTable->addCell(6000, [
+                'alignment' => 'center',
+                'borderSize' => null,
+            ]);
+            
+            if (isset($anggota[$leftIndex])) {
+                // ✅ UPDATED: Pencipta nomor dimulai dari 2 (karena pencipta 1 sudah di atas)
+                $this->addPenciptaToCell($leftCell, $anggota[$leftIndex], $leftIndex + 2);
+            } else {
+                $this->addEmptyPenciptaCell($leftCell, $leftIndex + 2);
+            }
+            
+            // Kolom kanan
+            $rightIndex = ($row * 2) + 1;
+            $rightCell = $gridTable->addCell(6000, [
+                'alignment' => 'center',
+                'borderSize'=> null,
+            ]);
+            
+            if (isset($anggota[$rightIndex])) {
+                // ✅ UPDATED: Pencipta nomor dimulai dari 2 (karena pencipta 1 sudah di atas)
+                $this->addPenciptaToCell($rightCell, $anggota[$rightIndex], $rightIndex + 2);
+            } else {
+                $this->addEmptyPenciptaCell($rightCell, $rightIndex + 2);
+            }
+            
+            // Add spacing between rows
+            if ($row < 1) {
+                $section->addTextBreak(1);
+            }
+        }
+    }
+
+    /**
+     * ✅ UPDATED: Add pencipta to table cell dengan nomor yang benar
+     */
+    private function addPenciptaToCell($cell, $member, $number)
+    {
+        // ✅ UPDATED: Label yang konsisten dengan urutan pencipta
+        $cell->addText("KTP Pencipta {$number}", 
+            ['bold' => true, 'size' => 12], 
+            ['alignment' => 'center']);
+    
+        $cell->addText($member->name, 
+            ['bold' => true, 'size' => 10], 
+            ['alignment' => 'center']);
+    
+        $cell->addTextBreak(1);
+        
+        // Insert KTP image atau placeholder
+        $this->insertKtpImageOrPlaceholder($cell, $member, 300, 180);
+    }
+
+    /**
+     * ✅ UPDATED: Add empty pencipta cell dengan nomor yang benar
+     */
+    private function addEmptyPenciptaCell($cell, $number)
+    {
+        // ✅ UPDATED: Label yang konsisten dengan urutan pencipta
+        $cell->addText("KTP Pencipta {$number}", 
+            ['bold' => true, 'size' => 12], 
+            ['alignment' => 'center']);
+    
+        $cell->addTextBreak(2);
+    
+        $cell->addText('[ FOTO KTP ]', 
+            ['bold' => true, 'size' => 16, 'color' => 'cccccc'], 
+            ['alignment' => 'center']);
+    
+        $cell->addTextBreak(1);
+    
+        $cell->addText('Tidak ada pencipta', 
+            ['italic' => true, 'size' => 10, 'color' => '999999'], 
+            ['alignment' => 'center']);
+    }
+
+    /**
+     * ✅ NEW: Insert KTP image atau placeholder dengan error handling
+     */
+    private function insertKtpImageOrPlaceholder($cell, $member, $width = 300, $height = 200)
+    {
+        try {
+            if (!$member->ktp) {
+                $this->addKtpPlaceholderToCell($cell, 'KTP BELUM DIUPLOAD', $width, $height);
+                return;
+            }
+
+            $ktpPath = storage_path('app/public/' . $member->ktp);
+            
+            if (!file_exists($ktpPath)) {
+                Log::warning('KTP file not found for member', [
+                    'member_id' => $member->id,
+                    'member_name' => $member->name,
+                    'ktp_path' => $ktpPath
+                ]);
+                $this->addKtpPlaceholderToCell($cell, 'FILE KTP TIDAK DITEMUKAN', $width, $height);
+                return;
+            }
+
+            // Process dan insert image
+            $processedImagePath = $this->processKtpImage($ktpPath, $member->id);
+            
+            // Insert actual KTP image
+            $cell->addImage($processedImagePath, [
+                'width' => $width * 0.75, // Convert points to pixels roughly
+                'height' => $height * 0.75,
+                'alignment' => 'center'
+            ]);
+            
+            // Add member info below image
+            $cell->addTextBreak(1);
+            $this->addMemberInfoToCell($cell, $member);
+            
+            Log::info('KTP successfully inserted for member', [
+                'member_id' => $member->id,
+                'member_name' => $member->name
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to insert KTP for member', [
+                'member_id' => $member->id,
+                'member_name' => $member->name,
+                'error' => $e->getMessage()
+            ]);
+            
+            $this->addKtpPlaceholderToCell($cell, 'ERROR: ' . $e->getMessage(), $width, $height);
+        }
+    }
+
+    /**
+     * ✅ NEW: Add KTP placeholder to cell
+     */
+    private function addKtpPlaceholderToCell($cell, $message, $width, $height)
+    {
+        // Create bordered placeholder
+        $placeholderTable = $cell->addTable([
+            'borderSize' => null,
+            'borderColor' => 'ffffff',
+            'width' => $width,
+        ]);
+        
+        $placeholderTable->addRow($height);
+        $placeholderCell = $placeholderTable->addCell($width, [
+            'bgColor' => 'f8f9fa',
+            'alignment' => 'center',
+            'valign' => 'center',
+            'borderSize' => null,
+        ]);
+        
+        $placeholderCell->addText('[ FOTO KTP ]', 
+            ['bold' => true, 'size' => 16, 'color' => 'cccccc'], 
+            ['alignment' => 'center']);
+        
+        $placeholderCell->addTextBreak(1);
+        
+        $placeholderCell->addText($message, 
+            ['bold' => true, 'size' => 10, 'color' => 'red'], 
+            ['alignment' => 'center']);
+    }
+
+    /**
+     * ✅ NEW: Add member info to cell
+     */
+    private function addMemberInfoToCell($cell, $member)
+    {
+        $infoTable = $cell->addTable([
+            'borderSize' => null,
+            'borderColor' => '999999',
+        ]);
+        
+        $memberInfo = [
+            ['Email', $member->email],
+            ['WhatsApp', $member->whatsapp],
+        ];
+    }
+
+    /**
+     * ✅ UPDATED: Process KTP image dengan better quality
+     */
+    private function processKtpImage($ktpPath, $memberId)
+    {
+        try {
+            $tempDir = storage_path('app/temp/processed_ktp');
+            if (!file_exists($tempDir)) {
+                mkdir($tempDir, 0755, true);
+            }
+
+            $processedPath = $tempDir . '/ktp_' . $memberId . '_' . time() . '.jpg';
+
+            // Check if Intervention Image is available
+            if (class_exists('\Intervention\Image\ImageManagerStatic')) {
+                $image = \Intervention\Image\ImageManagerStatic::make($ktpPath);
+                
+                // Resize dengan maintain aspect ratio
+                $image->resize(800, 500, function ($constraint) {
+                    $constraint->aspectRatio();
+                    $constraint->upsize();
+                });
+                
+                // Enhance untuk readability KTP
+                $image->sharpen(15);
+                $image->contrast(8);
+                $image->brightness(5);
+                
+                $image->save($processedPath, 95); // High quality
+                
+                return $processedPath;
+            } else {
+                // Fallback: copy original
+                copy($ktpPath, $processedPath);
+                return $processedPath;
+            }
+
+        } catch (\Exception $e) {
+            Log::warning('Image processing failed, using original', [
+                'error' => $e->getMessage(),
+                'original_path' => $ktpPath
+            ]);
+            
+            return $ktpPath;
+        }
+    }
+
+    /**
+     * ✅ UPDATED: Generate Surat Pengalihan Template sesuai format yang diminta
+     */
+    private function generateSuratPengalihanTemplate(HkiSubmission $submission, $templateData)
+    {
+        $phpWord = new \PhpOffice\PhpWord\PhpWord();
+        
+        // Set page setup
+        $section = $phpWord->addSection([
+            'orientation' => 'portrait',
+            'marginLeft' => 720,   // 1 inch
+            'marginRight' => 720,
+            'marginTop' => 720,
+            'marginBottom' => 720,
+        ]);
+
+        // Define styles
+        $titleStyle = ['bold' => true, 'size' => 14, 'name' => 'Times New Roman'];
+        $headerStyle = ['bold' => true, 'size' => 12, 'name' => 'Times New Roman'];
+        $textStyle = ['size' => 11, 'name' => 'Times New Roman'];
+        $centerAlign = ['alignment' => 'center'];
+        $justifyAlign = ['alignment' => 'both', 'lineHeight' => 1.5];
+
+        // ✅ TITLE
+        $section->addText('SURAT PENGALIHAN HAK CIPTA', $titleStyle, $centerAlign);
+        $section->addTextBreak(2);
+
+        // ✅ OPENING
+        $section->addText('Yang bertanda tangan di bawah ini :', $textStyle, $justifyAlign);
+        $section->addTextBreak(1);
+
+        // ✅ PIHAK I (PENCIPTA)
+        $pihak1Table = $section->addTable([
+            'borderSize' => null,
+            'width' => 100 * 50,
+        ]);
+        
+        $pihak1Table->addRow();
+        $pihak1Table->addCell(2000)->addText('N a m a', $textStyle);
+        $pihak1Table->addCell(300)->addText(':', $textStyle);
+        $pihak1Table->addCell(6000)->addText($templateData['leader_name'], $textStyle);
+        
+        $pihak1Table->addRow();
+        $pihak1Table->addCell(2000)->addText('Alamat', $textStyle);
+        $pihak1Table->addCell(300)->addText(':', $textStyle);
+        $pihak1Table->addCell(6000)->addText(' ', $textStyle); // Kosong untuk diisi manual
+
+        $section->addTextBreak(1);
+
+        // ✅ PENJELASAN PIHAK I
+        $section->addText('Adalah Pihak I selaku pencipta, dengan ini menyerahkan karya ciptaan saya kepada :', 
+            $textStyle, $justifyAlign);
+        $section->addTextBreak(1);
+
+        // ✅ PIHAK II (INSTITUSI)
+        $pihak2Table = $section->addTable([
+            'borderSize' => null,
+            'width' => 100 * 50,
+        ]);
+        
+        $pihak2Table->addRow();
+        $pihak2Table->addCell(2000)->addText('N a m a', $textStyle);
+        $pihak2Table->addCell(300)->addText(':', $textStyle);
+        $pihak2Table->addCell(6000)->addText('STMIK AMIKOM Surakarta', $textStyle);
+        
+        $pihak2Table->addRow();
+        $pihak2Table->addCell(2000)->addText('Alamat', $textStyle);
+        $pihak2Table->addCell(300)->addText(':', $textStyle);
+        $pihak2Table->addCell(6000)->addText('Jl. Veteran Notosuman Singopuran Kartasura Sukoharjo 57164', $textStyle);
+
+        $section->addTextBreak(1);
+
+        // ✅ PENJELASAN KARYA
+        $karyaText = 'Adalah Pihak II selaku Pemegang Hak Cipta berupa karya Jenis Ciptaan ' . 
+                    ucfirst(str_replace('_', ' ', $templateData['creation_type'])) . 
+                    ' yang berjudul "' . $templateData['title'] . 
+                    '" untuk didaftarkan di Direktorat Hak Cipta dan Desain Industri, ' .
+                    'Direktorat Jenderal Kekayaan Intelektual, Kementerian Hukum dan Hak Asasi Manusia Republik Indonesia.';
+        
+        $section->addText($karyaText, $textStyle, $justifyAlign);
+        $section->addTextBreak(1);
+
+        // ✅ PENUTUP
+        $section->addText('Demikianlah surat pengalihan hak ini kami buat, agar dapat dipergunakan sebagaimana mestinya.', 
+            $textStyle, $justifyAlign);
+        $section->addTextBreak(3);
+
+        // ✅ TANGGAL DAN TANDA TANGAN
+        $section->addText('Sukoharjo, ' . $templateData['current_date'], $textStyle, 
+            ['alignment' => 'right']);
+        $section->addTextBreak(2);
+
+        // ✅ TABEL TANDA TANGAN
+        $ttdTable = $section->addTable([
+            'borderSize' => null,
+            'width' => 100 * 50,
+        ]);
+        
+        // Header tanda tangan
+        $ttdTable->addRow();
+        $leftTtdCell = $ttdTable->addCell(4500, ['alignment' => 'center']);
+        $leftTtdCell->addText('Pemegang Hak Cipta', $textStyle, $centerAlign);
+        
+        $rightTtdCell = $ttdTable->addCell(4500, ['alignment' => 'center']);
+        $rightTtdCell->addText('Pencipta', $textStyle, $centerAlign);
+
+        // Space untuk materai
+        $ttdTable->addRow();
+        
+        $leftTtdCell2 = $ttdTable->addCell(4500, ['alignment' => 'center']);
+        $leftTtdCell2->addTextBreak(4); // Space untuk tanda tangan
+        
+        $rightTtdCell2 = $ttdTable->addCell(4500, ['alignment' => 'center']);
+        $rightTtdCell2->addTextBreak(1);
+        $rightTtdCell2->addText('Materai 10.000', ['size' => 10, 'italic' => true], $centerAlign);
+        $rightTtdCell2->addTextBreak(2);
+
+        // Nama penandatangan
+        $ttdTable->addRow();
+        $leftTtdCell3 = $ttdTable->addCell(4500, ['alignment' => 'center']);
+        $leftTtdCell3->addText('(Moch. Hari Purwidiantoro, S.T., M.M., M.Kom.)', $textStyle, $centerAlign);
+        
+
+        $rightTtdCell3 = $ttdTable->addCell(4500, ['alignment' => 'center']);
+        $rightTtdCell3->addText('(' . $templateData['leader_name'] . ')', $textStyle, $centerAlign);
+
+        // Save file
+        $fileName = 'Surat_Pengalihan_' . $templateData['submission_id'] . '_' . time() . '.docx';
+        $filePath = storage_path('app/temp/' . $fileName);
+        
+        if (!file_exists(storage_path('app/temp'))) {
+            mkdir(storage_path('app/temp'), 0755, true);
+        }
+        
+        $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+        $objWriter->save($filePath);
+        
+        return $filePath;
+    }
+
+    /**
+     * ✅ UPDATED: Generate Surat Pernyataan Template sesuai format resmi
+     */
+    private function generateSuratPernyataanTemplate(HkiSubmission $submission, $templateData)
+    {
+        $phpWord = new \PhpOffice\PhpWord\PhpWord();
+        
+        // Set page setup
+        $section = $phpWord->addSection([
+            'orientation' => 'portrait',
+            'marginLeft' => 720,
+            'marginRight' => 720,
+            'marginTop' => 720,
+            'marginBottom' => 720,
+        ]);
+
+        // Define styles
+        $titleStyle = ['bold' => true, 'size' => 14, 'name' => 'Times New Roman'];
+        $headerStyle = ['bold' => true, 'size' => 12, 'name' => 'Times New Roman'];
+        $textStyle = ['size' => 11, 'name' => 'Times New Roman'];
+        $centerAlign = ['alignment' => 'center'];
+        $justifyAlign = ['alignment' => 'both', 'lineHeight' => 1.5];
+
+        // ✅ TITLE
+        $section->addText('SURAT PERNYATAAN', $titleStyle, $centerAlign);
+        $section->addTextBreak(2);
+
+        // ✅ OPENING
+        $section->addText('Yang bertanda tangan dibawah ini, pemegang hak cipta:', $textStyle, $justifyAlign);
+        $section->addTextBreak(1);
+
+        // ✅ DATA PEMEGANG HAK CIPTA (INSTITUSI)
+        $dataTable = $section->addTable([
+            'borderSize' => null,
+            'width' => 100 * 50,
+        ]);
+        
+        $dataTable->addRow();
+        $dataTable->addCell(2000)->addText('N a m a', $textStyle);
+        $dataTable->addCell(300)->addText(':', $textStyle);
+        $dataTable->addCell(6000)->addText('Sekolah Tinggi Manajemen Informatika dan Komputer AMIKOM Surakarta', $textStyle);
+        
+        $dataTable->addRow();
+        $dataTable->addCell(2000)->addText('Alamat', $textStyle);
+        $dataTable->addCell(300)->addText(':', $textStyle);
+        $dataTable->addCell(6000)->addText('Jl. Veteran Notosuman Singopuran Kartasura Sukoharjo 57164', $textStyle);
+
+        $section->addTextBreak(2);
+
+        // ✅ PERNYATAAN UTAMA
+        $section->addText('Dengan ini menyatakan bahwa:', $textStyle, $justifyAlign);
+        $section->addTextBreak(1);
+
+        // ✅ POIN 1 - KARYA CIPTA
+        $section->addText('1. Karya Cipta yang saya mohonkan:', $textStyle, $justifyAlign);
+
+        // ✅ DATA KARYA CIPTA
+        $karyaTable = $section->addTable([
+            'borderSize' => null,
+            'width' => 100 * 50,
+        ]);
+        
+        $karyaTable->addRow();
+        $karyaTable->addCell(2000)->addText('Berupa', $textStyle);
+        $karyaTable->addCell(300)->addText(':', $textStyle);
+        $karyaTable->addCell(6000)->addText(ucfirst(str_replace('_', ' ', $templateData['creation_type'])), $textStyle);
+        
+        $karyaTable->addRow();
+        $karyaTable->addCell(2000)->addText('Berjudul', $textStyle);
+        $karyaTable->addCell(300)->addText(':', $textStyle);
+        $karyaTable->addCell(6000)->addText($templateData['title'], $textStyle);
+
+        $section->addTextBreak(1);
+
+        // ✅ POIN-POIN PERNYATAAN SESUAI UU HAK CIPTA
+        $poinPernyataan = [
+            'Tidak meniru dan tidak sama secara esensial dengan Karya Cipta milik pihak lain atau obyek kekayaan intelektual lainnya sebagaimana dimaksud dalam Pasal 68 ayat (2);',
+            'Bukan merupakan Ekspresi Budaya Tradisional sebagaimana dimaksud dalam Pasal 38;',
+            'Bukan merupakan Ciptaan yang tidak diketahui penciptanya sebagaimana dimaksud dalam Pasal 39;',
+            'Bukan merupakan hasil karya yang tidak dilindungi Hak Cipta sebagaimana dimaksud dalam Pasal 41 dan 42;',
+            'Bukan merupakan Ciptaan seni lukis yang berupa logo atau tanda pembeda yang digunakan sebagai merek dalam perdagangan barang/jasa atau digunakan sebagai lambang organisasi, badan usaha, atau badan hukum sebagaimana dimaksud dalam Pasal 65 dan;',
+            'Bukan merupakan Ciptaan yang melanggar norma agama, norma susila, ketertiban umum, pertahanan dan keamanan negara atau melanggar peraturan perundang-undangan sebagaimana dimaksud dalam Pasal 74 ayat (1) huruf d Undang-Undang Nomor 28 Tahun 2014 tentang Hak Cipta.'
+        ];
+
+        // Create list dengan bullet points menggunakan tab
+        foreach ($poinPernyataan as $poin) {
+            $section->addText('•	' . $poin, $textStyle, $justifyAlign);
+        }
+
+        $section->addTextBreak(1);
+
+        // ✅ POIN 2 - KEWAJIBAN MENYIMPAN
+        $section->addText('2. Sebagai pemohon mempunyai kewajiban untuk menyimpan asli contoh ciptaan yang dimohonkan dan harus memberikan apabila dibutuhkan untuk kepentingan penyelesaian sengketa perdata maupun pidana sesuai dengan ketentuan perundang-undangan.', $textStyle, $justifyAlign);
+        $section->addTextBreak(1);
+
+        // ✅ POIN 3 - TIDAK DALAM SENGKETA
+        $section->addText('3. Karya Cipta yang saya mohonkan pada Angka 1 tersebut di atas tidak pernah dan tidak sedang dalam sengketa pidana dan/atau perdata di Pengadilan.', $textStyle, $justifyAlign);
+
+        $section->addTextBreak(1);
+
+        // ✅ POIN 4 - KONSEKUENSI PELANGGARAN
+        $section->addText('4. Dalam hal ketentuan sebagaimana dimaksud dalam Angka 1 dan Angka 3 tersebut di atas saya / kami langgar, maka saya / kami bersedia secara sukarela bahwa:', $textStyle, $justifyAlign);
+        
+        $konsekuensiList = [
+            'permohonan karya cipta yang saya ajukan dianggap ditarik kembali; atau',
+            'Karya Cipta yang telah terdaftar dalam Daftar Umum Ciptaan Direktorat Hak Cipta, Direktorat Jenderal Hak Kekayaan Intelektual, Kementerian Hukum Dan Hak Asasi Manusia R.I dihapuskan sesuai dengan ketentuan perundang-undangan yang berlaku.',
+            'Dalam hal kepemilikan Hak Cipta yang dimohonkan secara elektronik sedang dalam berperkara dan/atau sedang dalam gugatan di Pengadilan maka status kepemilikan surat pencatatan elektronik tersebut ditangguhkan menunggu putusan Pengadilan yang berkekuatan hukum tetap.'
+        ];
+
+        foreach ($konsekuensiList as $index => $konsekuensi) {
+            $huruf = chr(97 + $index); // a, b, c
+            $section->addText($huruf . '.	' . $konsekuensi, $textStyle, $justifyAlign);
+        }
+
+        $section->addTextBreak(2);
+
+        // ✅ PENUTUP
+        $section->addText('Demikian Surat pernyataan ini saya/kami buat dengan sebenarnya dan untuk dipergunakan sebagimana mestinya.', 
+            $textStyle, $justifyAlign);
+        $section->addTextBreak(3);
+
+        // ✅ TANGGAL DAN TANDA TANGAN
+        $section->addText('Sukoharjo, ' . $templateData['current_date'], $textStyle, 
+            ['alignment' => 'right']);
+        $section->addTextBreak(6); // Space untuk tanda tangan
+        
+        $section->addText('(Moch. Hari Purwidiantoro, S.T., M.M., M.Kom.)', $textStyle, ['alignment' => 'right']);
+        $section->addText('Ketua STMIK AMIKOM Surakarta', $textStyle, ['alignment' => 'right']);
+        $section->addText('Pemegang Hak Cipta', $textStyle, ['alignment' => 'right']);
+
+        // Save file
+        $fileName = 'Surat_Pernyataan_' . $templateData['submission_id'] . '_' . time() . '.docx';
+        $filePath = storage_path('app/temp/' . $fileName);
+        
+        if (!file_exists(storage_path('app/temp'))) {
+            mkdir(storage_path('app/temp'), 0755, true);
+        }
+        
+        $objWriter = \PhpOffice\PhpWord\IOFactory::createWriter($phpWord, 'Word2007');
+        $objWriter->save($filePath);
+        
+        return $filePath;
     }
 }

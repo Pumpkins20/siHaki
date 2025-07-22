@@ -57,11 +57,7 @@
                                     </td>
                                 </tr>
                                 <tr>
-<<<<<<< HEAD
-=======
-<<<<<<< Updated upstream
-=======
->>>>>>> backend
+
                                     <td><strong>Jenis Ciptaan:</strong></td>
                                     <td>
                                         <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</span>
@@ -77,10 +73,6 @@
                                     </td>
                                 </tr>
                                 <tr>
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
->>>>>>> backend
                                     <td><strong>Status:</strong></td>
                                     <td>
                                         @php

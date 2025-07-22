@@ -467,10 +467,9 @@
                 </div>
                 <div class="card-body">
                     @php
-                    use App\Helpers\StatusHelper;
-                    $statusColor = StatusHelper::getStatusColor($submission->status);
-                    $statusIcon = StatusHelper::getStatusIcon($submission->status);
-                    $statusName = StatusHelper::getStatusName($submission->status);
+                    $statusColor = \App\Helpers\StatusHelper::getStatusColor($submission->status);
+                    $statusIcon = \App\Helpers\StatusHelper::getStatusIcon($submission->status);
+                    $statusName = \App\Helpers\StatusHelper::getStatusName($submission->status);
                     @endphp
 
                     <!-- Status Badge -->
@@ -514,6 +513,109 @@
                     </div>
                 </div>
             </div>
+
+            <!-- Document Templates Card (Only show for approved submissions) -->
+            @if($submission->status === 'approved')
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 fw-bold text-primary">
+                        <i class="bi bi-file-earmark-word me-2"></i>Generate Dokumen Template
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="small mb-3">
+                        <p class="text-muted mb-2">
+                            <i class="bi bi-info-circle"></i> 
+                            Generate dokumen template otomatis berdasarkan data submission yang sudah approved.
+                        </p>
+                    </div>
+                    
+                    <div class="row g-2">
+
+                        <!-- Surat KTP -->
+                        <div class="col-12">
+                            <div class="card border-primary">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title mb-1">
+                                                <i class="bi bi-file-earmark-person text-primary"></i> Dokumen KTP Lengkap
+                                            </h6>
+                                            <small class="text-muted">
+                                                Dokumen lengkap dengan foto KTP semua anggota yang terpasang otomatis
+                                                <br><span class="badge bg-success">Auto-Insert KTP</span>
+                                            </small>
+                                        </div>
+                                        <form action="{{ route('admin.submissions.generate-template', $submission) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="template_type" value="surat_ktp">
+                                            <button type="submit" class="btn btn-outline-primary btn-sm">
+                                                <i class="bi bi-download"></i> Generate & Auto-Insert
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Surat Pengalihan -->
+                        <div class="col-12">
+                            <div class="card border-success">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title mb-1">
+                                                <i class="bi bi-file-earmark-arrow-right text-success"></i> Surat Pengalihan Hak
+                                            </h6>
+                                            <small class="text-muted">Surat pengalihan hak cipta ke institusi</small>
+                                        </div>
+                                        <form action="{{ route('admin.submissions.generate-template', $submission) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="template_type" value="surat_pengalihan">
+                                            <button type="submit" class="btn btn-outline-success btn-sm">
+                                                <i class="bi bi-download"></i> Generate
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        <!-- Surat Pernyataan -->
+                        <div class="col-12">
+                            <div class="card border-warning">
+                                <div class="card-body p-3">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="card-title mb-1">
+                                                <i class="bi bi-file-earmark-check text-warning"></i> Surat Pernyataan
+                                            </h6>
+                                            <small class="text-muted">Surat pernyataan keaslian karya</small>
+                                        </div>
+                                        <form action="{{ route('admin.submissions.generate-template', $submission) }}" method="POST" class="d-inline">
+                                            @csrf
+                                            <input type="hidden" name="template_type" value="surat_pernyataan">
+                                            <button type="submit" class="btn btn-outline-warning btn-sm">
+                                                <i class="bi bi-download"></i> Generate
+                                            </button>
+                                        </form>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="bi bi-lightbulb"></i>
+                                <strong>Tips:</strong> Dokumen yang dihasilkan dalam format Word (.docx) dan dapat diedit sesuai kebutuhan sebelum dicetak atau dikirim.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            @endif
 
             <!-- Review Guidelines -->
             @if($submission->status === 'under_review' && $submission->reviewer_id === Auth::id())

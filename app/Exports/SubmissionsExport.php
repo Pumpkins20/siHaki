@@ -232,7 +232,10 @@ class SubmissionsExport implements FromQuery, WithHeadings, WithMapping, WithSty
             'program_komputer' => 'Program Komputer',
             'sinematografi' => 'Sinematografi',
             'buku' => 'Buku',
-            'poster_fotografi' => 'Poster/Fotografi/Seni Gambar',
+            'poster' => 'Poster',
+            'fotografi' => 'Fotografi',
+            'seni_gambar' => 'Seni Gambar',
+            'karakter_animasi' => 'Karakter Animasi',
             'alat_peraga' => 'Alat Peraga',
             'basis_data' => 'Basis Data',
             default => ucfirst(str_replace('_', ' ', $creationType))
