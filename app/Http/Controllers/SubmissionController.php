@@ -391,12 +391,10 @@ class SubmissionController extends Controller
                 
             case 'sinematografi':
                 $rules['video_link'] = 'required|url';
-                $rules['metadata_file'] = 'required|file|mimes:pdf|max:20480'; // 20MB
                 break;
                 
             case 'buku':
                 $rules['isbn'] = 'nullable|string|max:20';
-                $rules['page_count'] = 'required|integer|min:1';
                 $rules['ebook_file'] = 'required|file|mimes:pdf|max:20480'; // 20MB
                 break;
                 
@@ -413,15 +411,10 @@ class SubmissionController extends Controller
                 break;
                 
             case 'alat_peraga':
-                $rules['subject'] = 'required|string|max:255';
-                $rules['education_level'] = 'required|in:sd,smp,sma,kuliah';
-                $rules['photo_files'] = 'required|array|min:1';
                 $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:2048'; // 2MB per file
                 break;
                 
             case 'basis_data':
-                $rules['database_type'] = 'required|string|max:100';
-                $rules['record_count'] = 'required|integer|min:1';
                 $rules['documentation_file'] = 'required|file|mimes:pdf|max:20480'; // 20MB
                 break;
         }

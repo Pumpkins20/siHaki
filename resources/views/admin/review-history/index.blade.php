@@ -223,7 +223,7 @@
                         
                         <!-- Pagination -->
                         <div class="d-flex justify-content-center mt-3">
-                            {{ $submissions->appends(request()->query())->links() }}
+                            {{ $submissions->appends(request()->query())->links('custom.pagination') }}
                         </div>
                     @else
                         <div class="text-center py-4">
