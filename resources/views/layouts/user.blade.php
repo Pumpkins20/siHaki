@@ -177,7 +177,7 @@
     <!-- Main Content -->
     <main class="main-content">
         <!-- Top Navbar -->
-        <nav class="navbar navbar-main navbar-expand-lg navbar-light bg-white">
+        {{-- <nav class="navbar navbar-main navbar-expand-lg navbar-light bg-white">
             <div class="container-fluid">
                 <button class="navbar-toggler d-lg-none" type="button" id="sidebarToggle">
                     <span class="navbar-toggler-icon"></span>
@@ -210,7 +210,7 @@
                     </div>
                 </div>
             </div>
-        </nav>
+        </nav> --}}
 
         <!-- Content Wrapper -->
         <div class="content-wrapper">

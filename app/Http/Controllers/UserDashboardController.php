@@ -119,27 +119,96 @@ class UserDashboardController extends Controller
                 mkdir($directory, 0755, true);
             }
 
-            // Save original file
-            $path = $file->storeAs('profile_photos', $filename, 'public');
-
-            // Create resized version (optional)
             try {
-                $image = Image::make($file);
-                $image->fit(300, 300, function ($constraint) {
-                    $constraint->upsize();
-                });
-                $image->save(storage_path('app/public/profile_photos/' . $filename));
+                // ✅ ALTERNATIVE: Manual image processing with GD
+                $this->processAndSaveImage($file, $filename);
+                
+                // Update user photo
+                $user->update(['foto' => $filename]);
+
+                return back()->with('success', 'Foto profile berhasil diperbarui!');
+
             } catch (\Exception $e) {
-                // If Image intervention fails, just use the original
+                Log::error('Photo upload failed', [
+                    'error' => $e->getMessage(),
+                    'user_id' => $user->id
+                ]);
+
+                return back()->withErrors(['photo' => 'Gagal memproses foto. Silakan coba lagi.']);
             }
-
-            // Update user photo
-            $user->update(['foto' => $filename]);
-
-            return back()->with('success', 'Foto profile berhasil diperbarui!');
         }
 
         return back()->withErrors(['photo' => 'Gagal mengupload foto']);
+    }
+
+    /**
+     * ✅ NEW: Process image manually using GD library
+     */
+    private function processAndSaveImage($file, $filename)
+    {
+        $imagePath = $file->getPathname();
+        $mimeType = $file->getMimeType();
+        
+        // Create image resource based on type
+        switch ($mimeType) {
+            case 'image/jpeg':
+            case 'image/jpg':
+                $sourceImage = imagecreatefromjpeg($imagePath);
+                break;
+            case 'image/png':
+                $sourceImage = imagecreatefrompng($imagePath);
+                break;
+            default:
+                throw new \Exception('Unsupported image type');
+        }
+        
+        if (!$sourceImage) {
+            throw new \Exception('Failed to create image resource');
+        }
+        
+        // Get original dimensions
+        $originalWidth = imagesx($sourceImage);
+        $originalHeight = imagesy($sourceImage);
+        
+        // Calculate dimensions for square crop
+        $size = min($originalWidth, $originalHeight);
+        $x = ($originalWidth - $size) / 2;
+        $y = ($originalHeight - $size) / 2;
+        
+        // Create new image (300x300)
+        $newImage = imagecreatetruecolor(300, 300);
+        
+        // Preserve transparency for PNG
+        if ($mimeType === 'image/png') {
+            imagealphablending($newImage, false);
+            imagesavealpha($newImage, true);
+            $transparent = imagecolorallocatealpha($newImage, 255, 255, 255, 127);
+            imagefill($newImage, 0, 0, $transparent);
+        }
+        
+        // Crop and resize
+        imagecopyresampled(
+            $newImage, $sourceImage,
+            0, 0, $x, $y,
+            300, 300, $size, $size
+        );
+        
+        // Save the processed image
+        $savePath = storage_path('app/public/profile_photos/' . $filename);
+        
+        switch ($mimeType) {
+            case 'image/jpeg':
+            case 'image/jpg':
+                imagejpeg($newImage, $savePath, 90);
+                break;
+            case 'image/png':
+                imagepng($newImage, $savePath, 8);
+                break;
+        }
+        
+        // Clean up memory
+        imagedestroy($sourceImage);
+        imagedestroy($newImage);
     }
 
     public function changePassword(Request $request)

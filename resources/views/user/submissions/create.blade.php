@@ -680,6 +680,63 @@ function updateFormFields() {
             `;
             break;
 
+        case 'sinematografi':
+            dynamicFields.innerHTML = `
+                <!-- Video Link -->
+                <div class="mb-3">
+                    <label for="video_link" class="form-label">Link Video <span class="text-danger">*</span></label>
+                    <input type="url" class="form-control @error('video_link') is-invalid @enderror" 
+                           id="video_link" name="video_link" value="{{ old('video_link') }}" 
+                           placeholder="https://drive.google.com/..." required>
+                    @error('video_link')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <div class="form-text">Link Google Drive, YouTube, atau platform video lainnya. Pastikan file dapat diakses publik atau sudah dibagikan dengan admin.</div>
+                </div>
+            `;
+
+            guidelinesContent.innerHTML = `
+                <h6 class="fw-bold">Persyaratan Sinematografi:</h6>
+                <ul class="mb-3">
+                    <li>Link video yang dapat diakses (Google Drive/YouTube)</li>
+                    <li>Video berkualitas baik dan tidak melanggar hak cipta</li>
+                    <li>Durasi video sesuai dengan ketentuan</li>
+                </ul>
+                <div class="alert alert-warning">
+                    <small><i class="bi bi-exclamation-triangle"></i> <strong>Penting:</strong> Pastikan link video dapat diakses oleh admin untuk proses review.</small>
+                </div>
+            `;
+            break;
+        
+        case 'buku':
+            dynamicFields.innerHTML = `
+                <!-- E-book File -->
+                <div class="mb-3">
+                    <label for="ebook_file" class="form-label">Upload File Buku (PDF) <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control @error('ebook_file') is-invalid @enderror" 
+                           id="ebook_file" name="ebook_file" accept=".pdf" required>
+                    @error('ebook_file')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <div class="form-text">Format: PDF. File lengkap buku yang akan didaftarkan. Maksimal 20MB.</div>
+                </div>
+            `;
+            
+            guidelinesContent.innerHTML = `
+                <h6 class="fw-bold">Persyaratan Buku:</h6>
+                <ul class="mb-3">
+                    <li>File PDF lengkap buku</li>
+                    <li>ISBN (jika sudah ada)</li>
+                    <li>Jumlah halaman yang sesuai</li>
+                    <li>Konten tidak melanggar hak cipta</li>
+                    <li>Kualitas file PDF yang baik dan dapat dibaca</li>
+                </ul>
+                <div class="alert alert-info">
+                    <small><i class="bi bi-info-circle"></i> <strong>Tips:</strong> Pastikan file PDF tidak terlalu besar dan dapat dibuka dengan baik.</small>
+                </div>
+            `;
+            break;
+
         case 'poster':
         case 'fotografi':
         case 'seni_gambar':
@@ -697,43 +754,6 @@ function updateFormFields() {
                     <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 2MB per file.</div>
                 </div>
 
-                <!-- Dimensi (Opsional) -->
-                <div class="row">
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="width" class="form-label">Lebar (px)</label>
-                            <input type="number" class="form-control @error('width') is-invalid @enderror" 
-                                   id="width" name="width" value="{{ old('width') }}" 
-                                   placeholder="1920" min="1">
-                            @error('width')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                    <div class="col-md-6">
-                        <div class="mb-3">
-                            <label for="height" class="form-label">Tinggi (px)</label>
-                            <input type="number" class="form-control @error('height') is-invalid @enderror" 
-                                   id="height" name="height" value="{{ old('height') }}" 
-                                   placeholder="1080" min="1">
-                            @error('height')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Deskripsi Gambar -->
-                <div class="mb-3">
-                    <label for="image_description" class="form-label">Deskripsi Gambar</label>
-                    <textarea class="form-control @error('image_description') is-invalid @enderror" 
-                              id="image_description" name="image_description" rows="3" 
-                              placeholder="Jelaskan konsep, teknik, atau makna dari karya visual ini">{{ old('image_description') }}</textarea>
-                    @error('image_description')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <div class="form-text">Opsional. Maksimal 500 karakter.</div>
-                </div>
             `;
 
             const visualTypeNames = {
@@ -774,15 +794,16 @@ function updateFormFields() {
 
         case 'basis_data':
             dynamicFields.innerHTML = `
-                <!-- Metadata File -->
+
+                <!-- Documentation File -->
                 <div class="mb-3">
-                    <label for="metadata_file" class="form-label">File Metadata <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control @error('metadata_file') is-invalid @enderror" 
-                           id="metadata_file" name="metadata_file" accept=".pdf" required>
-                    @error('metadata_file')
+                    <label for="documentation_file" class="form-label">Dokumentasi Pendukung <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control @error('documentation_file') is-invalid @enderror" 
+                        id="documentation_file" name="documentation_file" accept=".pdf,.docx" required>
+                    @error('documentation_file')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Format: PDF. Maksimal 20MB.</div>
+                    <div class="form-text">Format: PDF/DOCX. Maksimal 20MB.</div>
                 </div>
             `;
             break;
