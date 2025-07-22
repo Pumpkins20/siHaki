@@ -501,10 +501,10 @@
                         
                         <div class="status-step {{ $submission->status === 'approved' ? 'active completed' : ($submission->status === 'rejected' ? 'active rejected' : ($submission->status === 'revision_needed' ? 'active revision' : '')) }}">
                             <div class="status-icon">
-                                <i class="bi bi-{{ StatusHelper::getStatusIcon($submission->status) }}"></i>
+                                <i class="bi bi-{{ \App\Helpers\StatusHelper::getStatusIcon($submission->status); }}"></i>
                             </div>
                             <div class="status-text">
-                                <strong>{{ StatusHelper::getStatusName($submission->status) }}</strong>
+                                <strong>{{ \App\Helpers\StatusHelper::getStatusName($submission->status) }}</strong>
                                 @if($submission->reviewed_at)
                                     <br><small>{{ $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB</small>
                                 @endif
@@ -794,7 +794,7 @@ function printSubmission() {
         department: "{{ $submission->user->department->name ?? 'N/A' }}",
         type: "{{ ucfirst($submission->type) }}",
         creation_type: "{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}",
-        status: "{{ StatusHelper::getStatusName($submission->status) }}",
+        status: "{{ \App\Helpers\StatusHelper::getStatusName($submission->status) }}",
         member_count: "{{ $submission->member_count }}",
         submission_date: "{{ $submission->submission_date ? $submission->submission_date->setTimezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '-' }}",
         description: "{{ $submission->description }}",
