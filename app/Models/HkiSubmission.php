@@ -33,11 +33,15 @@ class HkiSubmission extends Model
         'additional_data' => 'array',
     ];
 
+    // ✅ UPDATED: Pisahkan creation types menjadi lebih spesifik
     const CREATION_TYPES = [
         'program_komputer' => 'Program Komputer',
         'sinematografi' => 'Sinematografi',
         'buku' => 'Buku',
-        'poster_fotografi' => 'Poster / Fotografi / Seni Gambar / Karakter Animasi',
+        'poster' => 'Poster',
+        'fotografi' => 'Fotografi',
+        'seni_gambar' => 'Seni Gambar',
+        'karakter_animasi' => 'Karakter Animasi',
         'alat_peraga' => 'Alat Peraga',
         'basis_data' => 'Basis Data',
     ];
@@ -116,7 +120,10 @@ class HkiSubmission extends Model
             'program_komputer' => 'Program Komputer',
             'sinematografi' => 'Sinematografi',
             'buku' => 'Buku',
-            'poster_fotografi' => 'Poster/Fotografi/Seni Gambar',
+            'poster' => 'Poster',
+            'fotografi' => 'Fotografi',
+            'seni_gambar' => 'Seni Gambar',
+            'karakter_animasi' => 'Karakter Animasi',
             'alat_peraga' => 'Alat Peraga',
             'basis_data' => 'Basis Data',
             default => ucfirst(str_replace('_', ' ', $this->creation_type))

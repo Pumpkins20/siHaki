@@ -176,9 +176,9 @@
                                 <tbody>
                                     @foreach($submissions as $index => $submission)
                                     @php
-                                        $statusColor = StatusHelper::getStatusColor($submission->status);
-                                        $statusIcon = StatusHelper::getStatusIcon($submission->status);
-                                        $statusName = StatusHelper::getStatusName($submission->status);
+                                        $statusColor = App\Helpers\StatusHelper::getStatusColor($submission->status);
+                                        $statusIcon = App\Helpers\StatusHelper::getStatusIcon($submission->status);
+                                        $statusName = App\Helpers\StatusHelper::getStatusName($submission->status);
                                     @endphp
                                     <tr>
                                         <td>{{ $submissions->firstItem() + $index }}</td>

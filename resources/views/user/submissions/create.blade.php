@@ -68,13 +68,22 @@
                                     <option value="program_komputer" {{ old('creation_type') == 'program_komputer' ? 'selected' : '' }}>Program Komputer</option>
                                     <option value="sinematografi" {{ old('creation_type') == 'sinematografi' ? 'selected' : '' }}>Sinematografi</option>
                                     <option value="buku" {{ old('creation_type') == 'buku' ? 'selected' : '' }}>Buku</option>
-                                    <option value="poster_fotografi" {{ old('creation_type') == 'poster_fotografi' ? 'selected' : '' }}>Poster / Fotografi / Seni Gambar / Karakter Animasi</option>
+                                    
+                                    {{-- ✅ SEPARATED: Visual creation types --}}
+                                    <optgroup label="Karya Visual">
+                                        <option value="poster" {{ old('creation_type') == 'poster' ? 'selected' : '' }}>Poster</option>
+                                        <option value="fotografi" {{ old('creation_type') == 'fotografi' ? 'selected' : '' }}>Fotografi</option>
+                                        <option value="seni_gambar" {{ old('creation_type') == 'seni_gambar' ? 'selected' : '' }}>Seni Gambar</option>
+                                        <option value="karakter_animasi" {{ old('creation_type') == 'karakter_animasi' ? 'selected' : '' }}>Karakter Animasi</option>
+                                    </optgroup>
+                                    
                                     <option value="alat_peraga" {{ old('creation_type') == 'alat_peraga' ? 'selected' : '' }}>Alat Peraga</option>
                                     <option value="basis_data" {{ old('creation_type') == 'basis_data' ? 'selected' : '' }}>Basis Data</option>
                                 </select>
                                 @error('creation_type')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
+                                <div class="form-text">Pilih jenis ciptaan sesuai dengan karya yang akan didaftarkan</div>
                             </div>
 
                             <!-- ✅ NEW: Tanggal Pertama Kali Diumumkan/Digunakan/Dipublikasikan -->
@@ -652,58 +661,98 @@ function updateFormFields() {
                 <div class="mb-3">
                     <label for="program_link" class="form-label">Link Program <span class="text-danger">*</span></label>
                     <input type="url" class="form-control @error('program_link') is-invalid @enderror" 
-                           id="program_link" name="program_link" value="{{ old('program_link') }}"
-                           placeholder="https://example.com" required>
+                           id="program_link" name="program_link" value="{{ old('program_link') }}" 
+                           placeholder="https://github.com/username/repository" required>
                     @error('program_link')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Link akses ke program/aplikasi yang dapat diakses online.</div>
+                    <div class="form-text">Link GitHub, GitLab, atau repositori lainnya</div>
                 </div>
+            `;
+            
+            guidelinesContent.innerHTML = `
+                <h6 class="fw-bold">Persyaratan Program Komputer:</h6>
+                <ul class="mb-3">
+                    <li>File PDF berisi: Cover, Screenshot, Manual penggunaan</li>
+                    <li>Link akses program (GitHub/GitLab/dll)</li>
+                    <li>Deskripsi fungsi dan kegunaan program</li>
+                </ul>
             `;
             break;
 
-        case 'sinematografi':
+        case 'poster':
+        case 'fotografi':
+        case 'seni_gambar':
+        case 'karakter_animasi':
+            // ✅ UNIFIED: Form yang sama untuk semua jenis visual
             dynamicFields.innerHTML = `
-                <!-- Video Link -->
+                <!-- Image Files -->
                 <div class="mb-3">
-                    <label for="video_link" class="form-label">Link Video <span class="text-danger">*</span></label>
-                    <input type="url" class="form-control @error('video_link') is-invalid @enderror" 
-                           id="video_link" name="video_link" value="{{ old('video_link') }}"
-                           placeholder="https://youtube.com/watch?v=..." required>
-                    @error('video_link')
+                    <label for="image_files" class="form-label">File Gambar (JPG/PNG) <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control @error('image_files.*') is-invalid @enderror" 
+                           id="image_files" name="image_files[]" accept=".jpg,.jpeg,.png" multiple required>
+                    @error('image_files.*')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Link video YouTube, Vimeo, atau platform lainnya yang dapat diakses.</div>
+                    <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 2MB per file.</div>
+                </div>
+
+                <!-- Dimensi (Opsional) -->
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="width" class="form-label">Lebar (px)</label>
+                            <input type="number" class="form-control @error('width') is-invalid @enderror" 
+                                   id="width" name="width" value="{{ old('width') }}" 
+                                   placeholder="1920" min="1">
+                            @error('width')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label for="height" class="form-label">Tinggi (px)</label>
+                            <input type="number" class="form-control @error('height') is-invalid @enderror" 
+                                   id="height" name="height" value="{{ old('height') }}" 
+                                   placeholder="1080" min="1">
+                            @error('height')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Deskripsi Gambar -->
+                <div class="mb-3">
+                    <label for="image_description" class="form-label">Deskripsi Gambar</label>
+                    <textarea class="form-control @error('image_description') is-invalid @enderror" 
+                              id="image_description" name="image_description" rows="3" 
+                              placeholder="Jelaskan konsep, teknik, atau makna dari karya visual ini">{{ old('image_description') }}</textarea>
+                    @error('image_description')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                    @enderror
+                    <div class="form-text">Opsional. Maksimal 500 karakter.</div>
                 </div>
             `;
-            break;
 
-        case 'buku':
-            dynamicFields.innerHTML = `
-                <!-- E-book File -->
-                <div class="mb-3">
-                    <label for="ebook_file" class="form-label">File E-book <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control @error('ebook_file') is-invalid @enderror" 
-                           id="ebook_file" name="ebook_file" accept=".pdf" required>
-                    @error('ebook_file')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <div class="form-text">Format: PDF. Maksimal 20MB.</div>
-                </div>
-            `;
-            break;
+            const visualTypeNames = {
+                'poster': 'Poster',
+                'fotografi': 'Fotografi', 
+                'seni_gambar': 'Seni Gambar',
+                'karakter_animasi': 'Karakter Animasi'
+            };
 
-        case 'poster_fotografi':
-            dynamicFields.innerHTML = `
-                <!-- Image File -->
-                <div class="mb-3">
-                    <label for="image_file" class="form-label">File Gambar/Foto <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control @error('image_file') is-invalid @enderror" 
-                           id="image_file" name="image_file" accept=".jpg,.jpeg,.png" required>
-                    @error('image_file')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <div class="form-text">Format: JPG, PNG. Maksimal 1MB.</div>
+            guidelinesContent.innerHTML = `
+                <h6 class="fw-bold">Persyaratan ${visualTypeNames[creationType]}:</h6>
+                <ul class="mb-3">
+                    <li>File gambar berkualitas tinggi (JPG/PNG)</li>
+                    <li>Resolusi minimum 300 DPI untuk cetak</li>
+                    <li>Ukuran file maksimal 2MB per file</li>
+                    <li>Dapat upload multiple file untuk variasi</li>
+                </ul>
+                <div class="alert alert-info">
+                    <small><i class="bi bi-info-circle"></i> Dimensi dan deskripsi bersifat opsional namun direkomendasikan untuk dokumentasi yang lebih baik.</small>
                 </div>
             `;
             break;

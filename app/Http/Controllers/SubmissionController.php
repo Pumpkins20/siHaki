@@ -49,13 +49,10 @@ class SubmissionController extends Controller
     public function store(Request $request)
     {
         try {
-            // ✅ REMOVE: Don't use $this->authorize() here
-            // $this->authorize('create', HkiSubmission::class);
-
             // Validation rules
             $rules = [
                 'title' => 'required|string|max:255',
-                'creation_type' => 'required|in:program_komputer,sinematografi,buku,poster_fotografi,alat_peraga,basis_data',
+                'creation_type' => 'required|in:program_komputer,sinematografi,buku,poster,fotografi,seni_gambar,karakter_animasi,alat_peraga,basis_data',
                 'description' => 'required|string|max:1000',
                 'first_publication_date' => 'required|date|before_or_equal:today',
                 'member_count' => 'required|integer|min:2|max:5',
@@ -72,6 +69,7 @@ class SubmissionController extends Controller
             $customMessages = [
                 'title.required' => 'Judul HKI harus diisi',
                 'creation_type.required' => 'Jenis pengajuan harus dipilih',
+                'creation_type.in' => 'Jenis pengajuan tidak valid',
                 'description.required' => 'Deskripsi harus diisi',
                 'first_publication_date.required' => 'Tanggal pertama kali diumumkan/digunakan/dipublikasikan harus diisi',
                 'first_publication_date.date' => 'Format tanggal tidak valid',
@@ -91,7 +89,7 @@ class SubmissionController extends Controller
 
             $request->validate($rules, $customMessages);
 
-            // ✅ SIMPLE CHECK: Just check if user is authenticated and has role 'user'
+            // Check user role
             if (Auth::user()->role !== 'user') {
                 return back()->withErrors(['error' => 'Hanya dosen yang dapat membuat submission.']);
             }
@@ -126,7 +124,7 @@ class SubmissionController extends Controller
                 'notes' => 'Submission berhasil dibuat dan diajukan'
             ]);
 
-            // ✅ Send notification to user (confirmation)
+            // Send notification
             Auth::user()->notify(new SubmissionStatusChanged(
                 $submission, 
                 null, 
@@ -141,12 +139,60 @@ class SubmissionController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
-            Log::error('Submission creation failed: ' . $e->getMessage());
-            return back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan submission. Silakan coba lagi.'])->withInput();
+            Log::error('Submission creation failed: ' . $e->getMessage(), [
+                'request_data' => $request->except(['_token', 'members']),
+                'creation_type' => $request->creation_type,
+                'stack_trace' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'Terjadi kesalahan saat menyimpan submission: ' . $e->getMessage()])->withInput();
         }
     }
 
-    private function getAdditionalData($request)
+    /**
+     * ✅ FIX: Complete getAdditionalData method
+     */
+    private function getAdditionalData(Request $request)
+    {
+        $data = [];
+        
+        switch ($request->creation_type) {
+            case 'program_komputer':
+                $data['program_link'] = $request->program_link;
+                break;
+                
+            case 'sinematografi':
+                $data['video_link'] = $request->video_link;
+                break;
+                
+            case 'buku':
+                $data['isbn'] = $request->isbn;
+                $data['page_count'] = $request->page_count;
+                break;
+                
+            case 'poster':
+            case 'fotografi':
+            case 'seni_gambar':
+            case 'karakter_animasi':
+                // ✅ UNIFIED: Data untuk semua jenis visual
+                $data['width'] = $request->width;
+                $data['height'] = $request->height;
+                $data['image_description'] = $request->image_description;
+                $data['visual_type'] = $request->creation_type; // Store specific type
+                break;
+                
+            case 'alat_peraga':
+                $data['subject'] = $request->subject;
+                $data['education_level'] = $request->education_level;
+                break;
+                
+            case 'basis_data':
+                $data['database_type'] = $request->database_type;
+                $data['record_count'] = $request->record_count;
+                break;
+        }
+        
+        return $data;
+    }
 
     /**
      * Display submission detail
@@ -337,19 +383,23 @@ class SubmissionController extends Controller
                 $rules['ebook_file'] = 'required|file|mimes:pdf|max:20480'; // 20MB
                 break;
                 
-            case 'poster_fotografi':
-                $rules['image_type'] = 'required|in:poster,fotografi,seni_gambar,karakter_animasi';
-                $rules['width'] = 'required|integer|min:1';
-                $rules['height'] = 'required|integer|min:1';
+            case 'poster':
+            case 'fotografi':
+            case 'seni_gambar':
+            case 'karakter_animasi':
+                // ✅ UNIFIED: Semua jenis visual menggunakan rules yang sama
                 $rules['image_files'] = 'required|array|min:1';
-                $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // 1MB per file
+                $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:2048'; // 2MB per file
+                $rules['width'] = 'nullable|integer|min:1';
+                $rules['height'] = 'nullable|integer|min:1';
+                $rules['image_description'] = 'nullable|string|max:500';
                 break;
                 
             case 'alat_peraga':
                 $rules['subject'] = 'required|string|max:255';
                 $rules['education_level'] = 'required|in:sd,smp,sma,kuliah';
                 $rules['photo_files'] = 'required|array|min:1';
-                $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // 1MB per file
+                $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:2048'; // 2MB per file
                 break;
                 
             case 'basis_data':
@@ -410,46 +460,59 @@ class SubmissionController extends Controller
      */
     private function handleFileUploads(Request $request, HkiSubmission $submission)
     {
-        switch ($request->creation_type) {
-            case 'program_komputer':
-                if ($request->hasFile('manual_document')) {
-                    $this->uploadDocument($request, $submission, 'manual_document', 'main_document');
-                }
-                break;
-                
-            case 'sinematografi':
-                if ($request->hasFile('metadata_file')) {
-                    $this->uploadDocument($request, $submission, 'metadata_file', 'main_document');
-                }
-                break;
-                
-            case 'buku':
-                if ($request->hasFile('ebook_file')) {
-                    $this->uploadDocument($request, $submission, 'ebook_file', 'main_document');
-                }
-                break;
-                
-            case 'poster_fotografi':
-                if ($request->hasFile('image_files')) {
-                    foreach ($request->file('image_files') as $index => $file) {
-                        $this->uploadDocument($request, $submission, 'image_files', 'supporting_document', $file, $index);
+        try {
+            switch ($request->creation_type) {
+                case 'program_komputer':
+                    if ($request->hasFile('manual_document')) {
+                        $this->uploadDocument($request, $submission, 'manual_document', 'main_document');
                     }
-                }
-                break;
-                
-            case 'alat_peraga':
-                if ($request->hasFile('photo_files')) {
-                    foreach ($request->file('photo_files') as $index => $file) {
-                        $this->uploadDocument($request, $submission, 'photo_files', 'supporting_document', $file, $index);
+                    break;
+                    
+                case 'sinematografi':
+                    if ($request->hasFile('metadata_file')) {
+                        $this->uploadDocument($request, $submission, 'metadata_file', 'main_document');
                     }
-                }
-                break;
-                
-            case 'basis_data':
-                if ($request->hasFile('documentation_file')) {
-                    $this->uploadDocument($request, $submission, 'documentation_file', 'main_document');
-                }
-                break;
+                    break;
+                    
+                case 'buku':
+                    if ($request->hasFile('ebook_file')) {
+                        $this->uploadDocument($request, $submission, 'ebook_file', 'main_document');
+                    }
+                    break;
+                    
+                case 'poster':
+                case 'fotografi':
+                case 'seni_gambar':
+                case 'karakter_animasi':
+                    // ✅ UNIFIED: Handling untuk semua jenis visual
+                    if ($request->hasFile('image_files')) {
+                        foreach ($request->file('image_files') as $index => $file) {
+                            $this->uploadDocument($request, $submission, 'image_files', 'supporting_document', $file, $index);
+                        }
+                    }
+                    break;
+                    
+                case 'alat_peraga':
+                    if ($request->hasFile('photo_files')) {
+                        foreach ($request->file('photo_files') as $index => $file) {
+                            $this->uploadDocument($request, $submission, 'photo_files', 'supporting_document', $file, $index);
+                        }
+                    }
+                    break;
+                    
+                case 'basis_data':
+                    if ($request->hasFile('documentation_file')) {
+                        $this->uploadDocument($request, $submission, 'documentation_file', 'main_document');
+                    }
+                    break;
+            }
+        } catch (\Exception $e) {
+            Log::error('File upload failed', [
+                'submission_id' => $submission->id,
+                'creation_type' => $request->creation_type,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
         }
     }
 
@@ -649,16 +712,19 @@ class SubmissionController extends Controller
                 $rules['ebook_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
                 break;
                 
-            case 'poster_fotografi':
+            case 'poster':
+            case 'fotografi':
+            case 'seni_gambar':
+            case 'karakter_animasi':
                 $rules['image_files'] = 'nullable|array';
-                $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
+                $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:2048'; // Optional untuk update
                 break;
                 
             case 'alat_peraga':
                 $rules['subject'] = 'required|string|max:255';
                 $rules['education_level'] = 'required|in:sd,smp,sma,kuliah';
                 $rules['photo_files'] = 'nullable|array';
-                $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
+                $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:2048'; // Optional untuk update
                 break;
                 
             case 'basis_data':
@@ -732,7 +798,10 @@ class SubmissionController extends Controller
                 }
                 break;
                 
-            case 'poster_fotografi':
+            case 'poster':
+            case 'fotografi':
+            case 'seni_gambar':
+            case 'karakter_animasi':
                 if ($request->hasFile('image_files')) {
                     $this->deleteExistingDocuments($submission, 'supporting_document');
                     foreach ($request->file('image_files') as $index => $file) {
