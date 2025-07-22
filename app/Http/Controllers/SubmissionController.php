@@ -246,7 +246,7 @@ class SubmissionController extends Controller
 
         // ✅ Load relationships and log for debugging
         $submission->load(['documents', 'members']);
-
+        
         Log::info('Edit form accessed', [
             'submission_id' => $submission->id,
             'user_id' => Auth::id(),
@@ -684,19 +684,16 @@ class SubmissionController extends Controller
                 $rules['ebook_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
                 break;
                 
-            case 'poster':
-            case 'fotografi':
-            case 'seni_gambar':
-            case 'karakter_animasi':
+            case 'poster_fotografi':
                 $rules['image_files'] = 'nullable|array';
-                $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:2048'; // Optional untuk update
+                $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
                 break;
                 
             case 'alat_peraga':
                 $rules['subject'] = 'required|string|max:255';
                 $rules['education_level'] = 'required|in:sd,smp,sma,kuliah';
                 $rules['photo_files'] = 'nullable|array';
-                $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:2048'; // Optional untuk update
+                $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
                 break;
                 
             case 'basis_data':
@@ -770,10 +767,7 @@ class SubmissionController extends Controller
                 }
                 break;
                 
-            case 'poster':
-            case 'fotografi':
-            case 'seni_gambar':
-            case 'karakter_animasi':
+            case 'poster_fotografi':
                 if ($request->hasFile('image_files')) {
                     $this->deleteExistingDocuments($submission, 'supporting_document');
                     foreach ($request->file('image_files') as $index => $file) {
