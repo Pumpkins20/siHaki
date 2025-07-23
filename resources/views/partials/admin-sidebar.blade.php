@@ -38,10 +38,10 @@
                 <span class="sidebar-text">Kirim Sertifikat</span>
             </a>
         </li>
-
+        
         <li class="nav-item">
             <a href="{{ route('admin.review-history.index') }}" 
-                class="nav-link text-white {{ request()->routeIs('admin.review-history.*') ? 'active' : '' }}">
+               class="nav-link text-white {{ request()->routeIs('admin.review-history.*') ? 'active' : '' }}">
                 <i class="bi bi-clock-history me-2"></i>
                 <span class="sidebar-text">Riwayat Peninjauan</span>
             </a>

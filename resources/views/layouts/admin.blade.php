@@ -62,17 +62,6 @@
             overflow-x: auto;
         }
 
-        /* ✅ Navbar */
-        .admin-navbar {
-            background: #fff;
-            border-bottom: 1px solid #e3e6f0;
-            padding: 0.5rem 1rem;
-            position: sticky;
-            top: 0;
-            z-index: 999;
-            box-shadow: 0 0.15rem 1.75rem 0 rgba(58, 59, 69, 0.15);
-        }
-
         /* ✅ Mobile Toggle Button */
         .mobile-toggle {
             display: none;
@@ -87,6 +76,12 @@
             height: 45px;
             color: white;
             box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+            transition: all 0.3s ease;
+        }
+
+        .mobile-toggle:hover {
+            background: #0056b3;
+            transform: scale(1.1);
         }
 
         /* ✅ Responsive Breakpoints */
@@ -135,14 +130,18 @@
                 padding: 0.75rem;
             }
             
-            /* Hide sidebar text on tablet */
-            .sidebar .nav-link span {
+            /* ✅ UPDATED: Hide sidebar text on tablet ONLY when not in mobile overlay mode */
+            .sidebar:not(.show) .sidebar-text {
                 display: none;
             }
             
-            .sidebar .nav-link {
+            .sidebar:not(.show) .nav-link {
                 text-align: center;
                 padding: 0.75rem 0.5rem;
+            }
+            
+            .sidebar:not(.show) .sidebar-brand span {
+                display: none;
             }
         }
 
@@ -153,8 +152,23 @@
                 width: var(--sidebar-width);
             }
             
+            /* ✅ UPDATED: Show full sidebar with text when overlay is active */
             .sidebar.show {
                 transform: translateX(0);
+            }
+            
+            /* ✅ IMPORTANT: Ensure text is visible in mobile overlay */
+            .sidebar.show .sidebar-text {
+                display: inline !important;
+            }
+            
+            .sidebar.show .nav-link {
+                text-align: left !important;
+                padding: 0.75rem 1rem !important;
+            }
+            
+            .sidebar.show .sidebar-brand span {
+                display: inline !important;
             }
             
             .main-content {
@@ -180,10 +194,111 @@
                 background: rgba(0, 0, 0, 0.5);
                 z-index: 999;
                 display: none;
+                backdrop-filter: blur(2px);
             }
             
             .sidebar-overlay.show {
                 display: block;
+            }
+        }
+
+        /* ✅ Sidebar specific styles */
+        .sidebar .nav-link {
+            padding: 0.75rem 1rem;
+            border-radius: 0.35rem;
+            margin-bottom: 0.25rem;
+            transition: all 0.3s;
+            position: relative;
+            overflow: hidden;
+            white-space: nowrap;
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar .nav-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            transform: translateX(5px);
+            color: white;
+        }
+
+        .sidebar .nav-link.active {
+            background: rgba(255, 255, 255, 0.2);
+            font-weight: 600;
+            color: white;
+        }
+
+        .sidebar-brand {
+            color: white;
+            text-decoration: none;
+            display: flex;
+            align-items: center;
+            padding: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1rem;
+        }
+
+        .sidebar-brand:hover {
+            color: white;
+            text-decoration: none;
+        }
+
+        .sidebar-brand i {
+            margin-right: 0.5rem;
+        }
+
+        /* ✅ Mobile Navigation Animation */
+        .sidebar {
+            transition: transform 0.3s ease-in-out;
+        }
+
+        .sidebar.show {
+            box-shadow: 0 0 20px rgba(0, 0, 0, 0.3);
+        }
+
+        /* ✅ Additional Mobile Improvements */
+        @media (max-width: 767.98px) {
+            /* Ensure proper spacing in mobile overlay */
+            .sidebar.show .nav-item {
+                margin-bottom: 0;
+            }
+            
+            .sidebar.show .nav-link {
+                font-size: 0.9rem;
+                border-radius: 0.25rem;
+                margin: 0 0.5rem 0.25rem 0.5rem;
+                padding: 0.75rem 1rem;
+            }
+            
+            .sidebar.show .sidebar-brand {
+                font-size: 1.1rem;
+                padding: 1rem;
+            }
+            
+            /* Account section styling */
+            .sidebar.show .nav-item small {
+                color: rgba(255, 255, 255, 0.7);
+                font-size: 0.75rem;
+                text-transform: uppercase;
+                padding: 0 1rem;
+                margin: 0.5rem 0;
+                display: block;
+            }
+            
+            /* Dropdown in mobile */
+            .sidebar.show .dropdown-menu {
+                background: rgba(255, 255, 255, 0.1);
+                border: 1px solid rgba(255, 255, 255, 0.2);
+                backdrop-filter: blur(10px);
+            }
+            
+            .sidebar.show .dropdown-item {
+                color: white;
+                padding: 0.5rem 1rem;
+            }
+            
+            .sidebar.show .dropdown-item:hover {
+                background: rgba(255, 255, 255, 0.1);
+                color: white;
             }
         }
 
@@ -293,22 +408,6 @@
                 font-size: 0.8rem;
                 padding: 0.375rem 0.75rem;
             }
-        }
-
-        /* ✅ Sidebar Toggle Animation */
-        .sidebar-toggle {
-            background: none;
-            border: none;
-            color: #5a5c69;
-            font-size: 1.25rem;
-            padding: 0.5rem;
-            border-radius: 0.35rem;
-            transition: all 0.3s;
-        }
-
-        .sidebar-toggle:hover {
-            background: #eaecf4;
-            color: #3a3b45;
         }
 
         /* ✅ Print Styles */
@@ -427,80 +526,83 @@
     <script>
         // ✅ Responsive Sidebar Toggle
         document.addEventListener('DOMContentLoaded', function() {
-            const sidebar = document.getElementById('sidebar');
-            const mainContent = document.getElementById('mainContent');
-            const mobileToggle = document.getElementById('mobileToggle');
-            const sidebarToggle = document.getElementById('sidebarToggle');
-            const sidebarOverlay = document.getElementById('sidebarOverlay');
-            
-            // Mobile toggle
-            if (mobileToggle) {
-                mobileToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('show');
-                    sidebarOverlay.classList.toggle('show');
-                });
-            }
-            
-            // Desktop toggle (collapse/expand)
-            if (sidebarToggle) {
-                sidebarToggle.addEventListener('click', function() {
-                    sidebar.classList.toggle('collapsed');
-                    mainContent.classList.toggle('expanded');
-                    
-                    // Save state to localStorage
-                    const isCollapsed = sidebar.classList.contains('collapsed');
-                    localStorage.setItem('sidebarCollapsed', isCollapsed);
-                });
-                
-                // Restore sidebar state
-                const isCollapsed = localStorage.getItem('sidebarCollapsed') === 'true';
-                if (isCollapsed) {
-                    sidebar.classList.add('collapsed');
-                    mainContent.classList.add('expanded');
-                }
-            }
-            
-            // Overlay click to close mobile sidebar
-            if (sidebarOverlay) {
-                sidebarOverlay.addEventListener('click', function() {
-                    sidebar.classList.remove('show');
-                    sidebarOverlay.classList.remove('show');
-                });
-            }
-            
-            // Close mobile sidebar on window resize
-            window.addEventListener('resize', function() {
-                if (window.innerWidth >= 768) {
-                    sidebar.classList.remove('show');
-                    sidebarOverlay.classList.remove('show');
-                }
-            });
-            
-            // Auto-hide alerts after 5 seconds
-            const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
-            alerts.forEach(alert => {
-                setTimeout(() => {
-                    const bsAlert = new bootstrap.Alert(alert);
-                    bsAlert.close();
-                }, 5000);
-            });
-        });
+        const sidebar = document.getElementById('sidebar');
+        const mainContent = document.getElementById('mainContent');
+        const mobileToggle = document.getElementById('mobileToggle');
+        const sidebarOverlay = document.getElementById('sidebarOverlay');
         
-        // ✅ Table Responsive Helper
-        function makeTableResponsive() {
-            const tables = document.querySelectorAll('.table-responsive table');
-            tables.forEach(table => {
-                if (window.innerWidth < 768) {
-                    table.classList.add('table-sm');
+        // Mobile toggle with enhanced functionality
+        if (mobileToggle) {
+            mobileToggle.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+                sidebarOverlay.classList.toggle('show');
+                
+                // Prevent body scroll when sidebar is open
+                if (sidebar.classList.contains('show')) {
+                    document.body.style.overflow = 'hidden';
                 } else {
-                    table.classList.remove('table-sm');
+                    document.body.style.overflow = 'auto';
                 }
             });
         }
         
-        // Run on load and resize
-        window.addEventListener('load', makeTableResponsive);
-        window.addEventListener('resize', makeTableResponsive);
+        // Overlay click to close mobile sidebar
+        if (sidebarOverlay) {
+            sidebarOverlay.addEventListener('click', function() {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            });
+        }
+        
+        // Close mobile sidebar on window resize
+        window.addEventListener('resize', function() {
+            if (window.innerWidth >= 768) {
+                sidebar.classList.remove('show');
+                sidebarOverlay.classList.remove('show');
+                document.body.style.overflow = 'auto';
+            }
+        });
+        
+        // Close sidebar when clicking on nav links (mobile)
+        const navLinks = sidebar.querySelectorAll('.nav-link');
+        navLinks.forEach(link => {
+            link.addEventListener('click', function() {
+                if (window.innerWidth < 768 && sidebar.classList.contains('show')) {
+                    setTimeout(() => {
+                        sidebar.classList.remove('show');
+                        sidebarOverlay.classList.remove('show');
+                        document.body.style.overflow = 'auto';
+                    }, 100);
+                }
+            });
+        });
+        
+        // Auto-hide alerts after 5 seconds
+        const alerts = document.querySelectorAll('.alert:not(.alert-permanent)');
+        alerts.forEach(alert => {
+            setTimeout(() => {
+                const bsAlert = new bootstrap.Alert(alert);
+                bsAlert.close();
+            }, 5000);
+        });
+    });
+
+    // ✅ Table Responsive Helper
+    function makeTableResponsive() {
+        const tables = document.querySelectorAll('.table-responsive table');
+        tables.forEach(table => {
+            if (window.innerWidth < 768) {
+                table.classList.add('table-sm');
+            } else {
+                table.classList.remove('table-sm');
+            }
+        });
+    }
+
+    // Run on load and resize
+    window.addEventListener('load', makeTableResponsive);
+    window.addEventListener('resize', makeTableResponsive);
     </script>
     
     @stack('scripts')
