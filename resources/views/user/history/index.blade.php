@@ -275,10 +275,27 @@
                                                 </a>
                                                 
                                                 @if($submission->status === 'approved')
-                                                    <a href="{{ route('user.history.certificate', $submission) }}" 
-                                                       class="btn btn-sm btn-success mb-1" title="Download Sertifikat">
-                                                        <i class="bi bi-download"></i> Sertifikat
-                                                    </a>
+                                                    @php
+                                                        $certificate = $submission->documents()->where('document_type', 'certificate')->first();
+                                                        $hasCertificate = $certificate !== null;
+                                                    @endphp
+                                                    
+                                                    @if($hasCertificate)
+                                                        {{-- Certificate available - Green button --}}
+                                                        <a href="{{ route('user.history.certificate', $submission) }}" 
+                                                        class="btn btn-sm btn-success mb-1" 
+                                                        title="Sertifikat tersedia - Klik untuk download"
+                                                        data-bs-toggle="tooltip">
+                                                            <i class="bi bi-download"></i> Sertifikat
+                                                        </a>
+                                                    @else
+                                                        {{-- Certificate not available - Gray button with info --}}
+                                                        <button class="btn btn-sm btn-secondary mb-1" 
+                                                                title="Sertifikat sedang diproses oleh admin"
+                                                                data-bs-toggle="tooltip" disabled>
+                                                            <i class="bi bi-hourglass-split"></i> Menunggu
+                                                        </button>
+                                                    @endif
                                                 @endif
                                                 
                                                 @if($submission->documents->count() > 0)

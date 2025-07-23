@@ -421,51 +421,6 @@ class SubmissionController extends Controller
     }
 
     /**
-     * Get additional data based on creation type
-     */
-    private function getAdditionalData(Request $request)
-<<<<<<< HEAD
-=======
->>>>>>> Stashed changes
->>>>>>> backend
-    {
-        $data = [];
-        
-        switch ($request->creation_type) {
-            case 'program_komputer':
-                $data['program_link'] = $request->program_link;
-                break;
-                
-            case 'sinematografi':
-                $data['video_link'] = $request->video_link;
-                break;
-                
-            case 'buku':
-                $data['isbn'] = $request->isbn;
-                $data['page_count'] = $request->page_count;
-                break;
-                
-            case 'poster_fotografi':
-                $data['image_type'] = $request->image_type;
-                $data['width'] = $request->width;
-                $data['height'] = $request->height;
-                break;
-                
-            case 'alat_peraga':
-                $data['subject'] = $request->subject;
-                $data['education_level'] = $request->education_level;
-                break;
-                
-            case 'basis_data':
-                $data['database_type'] = $request->database_type;
-                $data['record_count'] = $request->record_count;
-                break;
-        }
-        
-        return $data;
-    }
-
-    /**
      * Handle file uploads based on creation type
      */
     private function handleFileUploads(Request $request, HkiSubmission $submission)
