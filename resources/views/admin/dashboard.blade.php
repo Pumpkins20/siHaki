@@ -10,12 +10,12 @@
             <div class="card bg-gradient-primary text-white">
                 <div class="card-body">
                     <div class="row align-items-center">
-                        <div class="col-md-8">
-                            <h4 class="card-title">Selamat Datang, {{ Auth::user()->nama }}!</h4>
-                            <p class="card-text">Dashboard Super Admin - Kelola sistem HKI dan review submission.</p>
+                        <div class="col-md-8 col-12">
+                            <h4 class="card-title mb-2 mb-md-1">Selamat Datang, {{ Auth::user()->nama }}!</h4>
+                            <p class="card-text mb-3 mb-md-0">Dashboard Super Admin - Kelola sistem HKI dan review submission.</p>
                         </div>
-                        <div class="col-md-4 text-end">
-                            <a href="{{ route('admin.submissions.index') }}" class="btn btn-light btn-lg">
+                        <div class="col-md-4 col-12 text-md-end text-start">
+                            <a href="{{ route('admin.submissions.index') }}" class="btn btn-light btn-lg w-100 w-md-auto">
                                 <i class="bi bi-file-earmark-check"></i> Review Submissions
                             </a>
                         </div>
@@ -28,7 +28,7 @@
     <!-- Stats Cards -->
     <div class="row mb-4">
         <!-- Total Users -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 mb-4">
             <div class="card border-left-primary shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -47,7 +47,7 @@
         </div>
 
         <!-- Total Submissions -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 mb-4">
             <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -66,7 +66,7 @@
         </div>
 
         <!-- Pending Reviews -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 mb-4">
             <div class="card border-left-warning shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -85,7 +85,7 @@
         </div>
 
         <!-- Under Review -->
-        <div class="col-xl-3 col-md-6 mb-4">
+        <div class="col-xl-3 col-lg-6 col-md-6 col-sm-6 mb-4">
             <div class="card border-left-info shadow h-100 py-2">
                 <div class="card-body">
                     <div class="row no-gutters align-items-center">
@@ -107,10 +107,10 @@
     <!-- Recent Activities & Quick Actions -->
     <div class="row">
         <!-- Recent Submissions -->
-        <div class="col-xl-8 col-lg-7">
-            <div class="card shadow mb-4">
-                <div class="card-header py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 font-weight-bold text-primary">Antrian Tinjauan Terbaru</h6>
+        <div class="col-xl-8 col-lg-12 mb-4 order-2 order-xl-1">
+            <div class="card shadow h-100">
+                <div class="card-header py-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
+                    <h6 class="m-0 font-weight-bold text-primary mb-2 mb-sm-0">Antrian Tinjauan Terbaru</h6>
                     <a href="{{ route('admin.submissions.index') }}" class="btn btn-sm btn-primary">
                         <i class="bi bi-eye"></i> Lihat Semua
                     </a>
@@ -118,35 +118,52 @@
                 <div class="card-body">
                     @if($recent_submissions->count() > 0)
                         <div class="table-responsive">
-                            <table class="table table-hover">
-                                <thead>
+                            <table class="table table-hover mb-0">
+                                <thead class="d-none d-md-table-header-group">
                                     <tr>
                                         <th>Title</th>
                                         <th>User</th>
-                                        <th>Type</th>
+                                        <th class="d-none d-lg-table-cell">Type</th>
                                         <th>Status</th>
-                                        <th>Date</th>
+                                        <th class="d-none d-lg-table-cell">Date</th>
                                         <th>Action</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($recent_submissions as $submission)
                                     @php
-                                        // ✅ UNIFIED: Gunakan StatusHelper untuk konsistensi
                                         $statusColor = App\Helpers\StatusHelper::getStatusColor($submission->status);
                                         $statusIcon = App\Helpers\StatusHelper::getStatusIcon($submission->status);
                                         $statusName = App\Helpers\StatusHelper::getStatusName($submission->status);
                                     @endphp
                                     <tr>
-                                        <td>
+                                        <!-- Mobile Layout -->
+                                        <td class="d-md-none">
+                                            <div class="mb-1">
+                                                <strong>{{ Str::limit($submission->title, 25) }}</strong>
+                                            </div>
+                                            <div class="small text-muted mb-1">{{ $submission->user->nama }}</div>
+                                            <div class="mb-2">
+                                                <span class="badge bg-{{ $statusColor }}">
+                                                    <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
+                                                </span>
+                                            </div>
+                                            <div>
+                                                <a href="{{ route('admin.submissions.show', $submission) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i> Detail
+                                                </a>
+                                            </div>
+                                        </td>
+
+                                        <!-- Desktop Layout -->
+                                        <td class="d-none d-md-table-cell">
                                             <strong>{{ Str::limit($submission->title, 30) }}</strong>
                                         </td>
-                                        <td>{{ $submission->user->nama }}</td>
-                                        <td>
+                                        <td class="d-none d-md-table-cell">{{ $submission->user->nama }}</td>
+                                        <td class="d-none d-lg-table-cell">
                                             <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</span>
                                         </td>
-                                        <td>
-                                            {{-- ✅ UNIFIED: Status dengan warna dan icon konsisten --}}
+                                        <td class="d-none d-md-table-cell">
                                             <span class="badge bg-{{ $statusColor }}">
                                                 <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
                                             </span>
@@ -156,19 +173,21 @@
                                                 <br><small class="text-warning"><i class="bi bi-clock"></i> Menunggu user</small>
                                             @endif
                                         </td>
-                                        <td>{{ $submission->submission_date->format('d M Y') }}</td>
-                                        <td>
-                                            <a href="{{ route('admin.submissions.show', $submission) }}" class="btn btn-sm btn-outline-primary">
-                                                <i class="bi bi-eye"></i>
-                                            </a>
-                                            @if($submission->status === 'submitted')
-                                                <form action="{{ route('admin.submissions.assign-to-self', $submission) }}" method="POST" class="d-inline">
-                                                    @csrf
-                                                    <button type="submit" class="btn btn-sm btn-outline-success" title="Assign to Self">
-                                                        <i class="bi bi-person-check"></i>
-                                                    </button>
-                                                </form>
-                                            @endif
+                                        <td class="d-none d-lg-table-cell">{{ $submission->submission_date->format('d M Y') }}</td>
+                                        <td class="d-none d-md-table-cell">
+                                            <div class="btn-group" role="group">
+                                                <a href="{{ route('admin.submissions.show', $submission) }}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="bi bi-eye"></i>
+                                                </a>
+                                                @if($submission->status === 'submitted')
+                                                    <form action="{{ route('admin.submissions.assign-to-self', $submission) }}" method="POST" class="d-inline">
+                                                        @csrf
+                                                        <button type="submit" class="btn btn-sm btn-outline-success" title="Assign to Self">
+                                                            <i class="bi bi-person-check"></i>
+                                                        </button>
+                                                    </form>
+                                                @endif
+                                            </div>
                                         </td>
                                     </tr>
                                     @endforeach
@@ -176,7 +195,7 @@
                             </table>
                         </div>
                     @else
-                        <div class="text-center py-3">
+                        <div class="text-center py-4">
                             <i class="bi bi-inbox fs-1 text-muted"></i>
                             <p class="text-muted mt-2">No recent submissions</p>
                         </div>
@@ -186,7 +205,7 @@
         </div>
 
         <!-- Quick Actions & Stats -->
-        <div class="col-xl-4 col-lg-5">
+        <div class="col-xl-4 col-lg-12 mb-4 order-1 order-xl-2">
             <!-- Quick Actions -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
@@ -229,14 +248,13 @@
                 </div>
             </div>
 
-            <!-- Status Summary - ✅ NEW: Tambahan ringkasan status dengan warna konsisten -->
+            <!-- Status Summary -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Ringkasan Status</h6>
                 </div>
                 <div class="card-body">
                     <div class="row g-2">
-                        {{-- Approved --}}
                         <div class="col-6">
                             <div class="d-flex align-items-center p-2 bg-light rounded">
                                 <div class="icon-circle bg-success text-white me-2">
@@ -249,7 +267,6 @@
                             </div>
                         </div>
                         
-                        {{-- Rejected --}}
                         <div class="col-6">
                             <div class="d-flex align-items-center p-2 bg-light rounded">
                                 <div class="icon-circle bg-danger text-white me-2">
@@ -262,7 +279,6 @@
                             </div>
                         </div>
                         
-                        {{-- Revision Needed --}}
                         <div class="col-6">
                             <div class="d-flex align-items-center p-2 bg-light rounded">
                                 <div class="icon-circle bg-warning text-white me-2">
@@ -275,7 +291,6 @@
                             </div>
                         </div>
                         
-                        {{-- Submitted --}}
                         <div class="col-6">
                             <div class="d-flex align-items-center p-2 bg-light rounded">
                                 <div class="icon-circle bg-primary text-white me-2">
@@ -298,10 +313,10 @@
                 </div>
                 <div class="card-body">
                     <div class="small">
-                        <p class="mb-1"><strong>Laravel Version:</strong> {{ app()->version() }}</p>
-                        <p class="mb-1"><strong>PHP Version:</strong> {{ phpversion() }}</p>
-                        <p class="mb-1"><strong>Server Time:</strong> {{ now()->setTimezone('Asia/Jakarta')->format('d M Y H:i:s') }} WIB</p>
-                        <p class="mb-0"><strong>Database:</strong> {{ config('database.default') }}</p>
+                        <p class="mb-1"><strong>Laravel:</strong> {{ app()->version() }}</p>
+                        <p class="mb-1"><strong>PHP:</strong> {{ phpversion() }}</p>
+                        <p class="mb-1"><strong>Time:</strong> {{ now()->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB</p>
+                        <p class="mb-0"><strong>DB:</strong> {{ config('database.default') }}</p>
                     </div>
                 </div>
             </div>
@@ -311,10 +326,12 @@
 
 @push('styles')
 <style>
+/* ✅ Base Styles */
 .bg-gradient-primary {
     background: linear-gradient(87deg, #667eea 0%, #764ba2 100%);
 }
 
+/* ✅ Border Left Colors */
 .border-left-primary {
     border-left: 0.25rem solid #4e73df !important;
 }
@@ -331,13 +348,14 @@
     border-left: 0.25rem solid #36b9cc !important;
 }
 
+/* ✅ Card Hover Effects */
 .card:hover {
     transform: translateY(-2px);
     transition: all 0.3s ease;
     box-shadow: 0 4px 20px rgba(0,0,0,0.1);
 }
 
-/* ✅ UNIFIED: Icon circle untuk status summary */
+/* ✅ Icon Circle */
 .icon-circle {
     width: 32px;
     height: 32px;
@@ -346,31 +364,290 @@
     align-items: center;
     justify-content: center;
     font-size: 14px;
+    flex-shrink: 0; /* Prevent shrinking */
 }
 
-/* ✅ UNIFIED: Badge konsisten dengan StatusHelper */
+/* ✅ Badge Styling */
 .badge {
     font-size: 0.75em;
     padding: 0.5em 0.75em;
+    font-weight: 500;
 }
 
 .badge i {
     margin-right: 0.25rem;
 }
 
-/* ✅ UNIFIED: Table hover effect yang konsisten */
+/* ✅ Table Improvements */
 .table-hover tbody tr:hover {
     background-color: rgba(0,0,0,.075);
 }
 
-/* ✅ UNIFIED: Status badge sizing */
-.badge.bg-success,
-.badge.bg-danger,
-.badge.bg-warning,
-.badge.bg-info,
-.badge.bg-primary,
-.badge.bg-secondary {
-    font-weight: 500;
+.table-responsive {
+    border-radius: 0.375rem;
+}
+
+/* ✅ RESPONSIVE FIXES */
+
+/* Desktop (Large screens) */
+@media (min-width: 1200px) {
+    .main-content {
+        margin-left: 250px;
+        padding: 1.5rem;
+    }
+}
+
+/* Tablet (Medium screens) */
+@media (max-width: 1199.98px) and (min-width: 768px) {
+    .main-content {
+        margin-left: 0;
+        padding: 1rem;
+    }
+    
+    /* Stack cards vertically on tablet */
+    .col-xl-3 {
+        margin-bottom: 1rem;
+    }
+    
+    /* Adjust stats cards */
+    .card-body .row.no-gutters {
+        align-items: center;
+    }
+    
+    .card-body .h5 {
+        font-size: 1.1rem;
+    }
+}
+
+/* Mobile (Small screens) */
+@media (max-width: 767.98px) {
+    .main-content {
+        margin-left: 0;
+        padding: 0.75rem;
+    }
+    
+    /* Header adjustments */
+    .card bg-gradient-primary .card-body {
+        padding: 1rem;
+    }
+    
+    .card bg-gradient-primary h4 {
+        font-size: 1.25rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .card bg-gradient-primary p {
+        font-size: 0.9rem;
+        margin-bottom: 1rem;
+    }
+    
+    /* Stack header content */
+    .col-md-4.text-end {
+        text-align: left !important;
+        margin-top: 1rem;
+    }
+    
+    /* Stats cards improvements */
+    .col-xl-3.col-md-6 {
+        margin-bottom: 1rem;
+    }
+    
+    .card.border-left-primary,
+    .card.border-left-success,
+    .card.border-left-warning,
+    .card.border-left-info {
+        border-left: 0.2rem solid;
+        border-top: 0.2rem solid;
+    }
+    
+    .card-body .py-2 {
+        padding: 1rem !important;
+    }
+    
+    .text-xs {
+        font-size: 0.7rem !important;
+    }
+    
+    .h5.mb-0 {
+        font-size: 1.1rem;
+    }
+    
+    /* Icon adjustments */
+    .bi.fs-2 {
+        font-size: 1.5rem !important;
+    }
+    
+    /* Table responsive */
+    .table-responsive {
+        font-size: 0.85rem;
+    }
+    
+    .table th,
+    .table td {
+        padding: 0.5rem 0.25rem;
+        vertical-align: middle;
+    }
+    
+    /* Hide some table columns on mobile */
+    .table th:nth-child(3),
+    .table td:nth-child(3),
+    .table th:nth-child(5),
+    .table td:nth-child(5) {
+        display: none;
+    }
+    
+    /* Adjust buttons */
+    .btn-sm {
+        padding: 0.25rem 0.5rem;
+        font-size: 0.75rem;
+    }
+    
+    .btn-lg {
+        padding: 0.5rem 1rem;
+        font-size: 1rem;
+    }
+    
+    /* Status summary grid */
+    .row.g-2 > .col-6 {
+        margin-bottom: 0.5rem;
+    }
+    
+    .icon-circle {
+        width: 28px;
+        height: 28px;
+        font-size: 12px;
+    }
+    
+    .h6.mb-0 {
+        font-size: 0.9rem;
+    }
+    
+    /* Quick actions */
+    .d-grid.gap-2 .btn {
+        padding: 0.6rem;
+        font-size: 0.9rem;
+    }
+    
+    /* System info */
+    .card-body .small {
+        font-size: 0.8rem;
+    }
+    
+    /* Badge adjustments */
+    .badge {
+        font-size: 0.65em;
+        padding: 0.35em 0.55em;
+    }
+}
+
+/* Extra small screens */
+@media (max-width: 575.98px) {
+    .main-content {
+        padding: 0.5rem;
+    }
+    
+    /* Further reduce spacing */
+    .mb-4 {
+        margin-bottom: 1rem !important;
+    }
+    
+    .py-3 {
+        padding-top: 0.75rem !important;
+        padding-bottom: 0.75rem !important;
+    }
+    
+    /* Stack all columns */
+    .col-xl-8,
+    .col-xl-4 {
+        margin-bottom: 1rem;
+    }
+    
+    /* Reduce card padding */
+    .card-body {
+        padding: 0.75rem;
+    }
+    
+    .card-header {
+        padding: 0.5rem 0.75rem;
+    }
+    
+    /* Header title */
+    .h6.m-0 {
+        font-size: 0.9rem;
+    }
+    
+    /* Today's stats */
+    .border-end {
+        border-right: none !important;
+        border-bottom: 1px solid #dee2e6 !important;
+        padding-bottom: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+    
+    .row.text-center > .col-6 {
+        margin-bottom: 0.5rem;
+    }
+    
+    /* No gutters fix */
+    .no-gutters {
+        margin: 0;
+    }
+    
+    .no-gutters > .col,
+    .no-gutters > [class*="col-"] {
+        padding: 0;
+    }
+}
+
+/* ✅ Print Styles */
+@media print {
+    .sidebar,
+    .btn,
+    .pagination {
+        display: none !important;
+    }
+    
+    .main-content {
+        margin-left: 0 !important;
+    }
+    
+    .card {
+        border: 1px solid #ddd !important;
+        box-shadow: none !important;
+    }
+}
+
+/* ✅ Focus and Accessibility */
+.btn:focus,
+.form-control:focus,
+.form-select:focus {
+    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
+    border-color: #667eea;
+}
+
+/* ✅ Loading States */
+.card.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+.card.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 20px;
+    height: 20px;
+    margin: -10px 0 0 -10px;
+    border: 2px solid #f3f3f3;
+    border-top: 2px solid #667eea;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
 }
 </style>
 @endpush

@@ -3,70 +3,121 @@
         <i class="bi bi-shield-check fs-4 me-2"></i>
         <span class="fs-4">SiHaki Admin</span>
     </a>
-    
-    <hr>
-    
-    <ul class="nav nav-pills flex-column mb-auto">
-        <!-- Dashboard -->
+</div>
+
+<nav class="sidebar-nav p-2">
+    <ul class="nav flex-column">
         <li class="nav-item">
-            <a href="{{ route('admin.dashboard') }}" class="nav-link text-white {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
+            <a href="{{ route('admin.dashboard') }}" 
+               class="nav-link text-white {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                 <i class="bi bi-speedometer2 me-2"></i>
-                Dashboard
+                <span class="sidebar-text">Dashboard</span>
             </a>
         </li>
         
-        <!-- Kelola Users -->
         <li class="nav-item">
-            <a href="{{ route('admin.users.index') }}" class="nav-link text-white {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                <i class="bi bi-people me-2"></i>
-                Kelola Users
-            </a>
-        </li>
-        
-        <!-- Review Submissions -->
-        <li class="nav-item">
-            <a href="{{ route('admin.submissions.index') }}" class="nav-link text-white {{ request()->routeIs('admin.submissions.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.submissions.index') }}" 
+               class="nav-link text-white {{ request()->routeIs('admin.submissions.*') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-check me-2"></i>
-                Review Submissions
+                <span class="sidebar-text">Review Submissions</span>
             </a>
         </li>
         
-        <!-- ✅ NEW: Kirim Sertifikat (menggantikan Kelola Departemen) -->
         <li class="nav-item">
-            <a href="{{ route('admin.certificates.index') }}" class="nav-link text-white {{ request()->routeIs('admin.certificates.*') ? 'active' : '' }}">
+            <a href="{{ route('admin.users.index') }}" 
+               class="nav-link text-white {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <i class="bi bi-people me-2"></i>
+                <span class="sidebar-text">Kelola Users</span>
+            </a>
+        </li>
+        
+        <li class="nav-item">
+            <a href="{{ route('admin.certificates.index') }}" 
+               class="nav-link text-white {{ request()->routeIs('admin.certificates.*') ? 'active' : '' }}">
                 <i class="bi bi-award me-2"></i>
-                Kirim Sertifikat
+                <span class="sidebar-text">Kirim Sertifikat</span>
+            </a>
+        </li>
+
+        <li class="nav-item">
+            <a href="{{ route('admin.review-history.index') }}" 
+                class="nav-link text-white {{ request()->routeIs('admin.review-history.*') ? 'active' : '' }}">
+                <i class="bi bi-clock-history me-2"></i>
+                <span class="sidebar-text">Riwayat Peninjauan</span>
             </a>
         </li>
         
-        <!-- ✅ UPDATED: Riwayat Peninjauan (menggantikan Laporan) -->
+        <li class="nav-item mt-3">
+            <small class="text-white-50 text-uppercase px-3 sidebar-text">Account</small>
+        </li>
+        
         <li class="nav-item">
-            <a href="{{ route('admin.review-history.index') }}" class="nav-link text-white {{ request()->routeIs('admin.review-history.*') ? 'active' : '' }}">
-                <i class="bi bi-clock-history me-2"></i>
-                Riwayat Peninjauan
+            <a href="#" class="nav-link text-white">
+                <i class="bi bi-person me-2"></i>
+                <span class="sidebar-text">Profile</span>
             </a>
+        </li>
+        
+        <li class="nav-item">
+            <form method="POST" action="{{ route('logout') }}" class="d-inline w-100">
+                @csrf
+                <button type="submit" class="nav-link text-white bg-transparent border-0 w-100 text-start">
+                    <i class="bi bi-box-arrow-right me-2"></i>
+                    <span class="sidebar-text">Logout</span>
+                </button>
+            </form>
         </li>
     </ul>
+</nav>
+
+<style>
+/* Sidebar specific responsive styles */
+.sidebar .nav-link {
+    padding: 0.75rem 1rem;
+    border-radius: 0.35rem;
+    margin-bottom: 0.25rem;
+    transition: all 0.3s;
+    position: relative;
+    overflow: hidden;
+    white-space: nowrap;
+}
+
+.sidebar .nav-link:hover {
+    background: rgba(255, 255, 255, 0.1);
+    transform: translateX(5px);
+}
+
+.sidebar .nav-link.active {
+    background: rgba(255, 255, 255, 0.2);
+    font-weight: 600;
+}
+
+.sidebar.collapsed .sidebar-text {
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.sidebar.collapsed .nav-link {
+    text-align: center;
+    padding: 0.75rem 0.5rem;
+}
+
+@media (max-width: 991.98px) {
+    .sidebar-text {
+        display: none;
+    }
     
-    <hr>
+    .sidebar .nav-link {
+        text-align: center;
+        padding: 0.75rem 0.5rem;
+    }
     
-    <div class="dropdown">
-        <a href="#" class="d-flex align-items-center text-white text-decoration-none dropdown-toggle" id="dropdownUser" data-bs-toggle="dropdown">
-            <i class="bi bi-person-circle me-2"></i>
-            <strong>{{ Auth::user()->nama }}</strong>
-        </a>
-        <ul class="dropdown-menu dropdown-menu-dark text-small shadow">
-            <li><a class="dropdown-item" href="#"><i class="bi bi-person me-2"></i>Profile</a></li>
-            <li><a class="dropdown-item" href="#"><i class="bi bi-gear me-2"></i>Settings</a></li>
-            <li><hr class="dropdown-divider"></li>
-            <li>
-                <form method="POST" action="{{ route('logout') }}" style="display: inline;">
-                    @csrf
-                    <button type="submit" class="dropdown-item" style="border: none; background: none; width: 100%; text-align: left;">
-                        <i class="bi bi-box-arrow-right me-2"></i>Logout
-                    </button>
-                </form>
-            </li>
-        </ul>
-    </div>
-</div>
+    .sidebar-header {
+        text-align: center;
+    }
+    
+    .sidebar-brand span {
+        display: none;
+    }
+}
+</style>

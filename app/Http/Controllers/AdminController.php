@@ -272,17 +272,21 @@ class AdminController extends Controller
     {
         // Calculate statistics
         $stats = [
-            'total' => HkiSubmission::count(),
+            'total' => HkiSubmission::whereIn('status', ['submitted', 'under_review', 'revision_needed'])->count(),
             'need_review' => HkiSubmission::where('status', 'submitted')->count(),
             'under_review' => HkiSubmission::where('status', 'under_review')->count(),
             'completed' => HkiSubmission::whereIn('status', ['approved', 'rejected'])->count(),
         ];
 
-        $query = HkiSubmission::with(['user', 'reviewer']);
+        $query = HkiSubmission::with(['user', 'reviewer'])
+            ->whereIn('status', ['submitted', 'under_review', 'revision_needed']);
 
         // Filter by status
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $allowedStatuses = ['submitted', 'under_review', 'revision_needed'];
+            if (in_array($request->status, $allowedStatuses)) {
+                $query->where('status', $request->status);
+            }
         }
 
         // Filter by type
@@ -297,10 +301,13 @@ class AdminController extends Controller
 
         // Filter by review assignment
         if ($request->filled('assignment')) {
-            if ($request->assignment === 'unassigned') {
-                $query->whereNull('reviewer_id');
-            } elseif ($request->assignment === 'my_reviews') {
-                $query->where('reviewer_id', Auth::id());
+            switch ($request->assignment) {
+                case 'unassigned':
+                    $query->where('status', 'submitted')->whereNull('reviewer_id');
+                    break;
+                case 'my_reviews':
+                    $query->where('reviewer_id', Auth::id());
+                    break;
             }
         }
 

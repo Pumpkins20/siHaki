@@ -10,13 +10,13 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 mb-2">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Kelola Submission</li>
+                    <li class="breadcrumb-item active">Review Submission</li>
                 </ol>
             </nav>
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-1 text-gray-800">Kelola Submission HKI</h1>
-                    <p class="text-muted mb-0">Review dan kelola semua pengajuan HKI</p>
+                    <h1 class="h3 mb-1 text-gray-800">Review Submission HKI</h1>
+                    <p class="text-muted mb-0">Review dan kelola submission yang sedang dalam proses</p>
                 </div>
                 <div>
                     <div class="btn-group" role="group">
@@ -40,6 +40,10 @@
                         <a href="{{ route('admin.submissions.index', ['assignment' => 'my_reviews']) }}" class="btn btn-primary">
                             <i class="bi bi-person-check"></i> Review Saya
                         </a>
+                        {{-- ✅ NEW: Add link to view all submissions (including completed) --}}
+                        <a href="{{ route('admin.review-history.index') }}" class="btn btn-outline-info">
+                            <i class="bi bi-clock-history"></i> Riwayat Review
+                        </a>
                     </div>
                 </div>
             </div>
@@ -53,8 +57,9 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Submission</div>
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Active</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total'] ?? 0 }}</div>
+                            <div class="text-xs text-muted">Submission dalam proses</div>
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-file-earmark-text fs-2 text-gray-300"></i>
@@ -70,6 +75,7 @@
                         <div class="col">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Perlu Review</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['need_review'] ?? 0 }}</div>
+                            <div class="text-xs text-muted">Belum di-assign</div>
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-clock fs-2 text-gray-300"></i>
@@ -85,6 +91,7 @@
                         <div class="col">
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Under Review</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['under_review'] ?? 0 }}</div>
+                            <div class="text-xs text-muted">Sedang direview</div>
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-eye fs-2 text-gray-300"></i>
@@ -98,8 +105,9 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Selesai</div>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Completed</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['completed'] ?? 0 }}</div>
+                            <div class="text-xs text-muted">Sudah selesai direview</div>
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-check-circle fs-2 text-gray-300"></i>
@@ -121,11 +129,10 @@
                                 <label for="status" class="form-label">Status</label>
                                 <select name="status" id="status" class="form-select">
                                     <option value="">Semua Status</option>
+                                    {{-- ✅ FIX: Only show allowed statuses --}}
                                     <option value="submitted" {{ request('status') == 'submitted' ? 'selected' : '' }}>Submitted</option>
                                     <option value="under_review" {{ request('status') == 'under_review' ? 'selected' : '' }}>Under Review</option>
                                     <option value="revision_needed" {{ request('status') == 'revision_needed' ? 'selected' : '' }}>Revision Needed</option>
-                                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
-                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
                                 </select>
                             </div>
                             <div class="col-md-2">
@@ -143,7 +150,10 @@
                                     <option value="program_komputer" {{ request('creation_type') == 'program_komputer' ? 'selected' : '' }}>Program Komputer</option>
                                     <option value="sinematografi" {{ request('creation_type') == 'sinematografi' ? 'selected' : '' }}>Sinematografi</option>
                                     <option value="buku" {{ request('creation_type') == 'buku' ? 'selected' : '' }}>Buku</option>
-                                    <option value="poster_fotografi" {{ request('creation_type') == 'poster_fotografi' ? 'selected' : '' }}>Poster/Fotografi</option>
+                                    <option value="poster" {{ request('creation_type') == 'poster' ? 'selected' : '' }}>Poster</option>
+                                    <option value="fotografi" {{ request('creation_type') == 'fotografi' ? 'selected' : '' }}>Fotografi</option>
+                                    <option value="seni_gambar" {{ request('creation_type') == 'seni_gambar' ? 'selected' : '' }}>Seni Gambar</option>
+                                    <option value="karakter_animasi" {{ request('creation_type') == 'karakter_animasi' ? 'selected' : '' }}>Karakter Animasi</option>
                                     <option value="alat_peraga" {{ request('creation_type') == 'alat_peraga' ? 'selected' : '' }}>Alat Peraga</option>
                                     <option value="basis_data" {{ request('creation_type') == 'basis_data' ? 'selected' : '' }}>Basis Data</option>
                                 </select>
