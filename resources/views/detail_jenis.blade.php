@@ -9,7 +9,7 @@
     <!-- Bootstrap CSS -->
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
-    <link href="{{ asset('landing-page/css/pencipta.css') }}" rel="stylesheet">
+    <link href="{{ asset('landing-page/css/detail_jenis.css') }}" rel="stylesheet">
     <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
@@ -37,13 +37,13 @@
                           <a class="nav-link" href="{{ route('beranda') }}">Beranda</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link active" href="#pencipta">Pencipta</a>
+                            <a class="nav-link" href="{{ route('pencipta') }}">Pencipta</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('jenis_ciptaan') }}">Jenis Ciptaan</a>
+                            <a class="nav-link active" href="#jenis">Jenis Ciptaan</a>
                         </li>
                         <li class="nav-item">
-                    <a class="nav-link" href="{{ route('panduan') }}">Panduan</a>
+                            <a class="nav-link" href="{{ route('panduan') }}">Panduan</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('login') }}">Login</a>
@@ -61,8 +61,8 @@
                 <div class="form-group">
                     <label for="searchBy">Cari Berdasarkan</label>
                     <select class="form-select" id="searchBy" name="search_by">
-                        <option value="nama_pencipta" {{ request('search_by') == 'nama_pencipta' ? 'selected' : '' }}>Nama Pencipta</option>
-                        <option value="program_studi" {{ request('search_by') == 'program_studi' ? 'selected' : '' }}>Program Studi/Jurusan</option>
+                        <option value="jenis_ciptaan" {{ request('search_by') == 'jenis_ciptaan' ? 'selected' : '' }}>Jenis Ciptaan</option>
+                        <option value="judul_ciptaan" {{ request('search_by') == 'judul_ciptaan' ? 'selected' : '' }}>Judul Ciptaan</option>
                     </select>
                 </div>
 
@@ -80,29 +80,45 @@
             </form>
         </div>
     </section>
-    <!-- Results Section -->
+ <!-- Results Section -->
     <section class="results-section">
         <div class="container">
             <!-- Result Card 1 -->
             <div class="result-card">
                 <div class="result-card-body">
                     <div class="result-header">
-                        <div class="result-avatar">
-                            NP
-                        </div>
+                       
                         <div class="result-info">
-                            <h5>Nama Pencipta</h5>
-                            <div>STMIK AMIKOM Surakarta</div>
-                            <div> Jurusan : Misalnya S1 Informatika / D3 Manajemen Informatika</div>
+                            <h5>Judul Ciptaan</h5>
+                            <div>Pencipta Utama</div>
+                            <div>Tanggal Publikasi</div>
                         </div>
                         <div class="result-action ms-auto">
-                            <a href="{{ route('detail_pencipta') }}" class="btn btn-outline-primary">Lihat Daftar HKI ></a>
+                            <a href="{{ route('detail_ciptaan') }}" class="btn btn-outline-primary">Lihat Detail HKI ></a>
                         </div>
                     </div>
                 </div>
             </div>
 
-         
+          <section class="results-section">
+        <div class="container">
+            <!-- Result Card 1 -->
+            <div class="result-card">
+                <div class="result-card-body">
+                    <div class="result-header">
+                       
+                        <div class="result-info">
+                            <h5>Judul Ciptaan</h5>
+                            <div>Pencipta Utama</div>
+                            <div>Tanggal Publikasi</div>
+                        </div>
+                        <div class="result-action ms-auto">
+                            <a href="{{ route('detail_ciptaan') }}" class="btn btn-outline-primary">Lihat Detail HKI ></a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
 
             <!-- Pagination -->
             <div class="pagination-wrapper">
@@ -129,6 +145,8 @@
                     </ul>
                 </nav>
             </div>
+        </div>
+    </section>
         </div>
     </section>
 

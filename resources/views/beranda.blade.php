@@ -1,317 +1,244 @@
 <!DOCTYPE html>
 <html lang="id">
-
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>SiHaki | Home</title>
-    <meta name="description" content="Sistem Informasi Hak Kekayaan Intelektual">
-    <meta name="keywords" content="HKI, STMIK AMIKOM, Surakarta">
-
-    <!-- Favicons -->
-    <link href="{{ asset('landing-page/img/favicon.png') }}" rel="icon">
-    <link href="{{ asset('landing-page/img/apple-touch-icon.png') }}" rel="apple-touch-icon">
-
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com" rel="preconnect">
-    <link href="https://fonts.gstatic.com" rel="preconnect" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&family=Poppins:wght@300;400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap" rel="stylesheet">
-
-    <!-- CSS Files -->
-    <link href="{{ asset('landing-page/vendor/bootstrap/css/bootstrap.min.css') }}" rel="stylesheet">
-    <link href="{{ asset('landing-page/vendor/bootstrap-icons/bootstrap-icons.css') }}" rel="stylesheet">
-    <link href="{{ asset('landing-page/vendor/aos/aos.css') }}" rel="stylesheet">
+    <title>SiHaki | Sistem Informasi Hak Kekayaan Intelektual</title>
+    <meta name="description" content="Sistem Informasi Hak Kekayaan Intelektual STMIK AMIKOM Surakarta">
+    
+    <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
     <link href="{{ asset('landing-page/css/main.css') }}" rel="stylesheet">
-
-    <!-- Chart.js -->
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+       
+    </style>
 </head>
 
-<body class="index-page">
-
+<body>
     <!-- Header -->
-    <header id="header" class="header d-flex align-items-center sticky-top">
-        <div class="container position-relative d-flex align-items-center">
-            
-            <a href="{{ url('/') }}" class="logo d-flex align-items-center me-auto">
-                <img src="{{ asset('landing-page/img/logo-amikom.png') }}" alt="Logo AMIKOM" style="height: 40px;">
-            </a>
-
-            <nav id="navmenu" class="navmenu">
-                <ul>
-                    <li><a href="#hero" class="active nav-link">Home</a></li>
-                    <li><a href="{{ route('pencipta') }}">Pencipta</a></li>
-                    <li><a href="#services">Jenis Ciptaan</a></li>
-                    <li><a href="#portfolio">Panduan</a></li>
-                    <li><a href="#team">Team</a></li>
-                    <li class="dropdown">
-                        <a href="#"><span>Pengajuan HKI</span> <i class="bi bi-chevron-down toggle-dropdown"></i></a>
-                        <ul>
-                            <li><a href="#">Informasi Pengajuan</a></li>
-                            <li><a href="#">Status Pengajuan</a></li>
-                            <li><a href="#">Riwayat Pengajuan</a></li>
-                        </ul>
-                    </li>
-                    <li><a href="#contact">Contact</a></li>
-                </ul>
-                <i class="mobile-nav-toggle d-xl-none bi bi-list"></i>
-            </nav>
-
-        </div>
+    <header class="header">
+        <nav class="navbar navbar-expand-lg">
+            <div class="container">
+                <a class="navbar-brand" href="#">
+                    <img src="{{ asset('landing-page/img/logo-amikom.png') }}" alt="Logo AMIKOM" style="height: 40px;">
+</a>
+                
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active"  href="#home">Beranda</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('pencipta') }}">Pencipta</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('jenis_ciptaan') }}">Jenis Ciptaan</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('panduan') }}">Panduan</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{{ route('login') }}">Login</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
     </header>
 
-    <main class="main">
-
-        <!-- Hero Section -->
-        <section id="hero" class="hero section">
-            <div class="container">
-                <div class="row gy-4">
-                    <div class="col-lg-7 order-2 order-lg-1 d-flex flex-column justify-content-center">
-                        <h1>Ajukan HKI Sekarang</h1>
-                        <p>Punya karya ilmiah, desain, atau software? Daftarkan HKI-nya dan dapatkan perlindungan serta pengakuan atas kreativitasmu!</p>
-                        <div class="d-flex">
-                            <a href="#about" class="btn-get-started">Ajukan Sekarang</a>
-                            <a href="#" class="btn-watch-video d-flex align-items-center">
-                                <i class="bi bi-download"></i>
-                                <span>Download Panduan</span>
-                            </a>
-                        </div>
-                    </div>
-                    <div class="col-lg-5 order-1 order-lg-2 hero-img">
-                        <img src="{{ asset('landing-page/img/hero-img.png') }}" class="img-fluid" alt="Hero Image">
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- About Section -->
-        <section id="about" class="about section">
-            <div class="container" data-aos="fade-up">
-                <div class="section-title">
-                    <h2>Statistik Dosen</h2>
-                    <p>Data jabatan akademik dosen di Indonesia</p>
-                </div>
-                
-                <div class="row gx-5 align-items-center">
-                    <!-- Pie Chart -->
-                    <div class="col-lg-6 d-flex justify-content-center">
-                        <canvas id="academicRankChart" style="max-width: 100%; height: 300px;"></canvas>
-                    </div>
-
-                    <!-- Legend -->
-                    <div class="col-lg-6">
-                        <div class="row g-3">
-                            <div class="col-6">
-                                <div class="p-3 border rounded bg-light text-dark">
-                                    <strong>Lektor:</strong> 114,105
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 border rounded bg-light text-dark">
-                                    <strong>Lektor Kepala:</strong> 30,714
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 border rounded bg-light text-dark">
-                                    <strong>Asisten Ahli:</strong> 72,123
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 border rounded bg-light text-dark">
-                                    <strong>Profesor:</strong> 10,722
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 border rounded bg-light text-dark">
-                                    <strong>Unknown:</strong> 78,880
-                                </div>
-                            </div>
-                            <div class="col-6">
-                                <div class="p-3 border rounded bg-light text-dark">
-                                    <strong>Tenaga Pengajar:</strong> 0
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-        <!-- Daftar Ciptaan Section -->
-        <section id="ciptaan" class="services section">
-            <div class="container section-title" data-aos="fade-up">
-                <h2>Daftar Ciptaan</h2>
-                <p>Pilih kriteria pencarian dan masukkan kata kunci</p>
-            </div>
-
-            <div class="container">
-                <div class="row gy-4 justify-content-center" data-aos="fade-up">
-                    <div class="col-md-3">
-                        <label for="filter1" class="form-label">Filter Berdasarkan</label>
-                        <select id="filter1" class="form-select" onchange="updateFilterOptions()">
-                            <option value="">-- Pilih Kategori --</option>
-                            <option value="nama">Nama</option>
-                            <option value="jenis">Jenis Pengajuan</option>
-                            <option value="tahun">Tahun</option>
-                            <option value="jurusan">Jurusan</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-3">
-                        <label for="filter2" class="form-label">Opsi</label>
-                        <select id="filter2" class="form-select">
-                            <option value="">-- Pilih Opsi --</option>
-                        </select>
-                    </div>
-
-                    <div class="col-md-4">
-                        <label for="searchInput" class="form-label">Cari</label>
-                        <input type="text" class="form-control" id="searchInput" placeholder="Masukkan kata kunci">
-                    </div>
-
-                    <div class="col-md-2 d-flex align-items-end">
-                        <button class="btn btn-primary w-100" onclick="performSearch()">Cari</button>
-                    </div>
-                </div>
-            </div>
-        </section>
-
-    </main>
-
-    <!-- Footer -->
-    <footer id="footer" class="footer">
-        <div class="footer-top">
-            <div class="container">
-                <div class="row gy-3">
-                    <!-- Kontak -->
-                    <div class="col-lg-8 col-md-6 footer-about">
-                        <a href="#" class="logo d-flex align-items-center mb-3">
-                            <img src="{{ asset('landing-page/img/logo-footer.png') }}" alt="Logo" class="img-fluid" style="max-height: 70px;">
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8">
+                    <div class="hero-content">
+                        <h1>SiHaki</h1>
+                        <h2>STMIK AMIKOM Surakarta</h2>
+                        <p class="lead">SiHAKI (Sistem Informasi Hak Kekayaan Intelektual), menghadirkan akses terhadap data dan pengelolaan HKI di lingkungan STMIK Amikom Surakarta</p>
+                        <a href="#search" class="btn-primary-custom">
+                            <i class="bi bi-search me-2"></i>
+                            Mulai Pencarian
                         </a>
-                        <div class="footer-contact">
-                            <p class="mb-1">Alamat: Jl. Veteran, Notosuman, Singopuran, Kec. Kartasura,</p>
-                            <p class="mb-1">Kabupaten Sukoharjo, Provinsi Jawa Tengah 57164</p>
-                            <p class="mb-1"><strong>Telp/Fax:</strong> (0271) 7851507</p>
-                            <p class="mb-1"><strong>Email:</strong> amikomsolo@amikomsolo.ac.id</p>
-                            <p class="mb-1"><strong>WhatsApp:</strong> 081329303450</p>
-                        </div>
-                    </div>
-
-                    <!-- Layanan -->
-                    <div class="col-lg-4 col-md-6 text-end">
-                        <h5 class="mb-3"><strong>Layanan</strong></h5>
-                        <ul class="list-unstyled">
-                            <li class="mb-2"><a href="#" class="text-white text-decoration-none">Pencipta</a></li>
-                            <li class="mb-2"><a href="#" class="text-white text-decoration-none">Jenis Ciptaan</a></li>
-                            <li class="mb-2"><a href="#" class="text-white text-decoration-none">Ajukan HKI</a></li>
-                            <li><a href="#" class="text-white text-decoration-none">Panduan</a></li>
-                        </ul>
                     </div>
                 </div>
             </div>
         </div>
+    </section>
 
-        <!-- Copyright -->
-        <div class="copyright text-white py-2">
-            <div class="container d-flex flex-column flex-lg-row justify-content-between align-items-center">
-                <div>
-                    © Copyright <strong><span>STMIK AMIKOM Surakarta</span></strong>. All Rights Reserved
+    <!-- Search Section -->
+    <section class="search-section" id="search">
+        <div class="container">
+            <div class="search-container">
+                <div class="search-title">
+                    <h2>Daftar Ciptaan</h2>
+                    <p>Pilih kriteria pencarian dan masukkan kata kunci untuk menemukan karya yang Anda cari</p>
+                </div>
+                
+                <form class="search-form" method="GET" action="{{ route('beranda') }}">
+                    <div class="form-group">
+                        <label for="authorFilter">Filter Pencarian</label>
+                        <select id="authorFilter" name="filter" class="form-select">
+                            <option value="">-- Pilih Filer Pencarian --</option>
+                            <!-- jika dicari berdasarkan nama pencipta atau jurusan ntar dialihkan ke menu pencipta.blade dan data akan muncul disana
+                            sedangkan jika dicari berdasarkan judul atau tipe ciptaan akan dialihkan ke menu jenis_ciptaa.blade dan data akan muncul -->
+
+                            <option value="nama" {{ request('filter') == 'nama' ? 'selected' : '' }}>Berdasarkan Nama Pencipta</option>
+                            <option value="institusi" {{ request('filter') == 'institusi' ? 'selected' : '' }}>Berdasarkan Jurusan</option>
+                            <option value="judul" {{ request('filter') == 'judul' ? 'selected' : '' }}>Berdasarkan Judul Ciptaan</option>
+                            <option value="tipe" {{ request('filter') == 'tipe' ? 'selected' : '' }}>Berdasarkan Tipe Ciptaan</option>
+                        </select>
+                    </div>
+                    
+                    <div class="form-group" style="flex: 2;">
+                        <label for="searchInput">Search</label>
+                        <input type="text" class="form-control" id="searchInput" name="q" value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
+                    </div>
+                    
+                    <button class="search-btn" type="submit">
+                        <i class="bi bi-search me-2"></i>
+                        Cari
+                    </button>
+                </form>
+
+                @if(isset($ciptaans) && $ciptaans->count())
+                    <div class="mt-4">
+                        <table class="table table-bordered table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Judul</th>
+                                    <th>Pencipta</th>
+                                    <th>Jurusan</th>
+                                    <th>Tipe</th>
+                                    <th>Tahun</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                @foreach($ciptaans as $ciptaan)
+                                    <tr>
+                                        <td>
+                                            @if(request('filter') == 'judul' || request('filter') == 'tipe')
+                                                <a href="{{ route('ciptaan.show', $ciptaan->id) }}">{{ $ciptaan->judul }}</a>
+                                            @else
+                                                {{ $ciptaan->judul }}
+                                            @endif
+                                        </td>
+                                        <td>
+                                            @if(request('filter') == 'nama' || request('filter') == 'institusi')
+                                                <a href="{{ route('pencipta.show', $ciptaan->pencipta_id) }}">{{ $ciptaan->pencipta }}</a>
+                                            @else
+                                                {{ $ciptaan->pencipta }}
+                                            @endif
+                                        </td>
+                                        <td>{{ $ciptaan->jurusan }}</td>
+                                        <td>{{ $ciptaan->tipe }}</td>
+                                        <td>{{ $ciptaan->tahun }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                        {{ $ciptaans->withQueryString()->links() }}
+                    </div>
+                @elseif(request()->has('q'))
+                    <div class="alert alert-warning mt-4">Data tidak ditemukan.</div>
+                @endif
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-info">
+                    <div class="footer-logo">
+                        <img src="{{ asset('landing-page/img/logo-footer.png') }}" alt="Logo" class="img-fluid" style="max-height: 70px;">
+ </div>
+                    <div class="footer-contact">
+                        <p><strong>Alamat:</strong> Jl. Veteran, Notosuman, Singopuran, Kec. Kartasura,</p>
+                        <p>Kabupaten Sukoharjo, Provinsi Jawa Tengah 57164</p>
+                        <p><strong>Telp/Fax:</strong> (0271) 7851507</p>
+                        <p><strong>Email:</strong> amikomsolo@amikomsolo.ac.id</p>
+                        <p><strong>WhatsApp:</strong> 081329303450</p>
+                    </div>
+                </div>
+                
+             
+            </div>
+            
+            <div class="footer-bottom">
+                <div class="copyright">
+                    © Copyright <strong>STMIK AMIKOM Surakarta</strong>. All Rights Reserved
                 </div>
                 <div class="social-links">
-                    <a href="#" class="me-3 text-white"><i class="bi bi-facebook"></i></a>
-                    <a href="#" class="text-white"><i class="bi bi-instagram"></i></a>
+                    <a href="#"><i class="bi bi-facebook"></i></a>
+                    <a href="#"><i class="bi bi-instagram"></i></a>
                 </div>
             </div>
         </div>
     </footer>
 
-    <!-- Scroll Top -->
-    <a href="#" id="scroll-top" class="scroll-top d-flex align-items-center justify-content-center">
-        <i class="bi bi-arrow-up-short"></i>
-    </a>
-
-    <!-- Preloader -->
-    <div id="preloader"></div>
-
-    <!-- JavaScript Files -->
-    <script src="{{ asset('landing-page/vendor/bootstrap/js/bootstrap.bundle.min.js') }}"></script>
-    <script src="{{ asset('landing-page/vendor/aos/aos.js') }}"></script>
-    <script src="{{ asset('landing-page/js/main.js') }}"></script>
-
-    <!-- Custom Scripts -->
+    <!-- Bootstrap JS -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+    
     <script>
-        // Chart JS Script
-        const ctx = document.getElementById('academicRankChart').getContext('2d');
-        new Chart(ctx, {
-            type: 'doughnut',
-            data: {
-                labels: ['Lektor', 'Lektor Kepala', 'Asisten Ahli', 'Profesor', 'Unknown', 'Tenaga Pengajar'],
-                datasets: [{
-                    data: [114105, 30714, 72123, 10722, 78880, 0],
-                    backgroundColor: ['#3ac9d6', '#c89ce4', '#5da8ef', '#ff8c8c', '#999999', '#ffcc66'],
-                    borderWidth: 1
-                }]
-            },
-            options: {
-                responsive: true,
-                plugins: {
-                    legend: {
-                        display: false
-                    }
+        // Smooth scrolling for anchor links
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function (e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    target.scrollIntoView({
+                        behavior: 'smooth',
+                        block: 'start'
+                    });
                 }
+            });
+        });
+
+        // Search functionality
+        function performSearch() {
+            const authorFilter = document.getElementById('authorFilter').value;
+            const searchInput = document.getElementById('searchInput').value;
+            
+            if (!searchInput.trim()) {
+                alert('Silakan masukkan kata kunci pencarian');
+                return;
+            }
+            
+            // Simulate search functionality
+            console.log('Search Parameters:', {
+                author: authorFilter,
+                keyword: searchInput
+            });
+            
+            // You can implement actual search logic here
+            alert(`Mencari: "${searchInput}" dengan filter: ${authorFilter || 'Semua'}`);
+        }
+
+        // Enter key search
+        document.getElementById('searchInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performSearch();
             }
         });
 
-        // Dynamic Filter Options
-        function updateFilterOptions() {
-            const filter1 = document.getElementById("filter1").value;
-            const filter2 = document.getElementById("filter2");
-
-            filter2.innerHTML = "";
-
-            let options = [];
-
-            switch(filter1) {
-                case "nama":
-                    options = ["A s/d Z", "Z s/d A"];
-                    break;
-                case "jenis":
-                    options = ["Program Komputer", "Sinematografi", "Basis Data"];
-                    break;
-                case "tahun":
-                    options = ["2023", "2024", "2025"];
-                    break;
-                case "jurusan":
-                    options = ["S1 Informatika", "D3 Manajemen Informatika"];
-                    break;
+        // Navbar scroll effect
+        window.addEventListener('scroll', function() {
+            const header = document.querySelector('.header');
+            if (window.scrollY > 100) {
+                header.style.boxShadow = '0 4px 20px rgba(0,0,0,0.15)';
+            } else {
+                header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
             }
-
-            filter2.appendChild(new Option("-- Pilih Opsi --", ""));
-            options.forEach(opt => {
-                filter2.appendChild(new Option(opt, opt));
-            });
-        }
-
-        // Search Function
-        function performSearch() {
-            const filter1 = document.getElementById("filter1").value;
-            const filter2 = document.getElementById("filter2").value;
-            const searchInput = document.getElementById("searchInput").value;
-
-            // Implement search logic here
-            console.log("Search Parameters:", {
-                category: filter1,
-                option: filter2,
-                keyword: searchInput
-            });
-
-            // You can add AJAX call here to search data
-        }
-
-        // Initialize AOS
-        AOS.init();
+        });
     </script>
-
 </body>
-
 </html>

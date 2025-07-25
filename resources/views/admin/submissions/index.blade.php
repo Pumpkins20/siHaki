@@ -37,9 +37,7 @@
                         </ul>
                     </div>
                     <div class="btn-group" role="group">
-                        <a href="{{ route('admin.submissions.index', ['assignment' => 'my_reviews']) }}" class="btn btn-primary">
-                            <i class="bi bi-person-check"></i> Review Saya
-                        </a>
+                       
                         {{-- ✅ NEW: Add link to view all submissions (including completed) --}}
                         <a href="{{ route('admin.review-history.index') }}" class="btn btn-outline-info">
                             <i class="bi bi-clock-history"></i> Riwayat Review

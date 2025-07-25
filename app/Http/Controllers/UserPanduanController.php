@@ -153,7 +153,7 @@ class UserPanduanController extends Controller
                 'pages' => 15,
                 'updated' => '2024-01-15'
             ],
-            [
+           /* [
                 'title' => 'Template Dokumen HKI',
                 'description' => 'Template dan contoh dokumen yang diperlukan untuk pengajuan',
                 'file' => 'template-dokumen-hki.pdf',
@@ -168,7 +168,7 @@ class UserPanduanController extends Controller
                 'size' => '1.2 MB',
                 'pages' => 8,
                 'updated' => '2024-01-20'
-            ]
+            ] */
         ];
 
         return view('user.panduan.index', compact(

@@ -243,7 +243,7 @@
                 </div>
             </div>
 
-            <!-- Department Info -->
+            <!-- Department Info 
             <div class="card shadow">
                 <div class="card-header py-3">
                     <h6 class="m-0 fw-bold text-primary">
@@ -270,7 +270,7 @@
                         </div>
                     @endif
                 </div>
-            </div>
+            </div>-->
         </div>
     </div>
 </div>
