@@ -54,11 +54,13 @@ class SubmissionController extends Controller
                 'title' => 'required|string|max:255',
                 'creation_type' => 'required|in:program_komputer,sinematografi,buku,poster,fotografi,seni_gambar,karakter_animasi,alat_peraga,basis_data',
                 'description' => 'required|string|max:1000',
+                'alamat' => 'required|string|max:500',           // ✅ NEW
+                'kode_pos' => 'required|string|size:5|regex:/^[0-9]+$/', // ✅ NEW
                 'first_publication_date' => 'required|date|before_or_equal:today',
                 'member_count' => 'required|integer|min:2|max:5',
-                'members' => 'required|array',
+                'members' => 'required|array|min:2|max:5',
                 'members.*.name' => 'required|string|max:255',
-                'members.*.whatsapp' => 'required|regex:/^[0-9]{10,13}$/',
+                'members.*.whatsapp' => 'required|string|regex:/^[0-9]{10,13}$/',
                 'members.*.email' => 'required|email',
                 'members.*.ktp' => 'required|file|mimes:jpg,jpeg|max:2048',
             ];
@@ -85,6 +87,11 @@ class SubmissionController extends Controller
                 'members.*.ktp.required' => 'File KTP anggota harus diupload',
                 'members.*.ktp.mimes' => 'File KTP harus dalam format JPG/JPEG',
                 'members.*.ktp.max' => 'Ukuran file KTP maksimal 2MB',
+                'alamat.required' => 'Alamat harus diisi',
+                'alamat.max' => 'Alamat maksimal 500 karakter',
+                'kode_pos.required' => 'Kode pos harus diisi',
+                'kode_pos.size' => 'Kode pos harus 5 digit',
+                'kode_pos.regex' => 'Kode pos hanya boleh angka',
             ];
 
             $request->validate($rules, $customMessages);
@@ -103,6 +110,8 @@ class SubmissionController extends Controller
                 'type' => 'copyright',
                 'creation_type' => $request->creation_type,
                 'description' => $request->description,
+                'alamat' => $request->alamat,                     // ✅ NEW
+                'kode_pos' => $request->kode_pos,                 // ✅ NEW
                 'first_publication_date' => $request->first_publication_date,
                 'member_count' => $request->member_count,
                 'status' => 'submitted',
@@ -278,7 +287,8 @@ class SubmissionController extends Controller
         $rules = [
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:1000',
-            'first_publication_date' => 'required|date|before_or_equal:today',
+            'alamat' => 'required|string|max:500',           // ✅ NEW
+            'kode_pos' => 'required|string|size:5|regex:/^[0-9]+$/', // ✅ NEW
         ];
 
         // ✅ Dynamic validation based on existing creation_type (tidak bisa diubah)
@@ -291,6 +301,9 @@ class SubmissionController extends Controller
             'first_publication_date.required' => 'Tanggal pertama kali diumumkan/digunakan/dipublikasikan harus diisi',
             'first_publication_date.date' => 'Format tanggal tidak valid',
             'first_publication_date.before_or_equal' => 'Tanggal tidak boleh lebih dari hari ini',
+            'alamat.required' => 'Alamat harus diisi',
+            'kode_pos.required' => 'Kode pos harus diisi',
+            'kode_pos.size' => 'Kode pos harus 5 digit',
         ];
 
         $request->validate($rules, $customMessages);
@@ -305,23 +318,60 @@ class SubmissionController extends Controller
             $submission->update([
                 'title' => $request->title,
                 'description' => $request->description,
-                'first_publication_date' => $request->first_publication_date,
-                'additional_data' => $this->getAdditionalDataForUpdate($request, $submission->creation_type),
+                'alamat' => $request->alamat,                 // ✅ NEW
+                'kode_pos' => $request->kode_pos,             // ✅ NEW
                 'status' => $request->has('save_as_draft') ? 'draft' : 'submitted',
                 'submission_date' => $request->has('save_as_draft') ? null : now(),
             ]);
 
-            // ✅ FIX: Handle file uploads using submission's creation_type
-            $this->handleFileUploadsForUpdate($request, $submission);
+            // Update members data including KTP if provided
+            if ($request->has('members')) {
+                foreach ($request->members as $index => $memberData) {
+                    $member = SubmissionMember::find($memberData['id']);
+                    
+                    if ($member && $member->submission_id === $submission->id) {
+                        // Update member basic data
+                        $member->update([
+                            'name' => $memberData['name'],
+                            'whatsapp' => $memberData['whatsapp'],
+                            'email' => $memberData['email'],
+                        ]);
+
+                        // ✅ NEW: Update KTP if new file is uploaded
+                        if (isset($memberData['ktp']) && $memberData['ktp'] instanceof \Illuminate\Http\UploadedFile) {
+                            // Delete old KTP file
+                            if ($member->ktp) {
+                                Storage::disk('public')->delete($member->ktp);
+                            }
+
+                            // Upload new KTP
+                            $ktpFile = $memberData['ktp'];
+                            $ktpFileName = $submission->id . '/ktp_' . ($index + 1) . '_' . time() . '.' . $ktpFile->getClientOriginalExtension();
+                            $ktpPath = $ktpFile->storeAs('ktp_files', $ktpFileName, 'public');
+                            
+                            $member->update(['ktp' => $ktpPath]);
+
+                            Log::info('KTP updated for member', [
+                                'submission_id' => $submission->id,
+                                'member_id' => $member->id,
+                                'new_ktp_path' => $ktpPath
+                            ]);
+                        }
+                    }
+                }
+            }
+
+            // Handle file uploads (other documents)
+            $this->handleFileUploads($request, $submission, true); // true for update mode
 
             // Create history record
             SubmissionHistory::create([
                 'submission_id' => $submission->id,
                 'user_id' => Auth::id(),
-                'action' => $request->has('save_as_draft') ? 'Updated as Draft' : 'Updated and Resubmitted',
-                'previous_status' => $oldStatus,
-                'new_status' => $request->has('save_as_draft') ? 'draft' : 'submitted',
-                'notes' => $request->has('save_as_draft') ? 'Submission updated and saved as draft' : 'Submission updated and resubmitted for review'
+                'action' => 'Updated',
+                'previous_status' => 'revision_needed',
+                'new_status' => 'submitted',
+                'notes' => 'Submission berhasil diupdate dan diresubmit untuk review'
             ]);
 
             // Send notification jika status berubah ke submitted

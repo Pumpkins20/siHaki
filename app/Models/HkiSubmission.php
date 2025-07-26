@@ -12,18 +12,20 @@ class HkiSubmission extends Model
 
     protected $fillable = [
         'user_id',
+        'reviewer_id',
         'title',
         'type',
         'creation_type',
         'description',
+        'alamat',           // ✅ NEW
+        'kode_pos',         // ✅ NEW
         'first_publication_date',
+        'additional_data',
         'member_count',
         'status',
         'submission_date',
-        'reviewer_id',
-        'reviewed_at',
         'review_notes',
-        'additional_data',
+        'reviewed_at',
     ];
 
     protected $casts = [
@@ -191,5 +193,20 @@ class HkiSubmission extends Model
         return $this->first_publication_date ? 
                $this->first_publication_date->setTimezone('Asia/Jakarta')->format('d M Y') : 
                null;
+    }
+
+    // Add accessor for formatted address
+    public function getFormattedAddressAttribute()
+    {
+        if (!$this->alamat) {
+            return '-';
+        }
+        
+        $address = $this->alamat;
+        if ($this->kode_pos) {
+            $address .= ' ' . $this->kode_pos;
+        }
+        
+        return $address;
     }
 }

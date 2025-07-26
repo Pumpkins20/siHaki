@@ -1315,6 +1315,12 @@ class AdminController extends Controller
             'leader_name' => $leader ? $leader->name : $submission->user->nama,
             'leader_email' => $leader ? $leader->email : $submission->user->email,
             'leader_whatsapp' => $leader ? $leader->whatsapp : '',
+
+            // ✅ ADDED: Alamat data untuk surat pengalihan
+            'alamat' => $submission->alamat ?: '',
+            'kode_pos' => $submission->kode_pos ?: '',
+            'alamat_lengkap' => $this->getFormattedAlamat($submission),
+            
             'submission_date' => $submission->submission_date->format('d M Y'),
             'reviewed_at' => $submission->reviewed_at->format('d M Y'),
             'current_date' => now()->format('d M Y'),
@@ -1405,6 +1411,31 @@ class AdminController extends Controller
         $objWriter->save($filePath);
         
         return $filePath;
+    }
+
+
+    /**
+     * ✅ NEW: Helper method untuk format alamat lengkap
+     */
+    private function getFormattedAlamat(HkiSubmission $submission)
+    {
+        // Jika alamat dan kode pos ada, gabungkan
+        if ($submission->alamat && $submission->kode_pos) {
+            return $submission->alamat . ' ' . $submission->kode_pos;
+        }
+        
+        // Jika hanya alamat ada
+        if ($submission->alamat) {
+            return $submission->alamat;
+        }
+        
+        // Jika hanya kode pos ada (unlikely)
+        if ($submission->kode_pos) {
+            return 'Kode Pos: ' . $submission->kode_pos;
+        }
+        
+        // Fallback jika tidak ada data alamat
+        return '_____________________________________';
     }
 
     /**
@@ -1740,7 +1771,9 @@ class AdminController extends Controller
         $pihak1Table->addRow();
         $pihak1Table->addCell(2000)->addText('Alamat', $textStyle);
         $pihak1Table->addCell(300)->addText(':', $textStyle);
-        $pihak1Table->addCell(6000)->addText(' ', $textStyle); // Kosong untuk diisi manual
+        // ✅ UPDATED: Alamat diisi otomatis dari data submission
+        $alamatLengkap = $this->getFormattedAlamat($submission);
+        $pihak1Table->addCell(6000)->addText($alamatLengkap, $textStyle);
 
         $section->addTextBreak(1);
 

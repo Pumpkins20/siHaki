@@ -1,4 +1,3 @@
-
 @extends('layouts.user')
 
 @section('title', 'Detail Submission')
@@ -107,6 +106,27 @@
                                     <td><strong>Jumlah Anggota:</strong></td>
                                     <td>
                                         <span class="badge bg-info">{{ $submission->member_count }} orang</span>
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Alamat:</strong></td>
+                                    <td>{{ $submission->alamat ?: '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Kode Pos:</strong></td>
+                                    <td>{{ $submission->kode_pos ?: '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Alamat Lengkap:</strong></td>
+                                    <td>
+                                        @if($submission->alamat && $submission->kode_pos)
+                                            <div class="border p-2 bg-light rounded">
+                                                <i class="bi bi-geo-alt text-primary me-1"></i>
+                                                {{ $submission->formatted_address }}
+                                            </div>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
                                     </td>
                                 </tr>
                             </table>

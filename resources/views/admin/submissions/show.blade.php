@@ -786,7 +786,6 @@ function showRejectModal() {
 
 // Print function
 function printSubmission() {
-    const printWindow = window.open('', '_blank');
     const submissionData = {
         title: "{{ $submission->title }}",
         id: "{{ str_pad($submission->id, 4, '0', STR_PAD_LEFT) }}",
@@ -802,8 +801,13 @@ function printSubmission() {
         submission_date: "{{ $submission->submission_date ? $submission->submission_date->setTimezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '-' }}",
         description: "{{ $submission->description }}",
         review_notes: "{{ $submission->review_notes ?? '' }}",
-        reviewed_at: "{{ $submission->reviewed_at ? $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '' }}"
+        reviewed_at: "{{ $submission->reviewed_at ? $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '' }}",
+        alamat: "{{ $submission->alamat ?? '-' }}",
+        kode_pos: "{{ $submission->kode_pos ?? '-' }}",
+        formatted_address: "{{ $submission->formatted_address }}",
     };
+    
+    const printWindow = window.open('', '_blank');
     
     printWindow.document.write(`
         <!DOCTYPE html>
@@ -855,6 +859,18 @@ function printSubmission() {
                 <h3>Catatan Review</h3>
                 <p><strong>Tanggal Review:</strong> ${submissionData.reviewed_at}</p>
                 <p><strong>Catatan:</strong> ${submissionData.review_notes}</p>
+            </div>
+            ` : ''}
+            
+            ${submissionData.alamat !== '-' ? `
+            <div class="section">
+                <h3>Alamat Pengalihan</h3>
+                <div><span class="label">Alamat:</span> <span class="value">${submissionData.alamat}</span></div>
+                <div><span class="label">Kode Pos:</span> <span class="value">${submissionData.kode_pos}</span></div>
+                <div style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 5px;">
+                    <strong>Alamat Lengkap untuk Surat:</strong><br>
+                    ${submissionData.formatted_address}
+                </div>
             </div>
             ` : ''}
             
