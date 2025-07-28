@@ -19,14 +19,19 @@ class SubmissionController extends Controller
     {
         $query = HkiSubmission::with(['reviewer'])
             ->where('user_id', Auth::id())
+            // ✅ UPDATED: Hanya tampilkan status aktif (submitted, under_review, revision_needed, draft)
+            ->whereIn('status', ['draft', 'submitted', 'under_review', 'revision_needed'])
             ->latest();
 
         // Filter berdasarkan status
         if ($request->filled('status')) {
-            $query->where('status', $request->status);
+            $allowedStatuses = ['draft', 'submitted', 'under_review', 'revision_needed'];
+            if (in_array($request->status, $allowedStatuses)) {
+                $query->where('status', $request->status);
+            }
         }
 
-        // ✅ NEW: Filter berdasarkan creation_type (replace type filter)
+        // Filter berdasarkan creation_type
         if ($request->filled('creation_type')) {
             $query->where('creation_type', $request->creation_type);
         }
@@ -287,23 +292,32 @@ class SubmissionController extends Controller
         $rules = [
             'title' => 'required|string|max:255',
             'description' => 'required|string|max:1000',
-            'alamat' => 'required|string|max:500',           // ✅ NEW
-            'kode_pos' => 'required|string|size:5|regex:/^[0-9]+$/', // ✅ NEW
+            'alamat' => 'required|string|max:500',
+            'kode_pos' => 'required|string|size:5|regex:/^[0-9]+$/',
+            'members' => 'required|array',
+            'members.*.id' => 'required|exists:submission_members,id',
+            'members.*.name' => 'required|string|max:255',
+            'members.*.whatsapp' => 'required|string|regex:/^[0-9]{10,13}$/',
+            'members.*.email' => 'required|email',
+            'members.*.ktp' => 'nullable|file|mimes:jpg,jpeg|max:2048', // ✅ Optional for update
         ];
 
-        // ✅ Dynamic validation based on existing creation_type (tidak bisa diubah)
+        // ✅ Dynamic validation based on existing creation_type
         $this->addDynamicValidationForUpdate($rules, $submission->creation_type);
 
         $customMessages = [
-            'title.required' => 'Judul HKI harus diisi',
+            'title.required' => 'Judul harus diisi',
             'description.required' => 'Deskripsi harus diisi',
-            'description.max' => 'Deskripsi maksimal 1000 karakter',
-            'first_publication_date.required' => 'Tanggal pertama kali diumumkan/digunakan/dipublikasikan harus diisi',
-            'first_publication_date.date' => 'Format tanggal tidak valid',
-            'first_publication_date.before_or_equal' => 'Tanggal tidak boleh lebih dari hari ini',
             'alamat.required' => 'Alamat harus diisi',
             'kode_pos.required' => 'Kode pos harus diisi',
             'kode_pos.size' => 'Kode pos harus 5 digit',
+            'members.*.name.required' => 'Nama anggota harus diisi',
+            'members.*.whatsapp.required' => 'No. WhatsApp anggota harus diisi',
+            'members.*.whatsapp.regex' => 'Format No. WhatsApp tidak valid (10-13 digit)',
+            'members.*.email.required' => 'Email anggota harus diisi',
+            'members.*.email.email' => 'Format email tidak valid',
+            'members.*.ktp.mimes' => 'File KTP harus dalam format JPG/JPEG',
+            'members.*.ktp.max' => 'Ukuran file KTP maksimal 2MB',
         ];
 
         $request->validate($rules, $customMessages);
@@ -311,20 +325,19 @@ class SubmissionController extends Controller
         try {
             DB::beginTransaction();
 
-            // Store old status for history
             $oldStatus = $submission->status;
 
-            // Update basic submission data
+            // Update submission basic data
             $submission->update([
                 'title' => $request->title,
                 'description' => $request->description,
-                'alamat' => $request->alamat,                 // ✅ NEW
-                'kode_pos' => $request->kode_pos,             // ✅ NEW
+                'alamat' => $request->alamat,
+                'kode_pos' => $request->kode_pos,
                 'status' => $request->has('save_as_draft') ? 'draft' : 'submitted',
                 'submission_date' => $request->has('save_as_draft') ? null : now(),
             ]);
 
-            // Update members data including KTP if provided
+            // ✅ ENHANCED: Update members data including KTP revision
             if ($request->has('members')) {
                 foreach ($request->members as $index => $memberData) {
                     $member = SubmissionMember::find($memberData['id']);
@@ -337,16 +350,28 @@ class SubmissionController extends Controller
                             'email' => $memberData['email'],
                         ]);
 
-                        // ✅ NEW: Update KTP if new file is uploaded
+                        // ✅ ENHANCED: Update KTP if new file is uploaded
                         if (isset($memberData['ktp']) && $memberData['ktp'] instanceof \Illuminate\Http\UploadedFile) {
                             // Delete old KTP file
                             if ($member->ktp) {
                                 Storage::disk('public')->delete($member->ktp);
+                                Log::info('Old KTP file deleted', [
+                                    'submission_id' => $submission->id,
+                                    'member_id' => $member->id,
+                                    'old_ktp_path' => $member->ktp
+                                ]);
                             }
 
                             // Upload new KTP
                             $ktpFile = $memberData['ktp'];
                             $ktpFileName = $submission->id . '/ktp_' . ($index + 1) . '_' . time() . '.' . $ktpFile->getClientOriginalExtension();
+                            
+                            // Create directory if not exists
+                            $ktpDir = 'ktp_files/' . $submission->id;
+                            if (!Storage::disk('public')->exists($ktpDir)) {
+                                Storage::disk('public')->makeDirectory($ktpDir);
+                            }
+                            
                             $ktpPath = $ktpFile->storeAs('ktp_files', $ktpFileName, 'public');
                             
                             $member->update(['ktp' => $ktpPath]);
@@ -354,7 +379,10 @@ class SubmissionController extends Controller
                             Log::info('KTP updated for member', [
                                 'submission_id' => $submission->id,
                                 'member_id' => $member->id,
-                                'new_ktp_path' => $ktpPath
+                                'member_name' => $member->name,
+                                'new_ktp_path' => $ktpPath,
+                                'file_size' => $ktpFile->getSize(),
+                                'updated_by' => Auth::id()
                             ]);
                         }
                     }
@@ -369,19 +397,21 @@ class SubmissionController extends Controller
                 'submission_id' => $submission->id,
                 'user_id' => Auth::id(),
                 'action' => 'Updated',
-                'previous_status' => 'revision_needed',
-                'new_status' => 'submitted',
-                'notes' => 'Submission berhasil diupdate dan diresubmit untuk review'
+                'previous_status' => $oldStatus,
+                'new_status' => $submission->status,
+                'notes' => $request->has('save_as_draft') ? 
+                    'Submission diupdate dan disimpan sebagai draft' :
+                    'Submission diupdate dan diresubmit untuk review. Data anggota dan KTP telah diperbarui.'
             ]);
 
-            // Send notification jika status berubah ke submitted
+            // Send notification if status changed to submitted
             if (!$request->has('save_as_draft')) {
                 Auth::user()->notify(new SubmissionStatusChanged(
                     $submission,
                     $oldStatus,
                     'submitted',
                     $oldStatus === 'revision_needed' ? 
-                        'Revisi Anda telah diterima dan submission akan direview kembali.' :
+                        'Revisi Anda telah diterima dan submission akan direview kembali. Data anggota dan KTP yang diperbarui telah disimpan.' :
                         'Update submission Anda berhasil diterima dan menunggu review.'
                 ));
             }
@@ -390,7 +420,7 @@ class SubmissionController extends Controller
 
             $message = $request->has('save_as_draft') ? 
                 'Submission berhasil diupdate dan disimpan sebagai draft.' :
-                'Submission berhasil diupdate dan dikirim untuk review!';
+                'Submission berhasil diupdate dan diresubmit untuk review! Perubahan data anggota dan KTP telah disimpan.';
 
             return redirect()->route('user.submissions.show', $submission)
                 ->with('success', $message);

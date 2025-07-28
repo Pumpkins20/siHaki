@@ -67,6 +67,7 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/documents/{document}/download', [SubmissionController::class, 'downloadDocument'])->name('documents.download');
             Route::delete('/documents/{document}', [SubmissionController::class, 'deleteDocument'])->name('documents.delete');
             
+            
             // KTP download
             Route::get('/{submission}/ktp/{member}', [SubmissionController::class, 'downloadKtp'])->name('ktp.download');
         });

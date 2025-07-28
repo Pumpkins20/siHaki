@@ -576,33 +576,231 @@
     </div>
 </div>
 
+@if($submission->members->count() > 0)
+    <div class="mb-4">
+        <h6 class="fw-bold text-secondary mb-3">
+            <i class="bi bi-people me-2"></i>Update Data Anggota Pencipta
+        </h6>
+        
+        @foreach($submission->members as $index => $member)
+            <div class="member-section {{ !$loop->last ? 'border-bottom pb-4 mb-4' : '' }}">
+                <div class="d-flex align-items-center mb-3">
+                    <i class="bi bi-person-circle text-success fs-5 me-2"></i>
+                    <h6 class="mb-0 fw-bold">{{ $member->is_leader ? 'Ketua' : 'Anggota' }} {{ $loop->iteration }}</h6>
+                    @if($member->is_leader)
+                        <span class="badge bg-success ms-2">Ketua Tim</span>
+                    @endif
+                </div>
+                
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <label class="form-label">Nama Pencipta <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" 
+                               name="members[{{ $index }}][name]" 
+                               value="{{ old('members.'.$index.'.name', $member->name) }}" 
+                               placeholder="Nama lengkap" required>
+                        <input type="hidden" name="members[{{ $index }}][id]" value="{{ $member->id }}">
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">No. WhatsApp <span class="text-danger">*</span></label>
+                        <input type="tel" class="form-control" 
+                               name="members[{{ $index }}][whatsapp]" 
+                               value="{{ old('members.'.$index.'.whatsapp', $member->whatsapp) }}" 
+                               placeholder="08xxxxxxxxxx" required>
+                    </div>
+                    <div class="col-md-6">
+                        <label class="form-label">Email <span class="text-danger">*</span></label>
+                        <input type="email" class="form-control" 
+                               name="members[{{ $index }}][email]" 
+                               value="{{ old('members.'.$index.'.email', $member->email) }}" 
+                               placeholder="email@example.com" required>
+                    </div>
+                    
+                    {{-- ✅ NEW: KTP Revision Section --}}
+                    <div class="col-md-6">
+                        <label class="form-label">
+                            <i class="bi bi-credit-card-2-front me-1"></i>
+                            Update Scan KTP (Opsional)
+                        </label>
+                        
+                        {{-- Current KTP Status --}}
+                        @if($member->ktp)
+                            <div class="current-ktp-info mb-2">
+                                <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-check-circle text-success me-2"></i>
+                                        <small class="text-success fw-bold">KTP sudah diupload</small>
+                                    </div>
+                                    <div class="btn-group" role="group">
+                                        <button type="button" class="btn btn-sm btn-outline-info" 
+                                                onclick="viewKtp('{{ route('admin.submissions.preview-member-ktp', [$submission, $member]) }}')"
+                                                title="Lihat KTP">
+                                            <i class="bi bi-eye"></i>
+                                        </button>
+                                        <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                onclick="toggleKtpUpload({{ $index }})"
+                                                title="Ganti KTP">
+                                            <i class="bi bi-pencil"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                                <small class="text-muted">
+                                    Upload tanggal: {{ $member->updated_at->format('d M Y H:i') }} WIB
+                                </small>
+                            </div>
+                        @else
+                            <div class="current-ktp-info mb-2">
+                                <div class="alert alert-warning py-2">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    <small><strong>KTP belum diupload</strong></small>
+                                </div>
+                            </div>
+                        @endif
+                        
+                        {{-- KTP Upload Input --}}
+                        <div class="ktp-upload-section" id="ktpUpload_{{ $index }}" 
+                             style="display: {{ $member->ktp ? 'none' : 'block' }};">
+                            <input type="file" 
+                                   class="form-control @error('members.'.$index.'.ktp') is-invalid @enderror" 
+                                   name="members[{{ $index }}][ktp]" 
+                                   accept=".jpg,.jpeg" 
+                                   id="ktp_{{ $index }}"
+                                   onchange="validateKtpFile(this, {{ $index }})">
+                            @error('members.'.$index.'.ktp')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            
+                            <div class="form-text">
+                                <i class="bi bi-info-circle text-primary me-1"></i>
+                                Upload file KTP baru (JPG/JPEG, maksimal 2MB)
+                                @if($member->ktp)
+                                    <br><small class="text-warning">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        File baru akan mengganti KTP yang sudah ada
+                                    </small>
+                                @endif
+                            </div>
+                            
+                            {{-- Preview untuk file baru --}}
+                            <div class="ktp-preview mt-2" id="ktpPreview_{{ $index }}" style="display: none;">
+                                <div class="border rounded p-2 bg-light">
+                                    <small class="text-info">
+                                        <i class="bi bi-image me-1"></i>
+                                        <span id="ktpFileName_{{ $index }}"></span>
+                                    </small>
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
+                                            onclick="clearKtpFile({{ $index }})" title="Hapus file">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        @if($member->ktp)
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                        onclick="cancelKtpUpdate({{ $index }})" 
+                                        id="cancelKtpBtn_{{ $index }}" 
+                                        style="display: none;">
+                                    <i class="bi bi-x-circle me-1"></i>Batal Ganti KTP
+                                </button>
+                            </div>
+                        @endif
+                    </div>
+                </div>
+                
+                {{-- Member revision notes --}}
+                @if($submission->status === 'revision_needed' && $submission->review_notes)
+                    <div class="mt-3">
+                        <div class="alert alert-warning">
+                            <small>
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <strong>Catatan Reviewer:</strong> Pastikan data anggota dan KTP sudah sesuai dengan catatan revisi.
+                            </small>
+                        </div>
+                    </div>
+                @endif
+            </div>
+        @endforeach
+        
+        <div class="alert alert-info mt-3">
+            <h6 class="alert-heading">
+                <i class="bi bi-lightbulb me-2"></i>Tips Revisi KTP:
+            </h6>
+            <ul class="mb-0 small">
+                <li>Upload ulang KTP jika foto tidak jelas atau terpotong</li>
+                <li>Pastikan semua informasi di KTP dapat dibaca dengan baik</li>
+                <li>Format file harus JPG/JPEG dengan ukuran maksimal 2MB</li>
+                <li>KTP harus asli dan masih berlaku</li>
+            </ul>
+        </div>
+    </div>
+@endif
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
     // Character counter for description
     const description = document.getElementById('description');
-    const counter = document.createElement('div');
-    counter.className = 'form-text text-end';
-    description.parentNode.appendChild(counter);
-    
-    function updateCounter() {
-        const length = description.value.length;
-        counter.textContent = `${length}/1000 karakter`;
-        counter.className = `form-text text-end ${length > 1000 ? 'text-danger' : 'text-muted'}`;
+    if (description) {
+        const counter = document.createElement('div');
+        counter.className = 'form-text text-end';
+        description.parentNode.appendChild(counter);
+        
+        function updateCounter() {
+            const length = description.value.length;
+            counter.textContent = `${length}/1000 karakter`;
+            counter.className = `form-text text-end ${length > 1000 ? 'text-danger' : 'text-muted'}`;
+        }
+        
+        description.addEventListener('input', updateCounter);
+        updateCounter();
     }
-    
-    description.addEventListener('input', updateCounter);
-    updateCounter();
+
+    // ✅ NEW: Alamat and Kode Pos validation (from previous implementation)
+    const alamatTextarea = document.getElementById('alamat');
+    if (alamatTextarea) {
+        const alamatCounter = document.createElement('div');
+        alamatCounter.className = 'form-text text-end';
+        alamatTextarea.parentNode.appendChild(alamatCounter);
+        
+        function updateAlamatCounter() {
+            const length = alamatTextarea.value.length;
+            alamatCounter.textContent = `${length}/500 karakter`;
+            
+            if (length > 450) {
+                alamatCounter.className = 'form-text text-end text-warning';
+            } else if (length > 500) {
+                alamatCounter.className = 'form-text text-end text-danger';
+            } else {
+                alamatCounter.className = 'form-text text-end text-muted';
+            }
+        }
+        
+        alamatTextarea.addEventListener('input', updateAlamatCounter);
+        updateAlamatCounter();
+    }
+
+    const kodePosInput = document.getElementById('kode_pos');
+    if (kodePosInput) {
+        kodePosInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            if (this.value.length > 5) {
+                this.value = this.value.slice(0, 5);
+            }
+        });
+    }
 
     // File size validation for different file types
     const fileInputs = {
-        'manual_document': 20 * 1024 * 1024, // 20MB
-        'metadata_file': 20 * 1024 * 1024,   // 20MB
-        'ebook_file': 20 * 1024 * 1024,      // 20MB
-        'documentation_file': 20 * 1024 * 1024, // 20MB
-        'image_files': 1 * 1024 * 1024,      // 1MB per file
-        'photo_files': 1 * 1024 * 1024,      // 1MB per file
-        'main_document': 10 * 1024 * 1024    // 10MB
+        'manual_document': 20 * 1024 * 1024,
+        'metadata_file': 20 * 1024 * 1024,
+        'ebook_file': 20 * 1024 * 1024,
+        'documentation_file': 20 * 1024 * 1024,
+        'image_files': 1 * 1024 * 1024,
+        'photo_files': 1 * 1024 * 1024,
+        'main_document': 10 * 1024 * 1024
     };
 
     Object.keys(fileInputs).forEach(inputId => {
@@ -612,7 +810,6 @@ document.addEventListener('DOMContentLoaded', function() {
                 const maxSize = fileInputs[inputId];
                 
                 if (this.multiple) {
-                    // For multiple files
                     for (let file of this.files) {
                         if (file.size > maxSize) {
                             alert(`Ukuran file ${file.name} terlalu besar. Maksimal ${maxSize / (1024 * 1024)}MB per file.`);
@@ -621,7 +818,6 @@ document.addEventListener('DOMContentLoaded', function() {
                         }
                     }
                 } else {
-                    // For single file
                     const file = this.files[0];
                     if (file && file.size > maxSize) {
                         alert(`Ukuran file terlalu besar. Maksimal ${maxSize / (1024 * 1024)}MB.`);
@@ -640,13 +836,176 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalText = submitButton.innerHTML;
             submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
             
-            // Re-enable after 5 seconds if still processing
             setTimeout(() => {
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalText;
             }, 5000);
         }
     });
+});
+
+// ✅ NEW: KTP Management Functions
+function toggleKtpUpload(index) {
+    const uploadSection = document.getElementById(`ktpUpload_${index}`);
+    const cancelBtn = document.getElementById(`cancelKtpBtn_${index}`);
+    
+    if (uploadSection.style.display === 'none') {
+        uploadSection.style.display = 'block';
+        if (cancelBtn) cancelBtn.style.display = 'inline-block';
+    } else {
+        uploadSection.style.display = 'none';
+        if (cancelBtn) cancelBtn.style.display = 'none';
+        clearKtpFile(index);
+    }
+}
+
+function cancelKtpUpdate(index) {
+    const uploadSection = document.getElementById(`ktpUpload_${index}`);
+    const cancelBtn = document.getElementById(`cancelKtpBtn_${index}`);
+    const fileInput = document.getElementById(`ktp_${index}`);
+    
+    uploadSection.style.display = 'none';
+    cancelBtn.style.display = 'none';
+    
+    // Clear file input
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    // Hide preview
+    const preview = document.getElementById(`ktpPreview_${index}`);
+    if (preview) {
+        preview.style.display = 'none';
+    }
+}
+
+function validateKtpFile(input, index) {
+    const file = input.files[0];
+    if (!file) {
+        clearKtpFile(index);
+        return;
+    }
+    
+    // Validate file size (2MB max)
+    if (file.size > 2 * 1024 * 1024) {
+        alert('Ukuran file KTP terlalu besar. Maksimal 2MB.');
+        input.value = '';
+        clearKtpFile(index);
+        return;
+    }
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+        alert('Format file KTP harus JPG atau JPEG.');
+        input.value = '';
+        clearKtpFile(index);
+        return;
+    }
+    
+    // Show preview
+    showKtpPreview(index, file.name);
+}
+
+function showKtpPreview(index, fileName) {
+    const preview = document.getElementById(`ktpPreview_${index}`);
+    const fileNameSpan = document.getElementById(`ktpFileName_${index}`);
+    
+    if (preview && fileNameSpan) {
+        fileNameSpan.textContent = fileName;
+        preview.style.display = 'block';
+    }
+}
+
+function clearKtpFile(index) {
+    const fileInput = document.getElementById(`ktp_${index}`);
+    const preview = document.getElementById(`ktpPreview_${index}`);
+    
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    if (preview) {
+        preview.style.display = 'none';
+    }
+}
+
+function viewKtp(url) {
+    // Open KTP in new window/tab
+    window.open(url, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+}
+
+// ✅ NEW: Enhanced form validation before submit
+function validateFormBeforeSubmit() {
+    let isValid = true;
+    const errors = [];
+    
+    // Validate basic fields
+    const title = document.getElementById('title');
+    if (title && title.value.trim().length < 5) {
+        isValid = false;
+        errors.push('Judul minimal 5 karakter');
+        title.classList.add('is-invalid');
+    }
+    
+    const description = document.getElementById('description');
+    if (description && description.value.trim().length < 20) {
+        isValid = false;
+        errors.push('Deskripsi minimal 20 karakter');
+        description.classList.add('is-invalid');
+    }
+    
+    const alamat = document.getElementById('alamat');
+    if (alamat && alamat.value.trim().length < 10) {
+        isValid = false;
+        errors.push('Alamat minimal 10 karakter');
+        alamat.classList.add('is-invalid');
+    }
+    
+    const kodePos = document.getElementById('kode_pos');
+    if (kodePos && kodePos.value.length !== 5) {
+        isValid = false;
+        errors.push('Kode pos harus 5 digit');
+        kodePos.classList.add('is-invalid');
+    }
+    
+    // Validate member data
+    const memberNames = document.querySelectorAll('input[name*="[name]"]');
+    memberNames.forEach((input, index) => {
+        if (input.value.trim().length < 3) {
+            isValid = false;
+            errors.push(`Nama anggota ${index + 1} minimal 3 karakter`);
+            input.classList.add('is-invalid');
+        }
+    });
+    
+    if (!isValid) {
+        alert('Mohon perbaiki kesalahan berikut:\n' + errors.join('\n'));
+        
+        // Scroll to first error
+        const firstError = document.querySelector('.is-invalid');
+        if (firstError) {
+            firstError.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            firstError.focus();
+        }
+        
+        return false;
+    }
+    
+    return true;
+}
+
+// Attach validation to form submit
+document.addEventListener('DOMContentLoaded', function() {
+    const form = document.getElementById('submissionEditForm');
+    if (form) {
+        form.addEventListener('submit', function(e) {
+            if (!validateFormBeforeSubmit()) {
+                e.preventDefault();
+                return false;
+            }
+        });
+    }
 });
 </script>
 @endpush
