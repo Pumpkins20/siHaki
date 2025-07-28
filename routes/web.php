@@ -67,7 +67,11 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/documents/{document}/download', [SubmissionController::class, 'downloadDocument'])->name('documents.download');
             Route::delete('/documents/{document}', [SubmissionController::class, 'deleteDocument'])->name('documents.delete');
             
-            
+            // ✅ NEW: KTP management routes - ADD THESE MISSING ROUTES
+            Route::patch('/{submission}/update-ktp', [SubmissionController::class, 'updateKtp'])
+                ->name('update-ktp');
+            Route::get('/{submission}/members/{member}/ktp-preview', [SubmissionController::class, 'previewMemberKtp'])
+                ->name('member-ktp-preview');
             // KTP download
             Route::get('/{submission}/ktp/{member}', [SubmissionController::class, 'downloadKtp'])->name('ktp.download');
         });

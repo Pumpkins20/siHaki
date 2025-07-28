@@ -294,7 +294,7 @@ class SubmissionController extends Controller
             'description' => 'required|string|max:1000',
             'alamat' => 'required|string|max:500',
             'kode_pos' => 'required|string|size:5|regex:/^[0-9]+$/',
-            'members' => 'required|array',
+            'members' => 'sometimes|array',
             'members.*.id' => 'required|exists:submission_members,id',
             'members.*.name' => 'required|string|max:255',
             'members.*.whatsapp' => 'required|string|regex:/^[0-9]{10,13}$/',
@@ -753,7 +753,7 @@ class SubmissionController extends Controller
                 
             case 'buku':
                 $rules['isbn'] = 'nullable|string|max:20';
-                $rules['page_count'] = 'required|integer|min:1';
+                
                 $rules['ebook_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
                 break;
                 
@@ -961,5 +961,164 @@ class SubmissionController extends Controller
             ]);
             // Don't throw here, let the upload continue
         }
+    }
+
+    /**
+     * ✅ NEW: Update KTP for submitted submissions
+     */
+    public function updateKtp(Request $request, HkiSubmission $submission)
+    {
+        // Check if user owns this submission
+        if ($submission->user_id !== Auth::id()) {
+            abort(403, 'Anda tidak memiliki akses ke submission ini.');
+        }
+        
+        // Allow KTP update for any status except rejected (more flexible)
+        if ($submission->status === 'rejected') {
+            return back()->withErrors(['error' => 'KTP tidak dapat diupdate untuk submission yang ditolak.']);
+        }
+
+        $request->validate([
+            'member_ids' => 'required|array',
+            'member_ids.*' => 'required|exists:submission_members,id',
+            'ktp_files' => 'required|array',
+            'ktp_files.*' => 'required|file|mimes:jpg,jpeg|max:2048',
+        ], [
+            'ktp_files.*.required' => 'File KTP harus diupload',
+            'ktp_files.*.mimes' => 'File KTP harus dalam format JPG/JPEG',
+            'ktp_files.*.max' => 'Ukuran file KTP maksimal 2MB',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $updatedMembers = [];
+            $memberIds = $request->member_ids;
+            
+            foreach ($request->file('ktp_files', []) as $memberId => $ktpFile) {
+                // Verify member belongs to this submission
+                $member = SubmissionMember::where('id', $memberId)
+                    ->where('submission_id', $submission->id)
+                    ->first();
+                    
+                if (!$member) {
+                    continue; // Skip invalid member
+                }
+
+                // Delete old KTP file if exists
+                if ($member->ktp) {
+                    Storage::disk('public')->delete($member->ktp);
+                    Log::info('Old KTP file deleted during update', [
+                        'submission_id' => $submission->id,
+                        'member_id' => $member->id,
+                        'old_ktp_path' => $member->ktp
+                    ]);
+                }
+
+                // Upload new KTP
+                $ktpFileName = $submission->id . '/ktp_' . $member->id . '_' . time() . '.' . $ktpFile->getClientOriginalExtension();
+                
+                // Create directory if not exists
+                $ktpDir = 'ktp_files/' . $submission->id;
+                if (!Storage::disk('public')->exists($ktpDir)) {
+                    Storage::disk('public')->makeDirectory($ktpDir);
+                }
+                
+                $ktpPath = $ktpFile->storeAs('ktp_files', $ktpFileName, 'public');
+                
+                // Update member record
+                $member->update(['ktp' => $ktpPath]);
+                
+                $updatedMembers[] = [
+                    'id' => $member->id,
+                    'name' => $member->name,
+                    'new_ktp_path' => $ktpPath,
+                    'file_size' => $ktpFile->getSize()
+                ];
+
+                Log::info('KTP updated via post-submit update', [
+                    'submission_id' => $submission->id,
+                    'member_id' => $member->id,
+                    'member_name' => $member->name,
+                    'new_ktp_path' => $ktpPath,
+                    'file_size' => $ktpFile->getSize(),
+                    'updated_by' => Auth::id(),
+                    'submission_status' => $submission->status
+                ]);
+            }
+
+            // Create history record
+            SubmissionHistory::create([
+                'submission_id' => $submission->id,
+                'user_id' => Auth::id(),
+                'action' => 'KTP Updated',
+                'previous_status' => $submission->status,
+                'new_status' => $submission->status, // Status remains same
+                'notes' => 'KTP anggota diperbarui: ' . collect($updatedMembers)->pluck('name')->join(', ') . 
+                          '. Total ' . count($updatedMembers) . ' file KTP berhasil diupdate.'
+            ]);
+
+            // ✅ Notify admin about KTP update (optional)
+            $adminUsers = User::where('role', 'admin')->get();
+            foreach ($adminUsers as $admin) {
+                $admin->notify(new \App\Notifications\KtpUpdated(
+                    $submission,
+                    $updatedMembers,
+                    Auth::user()
+                ));
+            }
+
+            DB::commit();
+
+            return back()->with('ktp_updated', true)
+                ->with('success', 'KTP berhasil diperbarui untuk ' . count($updatedMembers) . ' anggota. File KTP baru telah mengganti yang lama.');
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('KTP update failed: ' . $e->getMessage(), [
+                'submission_id' => $submission->id,
+                'user_id' => Auth::id(),
+                'error' => $e->getTraceAsString()
+            ]);
+            return back()->withErrors(['error' => 'Terjadi kesalahan saat mengupdate KTP. Silakan coba lagi.']);
+        }
+    }
+
+    /**
+     * ✅ ENHANCED: Preview member KTP for user's own submission
+     */
+    public function previewMemberKtp(HkiSubmission $submission, SubmissionMember $member)
+    {
+        // Check if user owns this submission
+        if ($submission->user_id !== Auth::id()) {
+            abort(403, 'Anda tidak memiliki akses ke submission ini.');
+        }
+        
+        // Verify member belongs to submission
+        if ($member->submission_id !== $submission->id) {
+            abort(404, 'Member not found');
+        }
+
+        if (!$member->ktp) {
+            return back()->withErrors(['error' => 'KTP file not available for this member']);
+        }
+
+        $filePath = storage_path('app/public/' . $member->ktp);
+        
+        if (!file_exists($filePath)) {
+            Log::error('KTP file not found for user preview', [
+                'submission_id' => $submission->id,
+                'member_id' => $member->id,
+                'expected_path' => $filePath
+            ]);
+            return back()->withErrors(['error' => 'KTP file not found on server']);
+        }
+
+        $mimeType = mime_content_type($filePath);
+        
+        return response()->file($filePath, [
+            'Content-Type' => $mimeType,
+            'Content-Disposition' => 'inline; filename="KTP_' . str_replace(' ', '_', $member->name) . '.jpg"'
+        ]);
     }
 }
