@@ -30,6 +30,26 @@ Route::get('/pencipta', function () {
     return view('pencipta');
 })->name('pencipta');
 
+Route::get('/detail_pencipta', function () {
+    return view('detail_pencipta');
+})->name('detail_pencipta');
+
+Route::get('/detail_ciptaan', function () {
+    return view('detail_ciptaan');
+})->name('detail_ciptaan');
+
+Route::get('/jenis_ciptaan', function () {
+    return view('jenis_ciptaan');
+})->name('jenis_ciptaan');
+
+Route::get('/panduan', function () {
+    return view('panduan');
+})->name('panduan');
+
+Route::get('/detail_jenis', function () {
+    return view('detail_jenis');
+})->name('detail_jenis');
+
 // Guest routes (not authenticated)
 Route::middleware(['guest'])->group(function () {
     // Standardize login routes

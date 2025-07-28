@@ -17,17 +17,20 @@ class SubmissionStatusChanged extends Notification implements ShouldQueue
     protected $newStatus;
     protected $notes;
 
+    protected $message;
+
     /**
      * Create a new notification instance.
      *
      * @return void
      */
-    public function __construct(HkiSubmission $submission, $previousStatus, $newStatus, $notes = null)
+    public function __construct(HkiSubmission $submission, $previousStatus, $newStatus, $notes = null, $message = null)
     {
         $this->submission = $submission;
         $this->previousStatus = $previousStatus;
         $this->newStatus = $newStatus;
         $this->notes = $notes;
+        $this->message = $message;
     }
 
     /**

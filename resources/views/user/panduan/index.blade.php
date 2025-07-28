@@ -228,40 +228,7 @@
 
         <!-- Sidebar -->
         <div class="col-xl-4 col-lg-5">
-            <!-- Popular FAQ -->
-            <div class="card shadow mb-4">
-                <div class="card-header bg-white py-3">
-                    <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-star me-2"></i>FAQ Populer
-                    </h6>
-                </div>
-                <div class="card-body">
-                    @foreach($popularFaqs as $faq)
-                    <div class="d-flex align-items-start mb-3 {{ !$loop->last ? 'border-bottom pb-3' : '' }}">
-                        <div class="flex-shrink-0">
-                            @php
-                                $categoryColors = [
-                                    'umum' => 'primary',
-                                    'pengajuan' => 'success', 
-                                    'dokumen' => 'warning',
-                                    'anggota' => 'info',
-                                    'status' => 'secondary',
-                                    'sertifikat' => 'danger'
-                                ];
-                                $color = $categoryColors[$faq['category']] ?? 'primary';
-                            @endphp
-                            <span class="badge bg-{{ $color }}">
-                                {{ $categories[$faq['category']] }}
-                            </span>
-                        </div>
-                        <div class="flex-grow-1 ms-2">
-                            <h6 class="mb-1 small">{{ Str::limit($faq['question'], 60) }}</h6>
-                            <p class="mb-0 small text-muted">{{ Str::limit($faq['answer'], 80) }}</p>
-                        </div>
-                    </div>
-                    @endforeach
-                </div>
-            </div>
+           
 
             <!-- Quick Links -->
             <div class="card shadow mb-4">
@@ -313,9 +280,6 @@
                             </a>
                             <a href="https://wa.me/6281329303450" class="btn btn-success btn-sm" target="_blank">
                                 <i class="bi bi-whatsapp me-1"></i>WhatsApp
-                            </a>
-                            <a href="tel:02717851507" class="btn btn-info btn-sm">
-                                <i class="bi bi-telephone me-1"></i>Telepon
                             </a>
                         </div>
                         
