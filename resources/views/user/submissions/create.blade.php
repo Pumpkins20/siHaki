@@ -114,6 +114,33 @@
                                 @enderror
                                 <div class="form-text"> Maksimal 1000 karakter</div>
                             </div>
+
+                            {{-- filepath: resources/views/user/submissions/create.blade.php --}}
+
+                            {{-- Add after description field --}}
+                            <!-- Alamat -->
+                            <div class="mb-3">
+                                <label for="alamat" class="form-label">Alamat Lengkap <span class="text-danger">*</span></label>
+                                <textarea class="form-control @error('alamat') is-invalid @enderror" 
+                                        id="alamat" name="alamat" rows="3" 
+                                        placeholder="Masukkan alamat lengkap (Jalan, Kelurahan, Kecamatan, Kota/Kabupaten, Provinsi)" required>{{ old('alamat') }}</textarea>
+                                @error('alamat')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">Contoh: Jl. Ring Road Utara, Condong Catur, Depok, Sleman, Yogyakarta</div>
+                            </div>
+
+                            <!-- Kode Pos -->
+                            <div class="mb-3">
+                                <label for="kode_pos" class="form-label">Kode Pos <span class="text-danger">*</span></label>
+                                <input type="text" class="form-control @error('kode_pos') is-invalid @enderror" 
+                                       id="kode_pos" name="kode_pos" value="{{ old('kode_pos') }}" 
+                                       placeholder="Masukkan kode pos" maxlength="10" pattern="[0-9]{5}" required>
+                                @error('kode_pos')
+                                    <div class="invalid-feedback">{{ $message }}</div>
+                                @enderror
+                                <div class="form-text">5 digit kode pos sesuai alamat</div>
+                            </div>
                         </div>
 
                         <!-- Member Information Section -->
