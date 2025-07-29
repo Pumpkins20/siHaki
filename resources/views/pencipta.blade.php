@@ -43,7 +43,7 @@
                             <a class="nav-link" href="{{ route('jenis_ciptaan') }}">Jenis Ciptaan</a>
                         </li>
                         <li class="nav-item">
-                    <a class="nav-link" href="{{ route('panduan') }}">Panduan</a>
+                            <a class="nav-link" href="{{ route('panduan') }}">Panduan</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('login') }}">Login</a>
@@ -80,57 +80,93 @@
             </form>
         </div>
     </section>
-    <!-- Results Section -->
-    <section class="results-section">
-        <div class="container">
-            <!-- Result Card 1 -->
-            <div class="result-card">
-                <div class="result-card-body">
-                    <div class="result-header">
-                        <div class="result-avatar">
-                            NP
-                        </div>
-                        <div class="result-info">
-                            <h5>Nama Pencipta</h5>
-                            <div>STMIK AMIKOM Surakarta</div>
-                            <div> Jurusan : Misalnya S1 Informatika / D3 Manajemen Informatika</div>
-                        </div>
-                        <div class="result-action ms-auto">
-                            <a href="{{ route('detail_pencipta') }}" class="btn btn-outline-primary">Lihat Daftar HKI ></a>
+
+<!-- Results Section -->
+<section class="results-section">
+    <div class="container">
+        @if(isset($results) && $results->count())
+            <div class="mb-4">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    Menampilkan <strong>{{ $results->count() }}</strong> hasil pencarian
+                    @if(isset($query) && $query)
+                        untuk "<strong>{{ $query }}</strong>"
+                    @endif
+                    @if(isset($searchBy))
+                        berdasarkan <strong>{{ $searchBy === 'nama_pencipta' ? 'Nama Pencipta' : 'Program Studi' }}</strong>
+                    @endif
+                </div>
+            </div>
+            
+            @foreach($results as $result)
+                <div class="result-card">
+                    <div class="result-card-body">
+                        <div class="result-header">
+                            <div class="result-avatar">
+                                {{ substr($result->nama, 0, 2) }}
+                            </div>
+                            <div class="result-info">
+                                <h5>{{ $result->nama }}</h5>
+                                <div>{{ $result->institusi }}</div>
+                                <div>Jurusan: {{ $result->jurusan }}</div>
+                                <div class="mt-2">
+                                    <span class="badge bg-primary">{{ $result->total_hki }} Karya HKI</span>
+                                    @if(isset($query) && $searchBy === 'nama_pencipta' && stripos($result->nama, $query) !== false)
+                                        <span class="badge bg-success">Sesuai pencarian nama</span>
+                                    @elseif(isset($query) && $searchBy === 'program_studi' && stripos($result->jurusan, $query) !== false)
+                                        <span class="badge bg-success">Sesuai pencarian jurusan</span>
+                                    @endif
+                                </div>
+                                
+                                {{-- Show some of the HKI works --}}
+                                @if(isset($result->submissions) && $result->submissions->count() > 0)
+                                    <div class="mt-3">
+                                        <small class="text-muted">Karya HKI terbaru:</small>
+                                        <ul class="list-unstyled mt-1">
+                                            @foreach($result->submissions->take(3) as $submission)
+                                                <li class="small">
+                                                    <i class="bi bi-arrow-right me-1"></i>
+                                                    {{ $submission->title }} 
+                                                    <span class="text-muted">({{ $submission->created_at->format('Y') }})</span>
+                                                </li>
+                                            @endforeach
+                                            @if($result->submissions->count() > 3)
+                                                <li class="small text-muted">
+                                                    ... dan {{ $result->submissions->count() - 3 }} karya lainnya
+                                                </li>
+                                            @endif
+                                        </ul>
+                                    </div>
+                                @endif
+                            </div>
+                            <div class="result-action ms-auto">
+                                <a href="{{ route('detail_pencipta', ['id' => $result->id]) }}" 
+                                   class="btn btn-outline-primary">Lihat Daftar HKI ></a>
+                            </div>
                         </div>
                     </div>
                 </div>
+            @endforeach
+            
+        @elseif(isset($query) && $query)
+            <div class="alert alert-warning">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Data tidak ditemukan</strong> untuk pencarian "{{ $query }}"
+                @if(isset($searchBy))
+                    berdasarkan {{ $searchBy === 'nama_pencipta' ? 'Nama Pencipta' : 'Program Studi' }}
+                @endif
+                <br><small>Coba gunakan kata kunci yang berbeda.</small>
             </div>
-
-         
-
-            <!-- Pagination -->
-            <div class="pagination-wrapper">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                <i class="bi bi-chevron-left"></i>
-                            </a>
-                        </li>
-                        <li class="page-item active">
-                            <a class="page-link" href="#">1</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">2</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">3</a>
-                        </li>
-                        <li class="page-item">                            <a class="page-link" href="#">
-                                <i class="bi bi-chevron-right"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
+        @else
+            <!-- Default content when no search -->
+            <div class="text-center py-5">
+                <i class="bi bi-search fs-1 text-muted"></i>
+                <h4 class="mt-3">Cari Pencipta HKI</h4>
+                <p class="text-muted">Gunakan form pencarian di atas untuk menemukan pencipta berdasarkan nama atau program studi</p>
             </div>
-        </div>
-    </section>
+        @endif
+    </div>
+</section>
 
     <!-- Bootstrap JS -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>

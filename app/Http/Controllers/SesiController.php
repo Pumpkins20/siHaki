@@ -52,6 +52,6 @@ class SesiController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')->with('success','Logout Berhasil');
+        return redirect()->route('beranda')->with('success','Logout Berhasil');
     }
 }

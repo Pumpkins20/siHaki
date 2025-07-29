@@ -8,6 +8,7 @@ use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\AdminSubmissionController;
 use App\Http\Controllers\UserHistoryController;
 use App\Http\Controllers\UserPanduanController;
+use App\Http\Controllers\PublicSearchController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -22,13 +23,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Public routes
-Route::get('/', function () {
-    return view('beranda');
-})->name('beranda');
+Route::get('/', [PublicSearchController::class, 'searchOnBeranda'])->name('beranda');
 
-Route::get('/pencipta', function () {
-    return view('pencipta');
-})->name('pencipta');
+Route::get('/pencipta', [PublicSearchController::class, 'searchPencipta'])->name('pencipta');
+
+Route::get('/jenis_ciptaan', [PublicSearchController::class, 'searchJenisCiptaan'])->name('jenis_ciptaan');
 
 Route::get('/detail_pencipta', function () {
     return view('detail_pencipta');
@@ -38,17 +37,16 @@ Route::get('/detail_ciptaan', function () {
     return view('detail_ciptaan');
 })->name('detail_ciptaan');
 
-Route::get('/jenis_ciptaan', function () {
-    return view('jenis_ciptaan');
-})->name('jenis_ciptaan');
+Route::get('/detail_jenis', function () {
+    return view('detail_jenis');
+})->name('detail_jenis');
 
 Route::get('/panduan', function () {
     return view('panduan');
 })->name('panduan');
 
-Route::get('/detail_jenis', function () {
-    return view('detail_jenis');
-})->name('detail_jenis');
+// ✅ NEW: Search route
+Route::post('/search', [PublicSearchController::class, 'search'])->name('public.search');
 
 // Guest routes (not authenticated)
 Route::middleware(['guest'])->group(function () {
