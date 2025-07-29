@@ -84,64 +84,141 @@
          <!-- Content Section -->
     <section class="content-section">
         <div class="container">
-            <!-- Program Komputer -->
-            <div class="category-card">
-                <div>
-                    <h3 class="category-title">Program Komputer</h3>
-                </div>
-                <div class="category-stats">
-                    <div class="text-center">
-                        <div class="total-label">Total Pengajuan</div>
-                        <div class="total-count">X</div>
+            @if(isset($results) && $results->count())
+                <div class="mb-4">
+                    <div class="alert alert-info">
+                        <i class="bi bi-info-circle me-2"></i>
+                        Menampilkan <strong>{{ $results->count() }}</strong> hasil pencarian
+                        @if(isset($query) && $query)
+                            untuk "<strong>{{ $query }}</strong>"
+                        @endif
+                        @if(isset($searchBy))
+                            berdasarkan <strong>{{ $searchBy === 'jenis_ciptaan' ? 'Jenis Ciptaan' : 'Judul Ciptaan' }}</strong>
+                        @endif
                     </div>
-                    <a href="{{ route('detail_jenis', ['jenis' => 'Program Komputer']) }}" class="view-btn">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
                 </div>
-            </div>
-
-            <!-- Sinematografi -->
-            <div class="category-card">
-                <div>
-                    <h3 class="category-title">Sinematografi</h3>
-                </div>
-                <div class="category-stats">
-                    <div class="text-center">
-                        <div class="total-label">Total Pengajuan</div>
-                        <div class="total-count">X</div>
+                
+                @foreach($results as $result)
+                    <div class="category-card">
+                        <div class="d-flex justify-content-between align-items-start">
+                            <div>
+                                <h3 class="category-title">{{ $result->type_name }}</h3>
+                                <p class="category-description">{{ $result->description }}</p>
+                                <div class="mt-2">
+                                    <span class="badge bg-primary">{{ $result->count }} Karya</span>
+                                    @if(isset($query) && $searchBy === 'jenis_ciptaan' && stripos($result->type, $query) !== false)
+                                        <span class="badge bg-success">Sesuai pencarian jenis</span>
+                                    @endif
+                                </div>
+                            </div>
+                            <div class="category-icon">
+                                @switch($result->type)
+                                    @case('program_komputer')
+                                        <i class="bi bi-code-slash"></i>
+                                        @break
+                                    @case('sinematografi')
+                                        <i class="bi bi-camera-video"></i>
+                                        @break
+                                    @case('buku')
+                                        <i class="bi bi-book"></i>
+                                        @break
+                                    @case('poster')
+                                        <i class="bi bi-image"></i>
+                                        @break
+                                    @case('fotografi')
+                                        <i class="bi bi-camera"></i>
+                                        @break
+                                    @case('seni_gambar')
+                                        <i class="bi bi-palette"></i>
+                                        @break
+                                    @case('karakter_animasi')
+                                        <i class="bi bi-person-workspace"></i>
+                                        @break
+                                    @case('alat_peraga')
+                                        <i class="bi bi-tools"></i>
+                                        @break
+                                    @case('basis_data')
+                                        <i class="bi bi-database"></i>
+                                        @break
+                                    @default
+                                        <i class="bi bi-file-earmark"></i>
+                                @endswitch
+                            </div>
+                        </div>
+                        
+                        {{-- Show search results for titles if searching by title --}}
+                        @if(isset($result->search_results) && $result->search_results->count() > 0)
+                            <div class="mt-4">
+                                <h6 class="text-muted">Hasil pencarian judul:</h6>
+                                <div class="row">
+                                    @foreach($result->search_results->take(6) as $submission)
+                                        <div class="col-md-6 mb-2">
+                                            <div class="card border-0 shadow-sm">
+                                                <div class="card-body py-2">
+                                                    <h6 class="card-title mb-1">{{ $submission->title }}</h6>
+                                                    <small class="text-muted">
+                                                        {{ $submission->creator }} • {{ $submission->department }} • {{ $submission->year }}
+                                                    </small>
+                                                    @if(isset($query) && stripos($submission->title, $query) !== false)
+                                                        <br><span class="badge bg-success badge-sm">Sesuai pencarian</span>
+                                                    @endif
+                                                </div>
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                    @if($result->search_results->count() > 6)
+                                        <div class="col-12">
+                                            <small class="text-muted">
+                                                ... dan {{ $result->search_results->count() - 6 }} karya lainnya
+                                            </small>
+                                        </div>
+                                    @endif
+                                </div>
+                            </div>
+                        @endif
+                        
+                        <div class="mt-3">
+                            <a href="{{ route('detail_jenis', ['type' => $result->type]) }}" 
+                               class="btn btn-outline-primary">
+                                Lihat Semua {{ $result->type_name }} >
+                            </a>
+                        </div>
                     </div>
-                    <a href="{{ route('detail_jenis', ['jenis' => 'Sinematografi']) }}" class="view-btn">
-                        <i class="bi bi-chevron-right"></i>
-                    </a>
+                @endforeach
+                
+            @elseif(isset($query) && $query)
+                <div class="alert alert-warning">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    <strong>Data tidak ditemukan</strong> untuk pencarian "{{ $query }}"
+                    @if(isset($searchBy))
+                        berdasarkan {{ $searchBy === 'jenis_ciptaan' ? 'Jenis Ciptaan' : 'Judul Ciptaan' }}
+                    @endif
+                    <br><small>Coba gunakan kata kunci yang berbeda.</small>
                 </div>
-            </div>
+            @else
+                <!-- Default category display -->
+                <div class="category-card">
+                    <div>
+                        <h3 class="category-title">Program Komputer</h3>
+                        <p class="category-description">Karya cipta berupa aplikasi, software, atau sistem komputer</p>
+                    </div>
+                    <div class="category-icon">
+                        <i class="bi bi-code-slash"></i>
+                    </div>
+                </div>
 
+                <div class="category-card">
+                    <div>
+                        <h3 class="category-title">Sinematografi</h3>
+                        <p class="category-description">Karya cipta berupa film, video, atau karya audiovisual</p>
+                    </div>
+                    <div class="category-icon">
+                        <i class="bi bi-camera-video"></i>
+                    </div>
+                </div>
 
-            <!-- Pagination -->
-            <div class="pagination-wrapper">
-                <nav aria-label="Page navigation">
-                    <ul class="pagination">
-                        <li class="page-item disabled">
-                            <a class="page-link" href="#" tabindex="-1" aria-disabled="true">
-                                <i class="bi bi-chevron-left"></i>
-                            </a>
-                        </li>
-                        <li class="page-item active">
-                            <a class="page-link" href="#">1</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">2</a>
-                        </li>
-                        <li class="page-item">
-                            <a class="page-link" href="#">3</a>
-                        </li>
-                        <li class="page-item">                            <a class="page-link" href="#">
-                                <i class="bi bi-chevron-right"></i>
-                            </a>
-                        </li>
-                    </ul>
-                </nav>
-            </div>
+                <!-- Add more default categories as needed -->
+            @endif
         </div>
     </section>
 

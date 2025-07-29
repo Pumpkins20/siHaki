@@ -34,12 +34,13 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link active"  href="#home">Beranda</a>
+                            <a class="nav-link active" href="#home">Beranda</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('pencipta') }}">Pencipta</a>
                         </li>
                         <li class="nav-item">
+                            {{-- ✅ FIXED: Use correct route name --}}
                             <a class="nav-link" href="{{ route('jenis_ciptaan') }}">Jenis Ciptaan</a>
                         </li>
                         <li class="nav-item">
@@ -82,14 +83,13 @@
                     <p>Pilih kriteria pencarian dan masukkan kata kunci untuk menemukan karya yang Anda cari</p>
                 </div>
                 
-                <form class="search-form" method="GET" action="{{ route('beranda') }}">
+                {{-- ✅ UPDATED: Form action to search route --}}
+                <form class="search-form" method="POST" action="{{ route('public.search') }}">
+                    @csrf
                     <div class="form-group">
                         <label for="authorFilter">Filter Pencarian</label>
-                        <select id="authorFilter" name="filter" class="form-select">
-                            <option value="">-- Pilih Filer Pencarian --</option>
-                            <!-- jika dicari berdasarkan nama pencipta atau jurusan ntar dialihkan ke menu pencipta.blade dan data akan muncul disana
-                            sedangkan jika dicari berdasarkan judul atau tipe ciptaan akan dialihkan ke menu jenis_ciptaa.blade dan data akan muncul -->
-
+                        <select id="authorFilter" name="filter" class="form-select" required>
+                            <option value="">-- Pilih Filter Pencarian --</option>
                             <option value="nama" {{ request('filter') == 'nama' ? 'selected' : '' }}>Berdasarkan Nama Pencipta</option>
                             <option value="institusi" {{ request('filter') == 'institusi' ? 'selected' : '' }}>Berdasarkan Jurusan</option>
                             <option value="judul" {{ request('filter') == 'judul' ? 'selected' : '' }}>Berdasarkan Judul Ciptaan</option>
@@ -99,7 +99,8 @@
                     
                     <div class="form-group" style="flex: 2;">
                         <label for="searchInput">Search</label>
-                        <input type="text" class="form-control" id="searchInput" name="q" value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
+                        <input type="text" class="form-control" id="searchInput" name="q" 
+                               value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian..." required>
                     </div>
                     
                     <button class="search-btn" type="submit">
@@ -108,8 +109,20 @@
                     </button>
                 </form>
 
+                {{-- ✅ ENHANCED: Results display --}}
                 @if(isset($ciptaans) && $ciptaans->count())
                     <div class="mt-4">
+                        <div class="alert alert-info">
+                            <i class="bi bi-info-circle me-2"></i>
+                            Menampilkan <strong>{{ $ciptaans->count() }}</strong> hasil pencarian
+                            @if(request('q'))
+                                untuk "<strong>{{ request('q') }}</strong>"
+                            @endif
+                            @if(request('filter'))
+                                dengan filter <strong>{{ ucfirst(request('filter')) }}</strong>
+                            @endif
+                        </div>
+                        
                         <table class="table table-bordered table-striped">
                             <thead>
                                 <tr>
@@ -118,36 +131,101 @@
                                     <th>Jurusan</th>
                                     <th>Tipe</th>
                                     <th>Tahun</th>
+                                    <th>Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($ciptaans as $ciptaan)
                                     <tr>
                                         <td>
-                                            @if(request('filter') == 'judul' || request('filter') == 'tipe')
-                                                <a href="{{ route('ciptaan.show', $ciptaan->id) }}">{{ $ciptaan->judul }}</a>
-                                            @else
-                                                {{ $ciptaan->judul }}
+                                            <strong>{{ $ciptaan->judul }}</strong>
+                                            @if(request('filter') == 'judul')
+                                                <br><small class="text-success">
+                                                    <i class="bi bi-check-circle"></i> Sesuai pencarian judul
+                                                </small>
                                             @endif
                                         </td>
                                         <td>
-                                            @if(request('filter') == 'nama' || request('filter') == 'institusi')
-                                                <a href="{{ route('pencipta.show', $ciptaan->pencipta_id) }}">{{ $ciptaan->pencipta }}</a>
-                                            @else
-                                                {{ $ciptaan->pencipta }}
+                                            {{ $ciptaan->pencipta }}
+                                            @if(request('filter') == 'nama')
+                                                <br><small class="text-success">
+                                                    <i class="bi bi-check-circle"></i> Sesuai pencarian nama
+                                                </small>
                                             @endif
                                         </td>
-                                        <td>{{ $ciptaan->jurusan }}</td>
-                                        <td>{{ $ciptaan->tipe }}</td>
+                                        <td>
+                                            {{ $ciptaan->jurusan }}
+                                            @if(request('filter') == 'institusi')
+                                                <br><small class="text-success">
+                                                    <i class="bi bi-check-circle"></i> Sesuai pencarian jurusan
+                                                </small>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-primary">{{ $ciptaan->tipe }}</span>
+                                            @if(request('filter') == 'tipe')
+                                                <br><small class="text-success">
+                                                    <i class="bi bi-check-circle"></i> Sesuai pencarian tipe
+                                                </small>
+                                            @endif
+                                        </td>
                                         <td>{{ $ciptaan->tahun }}</td>
+                                        <td>
+                                            <button class="btn btn-sm btn-outline-primary" 
+                                                    onclick="viewDetail({{ $ciptaan->id }})" title="Lihat Detail">
+                                                <i class="bi bi-eye"></i>
+                                            </button>
+                                        </td>
                                     </tr>
                                 @endforeach
                             </tbody>
                         </table>
-                        {{ $ciptaans->withQueryString()->links() }}
                     </div>
                 @elseif(request()->has('q'))
-                    <div class="alert alert-warning mt-4">Data tidak ditemukan.</div>
+                    <div class="alert alert-warning mt-4">
+                        <i class="bi bi-exclamation-triangle me-2"></i>
+                        <strong>Data tidak ditemukan</strong> untuk pencarian "{{ request('q') }}"
+                        @if(request('filter'))
+                            dengan filter {{ ucfirst(request('filter')) }}
+                        @endif
+                        <br><small>Coba gunakan kata kunci yang berbeda atau filter pencarian lainnya.</small>
+                    </div>
+                @endif
+
+                {{-- ✅ ADD: Search suggestions --}}
+                @if(!request()->has('q'))
+                    <div class="mt-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="bi bi-person me-2 text-primary"></i>Cari Berdasarkan Pencipta
+                                        </h6>
+                                        <p class="card-text small">Temukan karya berdasarkan nama pencipta atau jurusan</p>
+                                        <div class="d-flex gap-2">
+                                            <span class="badge bg-light text-dark">Nama Pencipta</span>
+                                            <span class="badge bg-light text-dark">Program Studi</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="card border-0 shadow-sm">
+                                    <div class="card-body">
+                                        <h6 class="card-title">
+                                            <i class="bi bi-file-text me-2 text-success"></i>Cari Berdasarkan Karya
+                                        </h6>
+                                        <p class="card-text small">Temukan karya berdasarkan judul atau tipe ciptaan</p>
+                                        <div class="d-flex gap-2">
+                                            <span class="badge bg-light text-dark">Judul Ciptaan</span>
+                                            <span class="badge bg-light text-dark">Tipe Ciptaan</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 @endif
             </div>
         </div>
@@ -238,6 +316,46 @@
             } else {
                 header.style.boxShadow = '0 2px 10px rgba(0,0,0,0.1)';
             }
+        });
+
+        function viewDetail(id) {
+            // Implement detail view functionality
+            console.log('View detail for ID:', id);
+            // You can redirect to detail page or show modal
+            alert('Detail untuk ciptaan ID: ' + id);
+        }
+
+        // Form validation
+        document.querySelector('.search-form').addEventListener('submit', function(e) {
+            const filter = document.getElementById('authorFilter').value;
+            const query = document.getElementById('searchInput').value.trim();
+            
+            if (!filter) {
+                e.preventDefault();
+                alert('Silakan pilih filter pencarian terlebih dahulu');
+                return false;
+            }
+            
+            if (!query) {
+                e.preventDefault();
+                alert('Silakan masukkan kata kunci pencarian');
+                return false;
+            }
+        });
+
+        // Dynamic placeholder based on filter selection
+        document.getElementById('authorFilter').addEventListener('change', function() {
+            const searchInput = document.getElementById('searchInput');
+            const filter = this.value;
+            
+            const placeholders = {
+                'nama': 'Contoh: Ahmad Fauzi, Sari Dewi',
+                'institusi': 'Contoh: Informatika, Manajemen Informatika',
+                'judul': 'Contoh: Sistem Informasi, Aplikasi Mobile',
+                'tipe': 'Contoh: Program Komputer, Sinematografi'
+            };
+            
+            searchInput.placeholder = placeholders[filter] || 'Masukkan kata kunci pencarian...';
         });
     </script>
 </body>
