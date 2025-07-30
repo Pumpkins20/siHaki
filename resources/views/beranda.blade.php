@@ -44,9 +44,6 @@
                             <a class="nav-link" href="{{ route('jenis_ciptaan') }}">Jenis Ciptaan</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('panduan') }}">Panduan</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="{{ route('login') }}">Login</a>
                         </li>
                     </ul>

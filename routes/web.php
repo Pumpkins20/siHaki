@@ -41,9 +41,6 @@ Route::get('/detail_jenis', function () {
     return view('detail_jenis');
 })->name('detail_jenis');
 
-Route::get('/panduan', function () {
-    return view('panduan');
-})->name('panduan');
 
 // Search route
 Route::post('/search', [PublicSearchController::class, 'search'])->name('public.search');
