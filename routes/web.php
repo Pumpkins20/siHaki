@@ -34,8 +34,8 @@ Route::get('/detail_pencipta/{id}', [PublicSearchController::class, 'detailPenci
 
 Route::get('/detail_ciptaan/{id}', [PublicSearchController::class, 'detailCiptaan'])->name('detail_ciptaan');
 
-// Add this route if not exists
-Route::get('/sertifikat/view/{submission}', [PublicSearchController::class, 'viewCertificate'])->name('public.certificate.view');
+// ✅ ADD: Route untuk melihat sertifikat
+Route::get('/sertifikat/view/{id}', [PublicSearchController::class, 'viewCertificate'])->name('sertifikat.view');
 
 Route::get('/detail_jenis', function () {
     return view('detail_jenis');

@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use App\Models\HkiSubmission;
 use App\Models\SubmissionMember;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
+
 
 class PublicSearchController extends Controller
 {
@@ -312,10 +314,9 @@ class PublicSearchController extends Controller
             ->where('role', 'user')
             ->with([
                 'submissions' => function($q) {
+                    // ✅ FIXED: Show ALL approved submissions, not just with certificates
                     $q->where('status', 'approved')
-                    ->with(['members', 'documents' => function($docQuery) {
-                        $docQuery->where('document_type', 'certificate');
-                    }]);
+                    ->with(['members', 'documents']); // Remove certificate filter
                 },
                 'department'
             ])
@@ -324,6 +325,13 @@ class PublicSearchController extends Controller
         if (!$user) {
             abort(404, 'Pencipta tidak ditemukan');
         }
+
+        // ✅ DEBUG: Log submissions
+        Log::info('User submissions count:', [
+            'user_id' => $user->id,
+            'total_submissions' => $user->submissions->count(),
+            'approved_submissions' => $user->submissions->where('status', 'approved')->count()
+        ]);
 
         // Transform submissions for detail view
         $submissions = $user->submissions->map(function($submission) {
@@ -340,7 +348,7 @@ class PublicSearchController extends Controller
                     : ($submission->created_at ? $submission->created_at->format('d M Y') : 'Tidak diketahui'),
                 'pencipta_utama' => $submission->members->where('is_leader', true)->first()->name ?? ($submission->user->nama ?? 'Tidak diketahui'),
                 'anggota_pencipta' => $submission->members->where('is_leader', false)->pluck('name')->toArray(),
-                'has_certificate' => $certificate ? true : false,
+                'has_certificate' => $certificate ? true : false, // ✅ FIXED: Check if certificate exists
                 'certificate_path' => $certificate ? $certificate->file_path : null,
                 'created_at' => $submission->created_at,
                 'status' => $submission->status,
@@ -348,13 +356,13 @@ class PublicSearchController extends Controller
             ];
         });
 
-        // Generate statistics
-        $statistics = $this->generateStatistics($user->submissions);
+        // Generate statistics - only for approved submissions
+        $statistics = $this->generateStatistics($user->submissions->where('status', 'approved'));
 
         $pencipta = (object) [
             'id' => $user->id,
             'nama' => $user->nama ?? 'Tidak diketahui',
-            'foto' => $user->foto ?? 'default.png',
+            'foto' => $user->foto ?? null, 
             'institusi' => 'STMIK AMIKOM Surakarta',
             'jurusan' => $user->program_studi ?? ($user->department->name ?? 'N/A'),
             'total_hki' => $submissions->count(),
@@ -463,6 +471,8 @@ class PublicSearchController extends Controller
 
     public function viewCertificate($submissionId)
     {
+        Log::info('Viewing certificate for submission:', ['id' => $submissionId]);
+        
         $submission = HkiSubmission::where('id', $submissionId)
             ->where('status', 'approved')
             ->with(['documents' => function($q) {
@@ -471,24 +481,39 @@ class PublicSearchController extends Controller
             ->first();
 
         if (!$submission) {
+            \Log::warning('Submission not found:', ['id' => $submissionId]);
             abort(404, 'Submission tidak ditemukan atau belum disetujui');
         }
 
         $certificate = $submission->documents->where('document_type', 'certificate')->first();
         
         if (!$certificate) {
-            abort(404, 'Sertifikat tidak ditemukan');
+            \Log::warning('Certificate not found for submission:', ['id' => $submissionId]);
+            // ✅ ENHANCED: Return error page instead of 404
+            return response()->view('errors.certificate-not-found', [
+                'submission' => $submission
+            ], 404);
         }
 
         $filePath = storage_path('app/public/' . $certificate->file_path);
         
         if (!file_exists($filePath)) {
+            Log::error('Certificate file not found:', [
+                'submission_id' => $submissionId,
+                'file_path' => $certificate->file_path,
+                'full_path' => $filePath
+            ]);
             abort(404, 'File sertifikat tidak ditemukan');
         }
 
+        Log::info('Certificate found, serving file:', [
+            'submission_id' => $submissionId,
+            'file_path' => $certificate->file_path
+        ]);
+
         return response()->file($filePath, [
-            'Content-Type' => $certificate->mime_type,
-            'Content-Disposition' => 'inline; filename="' . $certificate->file_name . '"'
+            'Content-Type' => $certificate->mime_type ?? 'application/pdf',
+            'Content-Disposition' => 'inline; filename="' . ($certificate->file_name ?? 'sertifikat.pdf') . '"'
         ]);
     }
 
