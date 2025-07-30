@@ -410,7 +410,7 @@
                                         </span>
                                     @else
                                         <span class="no-certificate-badge">
-                                            <i class="bi bi-clock me-1"></i>Belum Tersertifikasi
+                                            <i class="bi bi-clock me-1"></i>Sertifikat Sedang Diproses
                                         </span>
                                     @endif
                                 </div>
@@ -420,11 +420,22 @@
                                             onclick="viewCertificate('{{ $submission->id }}')">
                                         <i class="bi bi-eye me-1"></i>Lihat Sertifikat
                                     </button>
+                                @else
+                                    <button class="btn btn-secondary" disabled>
+                                        <i class="bi bi-hourglass-split me-1"></i>Sertifikat Belum Tersedia
+                                    </button>
                                 @endif
 
                                 <div class="mt-3 text-muted small">
                                     <i class="bi bi-calendar3 me-1"></i>
                                     Dibuat: {{ $submission->created_at->format('d M Y') }}
+                                </div>
+                                
+                                {{-- ✅ NEW: Show status --}}
+                                <div class="mt-2">
+                                    <span class="badge bg-success">
+                                        <i class="bi bi-check-circle me-1"></i>Disetujui
+                                    </span>
                                 </div>
                             </div>
                         </div>
@@ -594,10 +605,36 @@
             });
         }
 
-        // Certificate viewing function
+        // ✅ ENHANCED: Certificate viewing function with error handling
         function viewCertificate(submissionId) {
             const url = `/sertifikat/view/${submissionId}`;
-            window.open(url, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no');
+            console.log('Opening certificate:', url);
+            
+            // Try to open certificate
+            const certificateWindow = window.open(url, 'certificate', 'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no');
+            
+            // Check if popup was blocked
+            if (!certificateWindow || certificateWindow.closed || typeof certificateWindow.closed == 'undefined') {
+                // Popup blocked, show alternative
+                if (confirm('Popup diblokir. Buka sertifikat di tab baru?')) {
+                    window.open(url, '_blank');
+                }
+            }
+            
+            // Handle errors (if the window loads but shows error)
+            setTimeout(() => {
+                try {
+                    if (certificateWindow && !certificateWindow.closed) {
+                        certificateWindow.addEventListener('error', function() {
+                            alert('Terjadi kesalahan saat memuat sertifikat. Silakan coba lagi nanti.');
+                            certificateWindow.close();
+                        });
+                    }
+                } catch (e) {
+                    // Cross-origin error, ignore
+                    console.log('Cross-origin window access blocked (normal behavior)');
+                }
+            }, 1000);
         }
     </script>
 </body>
