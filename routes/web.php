@@ -29,13 +29,13 @@ Route::get('/pencipta', [PublicSearchController::class, 'searchPencipta'])->name
 
 Route::get('/jenis_ciptaan', [PublicSearchController::class, 'searchJenisCiptaan'])->name('jenis_ciptaan');
 
-Route::get('/detail_pencipta', function () {
-    return view('detail_pencipta');
-})->name('detail_pencipta');
+// ✅ UPDATED: Detail pages with proper controller methods
+Route::get('/detail_pencipta/{id}', [PublicSearchController::class, 'detailPencipta'])->name('detail_pencipta');
 
-Route::get('/detail_ciptaan', function () {
-    return view('detail_ciptaan');
-})->name('detail_ciptaan');
+Route::get('/detail_ciptaan/{id}', [PublicSearchController::class, 'detailCiptaan'])->name('detail_ciptaan');
+
+// Add this route if not exists
+Route::get('/sertifikat/view/{submission}', [PublicSearchController::class, 'viewCertificate'])->name('public.certificate.view');
 
 Route::get('/detail_jenis', function () {
     return view('detail_jenis');
@@ -45,7 +45,7 @@ Route::get('/panduan', function () {
     return view('panduan');
 })->name('panduan');
 
-// ✅ NEW: Search route
+// Search route
 Route::post('/search', [PublicSearchController::class, 'search'])->name('public.search');
 
 // Guest routes (not authenticated)
@@ -190,3 +190,6 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 });
+
+// ✅ ADD: Route untuk detail jenis yang menerima parameter type
+Route::get('/detail_jenis/{type?}', [PublicSearchController::class, 'detailJenis'])->name('detail_jenis');

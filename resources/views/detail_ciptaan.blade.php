@@ -64,32 +64,27 @@
 
                          <div class="info-row">
                             <div class="info-label">Judul HKI</div>
-                            <div class="info-value">Kelompok</div>
+                            <div class="info-value">{{ $ciptaan->judul ?? 'Tidak tersedia' }}</div>
                         </div>
 
                         <div class="info-row">
                             <div class="info-label">Tipe HKI</div>
-                            <div class="info-value">Hak Cipta</div>
+                            <div class="info-value">{{ $ciptaan->tipe_hki ?? 'Tidak tersedia' }}</div>
                         </div>
                         
                         <div class="info-row">
                             <div class="info-label">Jenis HKI</div>
-                            <div class="info-value">Program Komputer</div>
+                            <div class="info-value">{{ $ciptaan->jenis_hki ?? 'Tidak tersedia' }}</div>
                         </div>
                         
                         <div class="info-row">
                             <div class="info-label">Uraian Singkat</div>
-                            <div class="info-value">
-                                XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                                 XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                                  XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                                   XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-                            </div>
+                            <div class="info-value">{{ $ciptaan->uraian_singkat ?? 'Tidak tersedia' }}</div>
                         </div>
                         
                         <div class="info-row">
                             <div class="info-label">Tanggal Publikasi</div>
-                            <div class="info-value">15 Maret 2024</div>
+                            <div class="info-value">{{ $ciptaan->tanggal_publikasi ?? 'Tidak tersedia' }}</div>
                         </div>
                         
        
@@ -103,33 +98,30 @@
                         
                         <div class="info-row">
                             <div class="info-label">Nama Pencipta Utama</div>
-                            <div class="info-value">Dr. Ahmad Fauzi, M.Kom</div>
+                            <div class="info-value">{{ $ciptaan->pencipta_utama ?? 'Tidak tersedia' }}</div>
                         </div>
 
                         <!-- Section Divider -->
                         <hr class="section-divider">
 
                         <!-- Anggota Pencipta Section -->
-                        <div class="section-title">
-                            <i class="bi bi-people-fill me-2"></i>Anggota Pencipta
-                        </div>
-                        
-                        <div class="anggota-list">
-                            <div class="anggota-item">
-                                <div class="anggota-number">1</div>
-                                <div class="anggota-name">Sari Dewi Lestari, S.Kom</div>
+                        @if(isset($ciptaan->anggota_pencipta) && count($ciptaan->anggota_pencipta) > 0)
+                            <!-- Section Divider -->
+                            <hr class="section-divider">
+                            
+                            <div class="section-title">
+                                <i class="bi bi-people-fill me-2"></i>Anggota Pencipta
                             </div>
                             
-                            <div class="anggota-item">
-                                <div class="anggota-number">2</div>
-                                <div class="anggota-name">Budi Santoso, M.T</div>
+                            <div class="anggota-list">
+                                @foreach($ciptaan->anggota_pencipta as $index => $anggota)
+                                    <div class="anggota-item">
+                                        <div class="anggota-number">{{ $index + 1 }}</div>
+                                        <div class="anggota-name">{{ $anggota }}</div>
+                                    </div>
+                                @endforeach
                             </div>
-                            
-                            <div class="anggota-item">
-                                <div class="anggota-number">3</div>
-                                <div class="anggota-name">Rina Kurniasari, S.T</div>
-                            </div>
-                        </div>
+                        @endif
 
                         <!-- Section Divider -->
                         <hr class="section-divider">
@@ -139,15 +131,23 @@
                             <i class="bi bi-file-earmark-pdf me-2"></i>File Sertifikat HKI
                         </div>
                         
-                        <div class="file-info">
-                            <d class="bi bi-file-earmark-pdf"></d>
-                            <div class="file-name">Unduh File Sertifikat HKI</div>
-                            <div class="file-size">2.4 MB • PDF Document</div>
-                            <a href="#" class="btn-download">
-                                <i class="bi bi-download"></i>
-                                Lihat Sertifikat 
-                            </a> <!-- Hanya Bisa Lihat Sertifikat dan Tidak Bisa Mendownload -->
-                        </div>
+                        @if(isset($ciptaan->has_certificate) && $ciptaan->has_certificate)
+                            <div class="file-info">
+                                <i class="bi bi-file-earmark-pdf"></i>
+                                <div class="file-name">Sertifikat HKI {{ $ciptaan->judul ?? 'Ciptaan' }}</div>
+                                <div class="file-size">PDF Document • Tersertifikasi</div>
+                                <button class="btn-download" onclick="viewCertificate('{{ $ciptaan->id }}')">
+                                    <i class="bi bi-eye"></i>
+                                    Lihat Sertifikat 
+                                </button>
+                            </div>
+                        @else
+                            <div class="file-info">
+                                <i class="bi bi-file-earmark-x text-muted"></i>
+                                <div class="file-name text-muted">Sertifikat belum tersedia</div>
+                                <div class="file-size text-muted">Pengajuan belum disetujui atau sertifikat belum diterbitkan</div>
+                            </div>
+                        @endif
 
                         <!-- Action Buttons -->
                         <div class="action-buttons">
@@ -215,6 +215,12 @@
         document.querySelector('.btn-primary:last-child').addEventListener('click', function() {
             window.print();
         });
+
+        // Certificate viewing function
+        function viewCertificate(submissionId) {
+            const url = `/sertifikat/view/${submissionId}`;
+            window.open(url, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes,toolbar=no,menubar=no');
+        }
     </script>
 </body>
 </html>
