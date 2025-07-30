@@ -532,4 +532,64 @@ class PublicSearchController extends Controller
 
         return view('detail_ciptaan', compact('ciptaan'));
     }
+
+    /**
+     * ✅ NEW: Show detail jenis with all submissions of that type
+     */
+    public function detailJenis(Request $request, $type = null)
+    {
+        $searchBy = $request->get('search_by', 'jenis_ciptaan');
+        $query = $request->get('q');
+        
+        $submissions = collect();
+        
+        if ($type) {
+            // Show all submissions of specific type
+            $submissions = HkiSubmission::where('status', 'approved')
+                ->where('creation_type', $type)
+                ->with(['user.department', 'members'])
+                ->paginate(10);
+                
+            $submissions->transform(function($submission) {
+                return (object) [
+                    'id' => $submission->id,
+                    'title' => $submission->title,
+                    'creator' => $submission->members->where('is_leader', true)->first()->name ?? $submission->user->nama,
+                    'publication_date' => $submission->first_publication_date 
+                        ? $submission->first_publication_date->format('d M Y') 
+                        : $submission->created_at->format('d M Y'),
+                    'type' => ucfirst(str_replace('_', ' ', $submission->creation_type)),
+                    'department' => $submission->user->department->name ?? 'N/A'
+                ];
+            });
+        } elseif (!empty($query)) {
+            // Search functionality
+            if ($searchBy === 'jenis_ciptaan') {
+                $submissions = HkiSubmission::where('status', 'approved')
+                    ->where('creation_type', 'like', '%' . $query . '%')
+                    ->with(['user.department', 'members'])
+                    ->paginate(10);
+            } else {
+                $submissions = HkiSubmission::where('status', 'approved')
+                    ->where('title', 'like', '%' . $query . '%')
+                    ->with(['user.department', 'members'])
+                    ->paginate(10);
+            }
+            
+            $submissions->transform(function($submission) {
+                return (object) [
+                    'id' => $submission->id,
+                    'title' => $submission->title,
+                    'creator' => $submission->members->where('is_leader', true)->first()->name ?? $submission->user->nama,
+                    'publication_date' => $submission->first_publication_date 
+                        ? $submission->first_publication_date->format('d M Y') 
+                        : $submission->created_at->format('d M Y'),
+                    'type' => ucfirst(str_replace('_', ' ', $submission->creation_type)),
+                    'department' => $submission->user->department->name ?? 'N/A'
+                ];
+            });
+        }
+        
+        return view('detail_jenis', compact('submissions', 'type', 'searchBy', 'query'));
+    }
 }

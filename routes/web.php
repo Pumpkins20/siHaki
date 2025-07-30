@@ -185,3 +185,6 @@ Route::middleware(['auth'])->group(function () {
         });
     });
 });
+
+// ✅ ADD: Route untuk detail jenis yang menerima parameter type
+Route::get('/detail_jenis/{type?}', [PublicSearchController::class, 'detailJenis'])->name('detail_jenis');
