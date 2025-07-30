@@ -14,7 +14,54 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-       
+        /* ✅ ADD: Enhanced styles for submission cards */
+        .submission-card {
+            transition: all 0.3s ease;
+            border: 1px solid #e9ecef;
+        }
+
+        .submission-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+
+        .submission-card .card-title a {
+            font-weight: 600;
+            color: #2c3e50;
+            transition: color 0.3s ease;
+        }
+
+        .submission-card .card-title a:hover {
+            color: var(--primary-color);
+        }
+
+        /* ✅ ENHANCED: Category card improvements */
+        .category-card {
+            border: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .category-card:hover {
+            border-color: var(--primary-color);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
+        }
+
+        .category-icon i {
+            font-size: 2.5rem;
+            color: var(--primary-color);
+        }
+
+        /* ✅ NEW: Badge enhancements */
+        .badge-sm {
+            font-size: 0.7rem;
+            padding: 0.25rem 0.5rem;
+        }
+
+        /* ✅ NEW: Search suggestions */
+        .btn-outline-primary.btn-sm {
+            font-size: 0.8rem;
+            padding: 0.4rem 0.8rem;
+        }
     </style>
 </head>
 
@@ -43,9 +90,6 @@
                             <a class="nav-link active" href="#jenis">Jenis Ciptaan</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('panduan') }}">Panduan</a>
-                        </li>
-                        <li class="nav-item">
                             <a class="nav-link" href="{{ route('login') }}">Login</a>
                         </li>
                     </ul>
@@ -56,7 +100,8 @@
  <!-- Search Section -->
     <section class="search-section py-4">
         <div class="container">
-            <form method="GET" action="{{ route('pencipta') }}">
+            {{-- ✅ FIXED: Form action should go to jenis_ciptaan route --}}
+            <form method="GET" action="{{ route('jenis_ciptaan') }}">
                 <!-- Dropdown Cari Berdasarkan -->
                 <div class="form-group">
                     <label for="searchBy">Cari Berdasarkan</label>
@@ -81,7 +126,8 @@
         </div>
     </section>
  
-         <!-- Content Section -->
+
+    <!-- Content Section -->
     <section class="content-section">
         <div class="container">
             @if(isset($results) && $results->count())
@@ -146,78 +192,227 @@
                             </div>
                         </div>
                         
-                        {{-- Show search results for titles if searching by title --}}
+                        {{-- ✅ ENHANCED: Show search results for titles if searching by title --}}
                         @if(isset($result->search_results) && $result->search_results->count() > 0)
                             <div class="mt-4">
-                                <h6 class="text-muted">Hasil pencarian judul:</h6>
+                                <h6 class="text-muted">
+                                    <i class="bi bi-list-ul me-1"></i>Hasil pencarian judul dalam kategori {{ $result->type_name }}:
+                                </h6>
                                 <div class="row">
                                     @foreach($result->search_results->take(6) as $submission)
                                         <div class="col-md-6 mb-2">
-                                            <div class="card border-0 shadow-sm">
+                                            <div class="card border-0 shadow-sm submission-card">
                                                 <div class="card-body py-2">
-                                                    <h6 class="card-title mb-1">{{ $submission->title }}</h6>
+                                                    <h6 class="card-title mb-1">
+                                                        {{-- ✅ FIXED: Link to detail_ciptaan with proper ID --}}
+                                                        <a href="{{ route('detail_ciptaan', ['id' => $submission->id ?? 1]) }}" 
+                                                        class="text-decoration-none text-primary">
+                                                            {{ $submission->title }}
+                                                        </a>
+                                                    </h6>
                                                     <small class="text-muted">
-                                                        {{ $submission->creator }} • {{ $submission->department }} • {{ $submission->year }}
+                                                        <i class="bi bi-person me-1"></i>{{ $submission->creator }} • 
+                                                        <i class="bi bi-building me-1"></i>{{ $submission->department }} • 
+                                                        <i class="bi bi-calendar me-1"></i>{{ $submission->year }}
                                                     </small>
                                                     @if(isset($query) && stripos($submission->title, $query) !== false)
-                                                        <br><span class="badge bg-success badge-sm">Sesuai pencarian</span>
+                                                        <br><span class="badge bg-success badge-sm">
+                                                            <i class="bi bi-check-circle me-1"></i>Sesuai pencarian
+                                                        </span>
                                                     @endif
+                                                    
+                                                    {{-- ✅ NEW: Action button for detail --}}
+                                                    <div class="mt-2">
+                                                        <a href="{{ route('detail_ciptaan', ['id' => $submission->id ?? 1]) }}" 
+                                                        class="btn btn-outline-primary btn-sm">
+                                                            <i class="bi bi-eye me-1"></i>Lihat Detail
+                                                        </a>
+                                                    </div>
                                                 </div>
                                             </div>
                                         </div>
                                     @endforeach
                                     @if($result->search_results->count() > 6)
                                         <div class="col-12">
-                                            <small class="text-muted">
-                                                ... dan {{ $result->search_results->count() - 6 }} karya lainnya
-                                            </small>
+                                            <div class="alert alert-light">
+                                                <i class="bi bi-info-circle me-1"></i>
+                                                <small class="text-muted">
+                                                    ... dan <strong>{{ $result->search_results->count() - 6 }}</strong> karya lainnya. 
+                                                    <a href="{{ route('detail_jenis', ['type' => $result->type]) }}" class="text-primary">
+                                                        Lihat semua
+                                                    </a>
+                                                </small>
+                                            </div>
                                         </div>
                                     @endif
                                 </div>
                             </div>
                         @endif
                         
+                        {{-- ✅ ENHANCED: View all button --}}
                         <div class="mt-3">
                             <a href="{{ route('detail_jenis', ['type' => $result->type]) }}" 
-                               class="btn btn-outline-primary">
-                                Lihat Semua {{ $result->type_name }} >
+                            class="btn btn-outline-primary">
+                                <i class="bi bi-arrow-right me-1"></i>Lihat Semua {{ $result->type_name }} ({{ $result->count }} karya)
                             </a>
                         </div>
                     </div>
                 @endforeach
                 
             @elseif(isset($query) && $query)
+                {{-- ✅ ENHANCED: No results found --}}
                 <div class="alert alert-warning">
                     <i class="bi bi-exclamation-triangle me-2"></i>
-                    <strong>Data tidak ditemukan</strong> untuk pencarian "{{ $query }}"
+                    <strong>Data tidak ditemukan</strong> untuk pencarian "<strong>{{ $query }}</strong>"
                     @if(isset($searchBy))
-                        berdasarkan {{ $searchBy === 'jenis_ciptaan' ? 'Jenis Ciptaan' : 'Judul Ciptaan' }}
+                        berdasarkan <strong>{{ $searchBy === 'jenis_ciptaan' ? 'Jenis Ciptaan' : 'Judul Ciptaan' }}</strong>
                     @endif
-                    <br><small>Coba gunakan kata kunci yang berbeda.</small>
+                    <br><small>Coba gunakan kata kunci yang berbeda atau pilih filter pencarian lain.</small>
+                    
+                    {{-- ✅ NEW: Search suggestions --}}
+                    <div class="mt-3">
+                        <strong>Saran pencarian:</strong>
+                        <div class="d-flex gap-2 flex-wrap mt-2">
+                            <a href="{{ route('jenis_ciptaan', ['search_by' => 'jenis_ciptaan', 'q' => 'program']) }}" 
+                            class="btn btn-outline-primary btn-sm">Program Komputer</a>
+                            <a href="{{ route('jenis_ciptaan', ['search_by' => 'jenis_ciptaan', 'q' => 'sinematografi']) }}" 
+                            class="btn btn-outline-primary btn-sm">Sinematografi</a>
+                            <a href="{{ route('jenis_ciptaan', ['search_by' => 'jenis_ciptaan', 'q' => 'buku']) }}" 
+                            class="btn btn-outline-primary btn-sm">Buku</a>
+                            <a href="{{ route('jenis_ciptaan', ['search_by' => 'jenis_ciptaan', 'q' => 'alat']) }}" 
+                            class="btn btn-outline-primary btn-sm">Alat Peraga</a>
+                        </div>
+                    </div>
                 </div>
             @else
-                <!-- Default category display -->
-                <div class="category-card">
-                    <div>
-                        <h3 class="category-title">Program Komputer</h3>
-                        <p class="category-description">Karya cipta berupa aplikasi, software, atau sistem komputer</p>
+                {{-- ✅ ENHANCED: Default category display --}}
+                <div class="row">
+                    <!-- Program Komputer -->
+                    <div class="col-md-6 mb-4">
+                        <div class="category-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="category-title">Program Komputer</h3>
+                                    <p class="category-description">Karya cipta berupa aplikasi, software, atau sistem komputer</p>
+                                    <div class="mt-3">
+                                        <a href="{{ route('detail_jenis', ['type' => 'program_komputer']) }}" 
+                                        class="btn btn-outline-primary">
+                                            <i class="bi bi-arrow-right me-1"></i>Lihat Semua
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="category-icon">
+                                    <i class="bi bi-code-slash"></i>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    <div class="category-icon">
-                        <i class="bi bi-code-slash"></i>
+
+                    <!-- Sinematografi -->
+                    <div class="col-md-6 mb-4">
+                        <div class="category-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="category-title">Sinematografi</h3>
+                                    <p class="category-description">Karya cipta berupa film, video, atau karya audiovisual</p>
+                                    <div class="mt-3">
+                                        <a href="{{ route('detail_jenis', ['type' => 'sinematografi']) }}" 
+                                        class="btn btn-outline-primary">
+                                            <i class="bi bi-arrow-right me-1"></i>Lihat Semua
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="category-icon">
+                                    <i class="bi bi-camera-video"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Buku -->
+                    <div class="col-md-6 mb-4">
+                        <div class="category-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="category-title">Buku</h3>
+                                    <p class="category-description">Karya cipta berupa buku, jurnal, atau publikasi tertulis</p>
+                                    <div class="mt-3">
+                                        <a href="{{ route('detail_jenis', ['type' => 'buku']) }}" 
+                                        class="btn btn-outline-primary">
+                                            <i class="bi bi-arrow-right me-1"></i>Lihat Semua
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="category-icon">
+                                    <i class="bi bi-book"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Alat Peraga -->
+                    <div class="col-md-6 mb-4">
+                        <div class="category-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="category-title">Alat Peraga</h3>
+                                    <p class="category-description">Karya cipta berupa alat bantu pembelajaran atau demonstrasi</p>
+                                    <div class="mt-3">
+                                        <a href="{{ route('detail_jenis', ['type' => 'alat_peraga']) }}" 
+                                        class="btn btn-outline-primary">
+                                            <i class="bi bi-arrow-right me-1"></i>Lihat Semua
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="category-icon">
+                                    <i class="bi bi-tools"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Basis Data -->
+                    <div class="col-md-6 mb-4">
+                        <div class="category-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="category-title">Basis Data</h3>
+                                    <p class="category-description">Karya cipta berupa database atau sistem basis data</p>
+                                    <div class="mt-3">
+                                        <a href="{{ route('detail_jenis', ['type' => 'basis_data']) }}" 
+                                        class="btn btn-outline-primary">
+                                            <i class="bi bi-arrow-right me-1"></i>Lihat Semua
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="category-icon">
+                                    <i class="bi bi-database"></i>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- More categories... -->
+                    <div class="col-md-6 mb-4">
+                        <div class="category-card">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div>
+                                    <h3 class="category-title">Seni Gambar</h3>
+                                    <p class="category-description">Karya cipta berupa lukisan, ilustrasi, atau seni rupa</p>
+                                    <div class="mt-3">
+                                        <a href="{{ route('detail_jenis', ['type' => 'seni_gambar']) }}" 
+                                        class="btn btn-outline-primary">
+                                            <i class="bi bi-arrow-right me-1"></i>Lihat Semua
+                                        </a>
+                                    </div>
+                                </div>
+                                <div class="category-icon">
+                                    <i class="bi bi-palette"></i>
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
-
-                <div class="category-card">
-                    <div>
-                        <h3 class="category-title">Sinematografi</h3>
-                        <p class="category-description">Karya cipta berupa film, video, atau karya audiovisual</p>
-                    </div>
-                    <div class="category-icon">
-                        <i class="bi bi-camera-video"></i>
-                    </div>
-                </div>
-
-                <!-- Add more default categories as needed -->
             @endif
         </div>
     </section>
@@ -226,31 +421,68 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
-        // Search functionality
-        document.querySelector('.search-btn').addEventListener('click', function() {
-            const searchInput = document.querySelector('.search-input');
-            const searchValue = searchInput.value.trim();
+        document.addEventListener('DOMContentLoaded', function() {
+            // ✅ FIXED: Search functionality
+            const searchForm = document.querySelector('form');
+            const searchBtn = document.querySelector('.search-btn');
+            const searchInput = document.querySelector('#searchInput');
             
-            if (searchValue) {
-                // Simulate search functionality
-                console.log('Searching for:', searchValue);
-                // Here you would typically make an API call or filter results
+            // Fix search button event
+            if (searchBtn) {
+                searchBtn.addEventListener('click', function(e) {
+                    const searchValue = searchInput.value.trim();
+                    console.log('Searching for:', searchValue);
+                    // Form akan submit secara normal
+                });
             }
-        });
 
-        // Enter key search
-        document.querySelector('.search-input').addEventListener('keypress', function(e) {            if (e.key === 'Enter') {
-                document.querySelector('.search-btn').click();            }
-        });
+            // Enter key search
+            if (searchInput) {
+                searchInput.addEventListener('keypress', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        searchForm.submit();
+                    }
+                });
+            }
 
-        // Add hover effects and animations
-        document.querySelectorAll('.result-card').forEach(card => {
-            card.addEventListener('mouseenter', function() {
-                this.style.transform = 'translateY(-5px)';
+            // Dynamic placeholder based on search type
+            const searchBy = document.querySelector('#searchBy');
+            if (searchBy) {
+                searchBy.addEventListener('change', function() {
+                    const searchType = this.value;
+                    const placeholders = {
+                        'jenis_ciptaan': 'Contoh: Program Komputer, Sinematografi, Buku',
+                        'judul_ciptaan': 'Contoh: Sistem Informasi, Aplikasi Mobile'
+                    };
+                    
+                    if (searchInput) {
+                        searchInput.placeholder = placeholders[searchType] || 'Masukkan kata kunci pencarian...';
+                    }
+                });
+            }
+
+            // ✅ ENHANCED: Card hover effects
+            document.querySelectorAll('.category-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'translateY(-5px)';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'translateY(0)';
+                });
             });
-            
-            card.addEventListener('mouseleave', function() {
-                this.style.transform = 'translateY(0)';
+
+            // ✅ NEW: Submission card hover effects
+            document.querySelectorAll('.submission-card').forEach(card => {
+                card.addEventListener('mouseenter', function() {
+                    this.style.transform = 'scale(1.02)';
+                    this.style.transition = 'all 0.3s ease';
+                });
+                
+                card.addEventListener('mouseleave', function() {
+                    this.style.transform = 'scale(1)';
+                });
             });
         });
     </script>
