@@ -294,10 +294,10 @@ class PublicSearchController extends Controller
             'program_komputer' => 'Karya cipta berupa aplikasi, software, atau sistem komputer',
             'sinematografi' => 'Karya cipta berupa film, video, atau karya audiovisual',
             'buku' => 'Karya cipta berupa buku, jurnal, atau publikasi tertulis',
-            'poster' => 'Karya cipta berupa desain poster atau media visual',
-            'fotografi' => 'Karya cipta berupa foto atau karya fotografi',
+            'poster' => 'Karya cipta berupa desain poster atau media visual promosi',
+            'fotografi' => 'Karya cipta berupa foto atau karya fotografi artistik',
             'seni_gambar' => 'Karya cipta berupa lukisan, ilustrasi, atau seni rupa',
-            'karakter_animasi' => 'Karya cipta berupa desain karakter untuk animasi',
+            'karakter_animasi' => 'Karya cipta berupa desain karakter untuk animasi atau game',
             'alat_peraga' => 'Karya cipta berupa alat bantu pembelajaran atau demonstrasi',
             'basis_data' => 'Karya cipta berupa database atau sistem basis data'
         ];
@@ -430,11 +430,11 @@ class PublicSearchController extends Controller
     }
 
     /**
-     * ✅ NEW: Get display name for creation type
+     * ✅ NEW: Get creation type display name untuk semua 9 jenis
      */
     private function getCreationTypeDisplayName($type)
     {
-        $names = [
+        $displayNames = [
             'program_komputer' => 'Program Komputer',
             'sinematografi' => 'Sinematografi',
             'buku' => 'Buku',
@@ -446,7 +446,7 @@ class PublicSearchController extends Controller
             'basis_data' => 'Basis Data'
         ];
 
-        return $names[$type] ?? ucfirst(str_replace('_', ' ', $type));
+        return $displayNames[$type] ?? ucfirst(str_replace('_', ' ', $type));
     }
 
     /**
@@ -481,14 +481,14 @@ class PublicSearchController extends Controller
             ->first();
 
         if (!$submission) {
-            \Log::warning('Submission not found:', ['id' => $submissionId]);
+            Log::warning('Submission not found:', ['id' => $submissionId]);
             abort(404, 'Submission tidak ditemukan atau belum disetujui');
         }
 
         $certificate = $submission->documents->where('document_type', 'certificate')->first();
         
         if (!$certificate) {
-            \Log::warning('Certificate not found for submission:', ['id' => $submissionId]);
+            Log::warning('Certificate not found for submission:', ['id' => $submissionId]);
             // ✅ ENHANCED: Return error page instead of 404
             return response()->view('errors.certificate-not-found', [
                 'submission' => $submission
@@ -569,51 +569,55 @@ class PublicSearchController extends Controller
         $submissions = collect();
         
         if ($type) {
-            // Show all submissions of specific type
+            // Show all submissions of specific type with full relations
             $submissions = HkiSubmission::where('status', 'approved')
                 ->where('creation_type', $type)
-                ->with(['user.department', 'members'])
+                ->with([
+                    'user.department', 
+                    'members',
+                    'documents' => function($q) {
+                        $q->where('document_type', 'certificate');
+                    }
+                ])
+                ->orderBy('created_at', 'desc')
                 ->paginate(10);
                 
-            $submissions->transform(function($submission) {
-                return (object) [
-                    'id' => $submission->id,
-                    'title' => $submission->title,
-                    'creator' => $submission->members->where('is_leader', true)->first()->name ?? $submission->user->nama,
-                    'publication_date' => $submission->first_publication_date 
-                        ? $submission->first_publication_date->format('d M Y') 
-                        : $submission->created_at->format('d M Y'),
-                    'type' => ucfirst(str_replace('_', ' ', $submission->creation_type)),
-                    'department' => $submission->user->department->name ?? 'N/A'
-                ];
-            });
         } elseif (!empty($query)) {
-            // Search functionality
+            // Search functionality with full relations
             if ($searchBy === 'jenis_ciptaan') {
                 $submissions = HkiSubmission::where('status', 'approved')
                     ->where('creation_type', 'like', '%' . $query . '%')
-                    ->with(['user.department', 'members'])
+                    ->with([
+                        'user.department', 
+                        'members',
+                        'documents' => function($q) {
+                            $q->where('document_type', 'certificate');
+                        }
+                    ])
+                    ->orderBy('created_at', 'desc')
                     ->paginate(10);
             } else {
                 $submissions = HkiSubmission::where('status', 'approved')
                     ->where('title', 'like', '%' . $query . '%')
-                    ->with(['user.department', 'members'])
+                    ->with([
+                        'user.department', 
+                        'members',
+                        'documents' => function($q) {
+                            $q->where('document_type', 'certificate');
+                        }
+                    ])
+                    ->orderBy('created_at', 'desc')
                     ->paginate(10);
             }
-            
-            $submissions->transform(function($submission) {
-                return (object) [
-                    'id' => $submission->id,
-                    'title' => $submission->title,
-                    'creator' => $submission->members->where('is_leader', true)->first()->name ?? $submission->user->nama,
-                    'publication_date' => $submission->first_publication_date 
-                        ? $submission->first_publication_date->format('d M Y') 
-                        : $submission->created_at->format('d M Y'),
-                    'type' => ucfirst(str_replace('_', ' ', $submission->creation_type)),
-                    'department' => $submission->user->department->name ?? 'N/A'
-                ];
-            });
         }
+        
+        Log::info('Detail Jenis Query Result:', [
+            'type' => $type,
+            'query' => $query,
+            'searchBy' => $searchBy,
+            'total_submissions' => $submissions->count(),
+            'submissions_with_certs' => $submissions->where('documents.count', '>', 0)->count()
+        ]);
         
         return view('detail_jenis', compact('submissions', 'type', 'searchBy', 'query'));
     }
