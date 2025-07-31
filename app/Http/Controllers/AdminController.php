@@ -103,36 +103,86 @@ class AdminController extends Controller
         return view('admin.users.index', compact('users', 'stats'));
     }
 
-    public function storeUser(request $request)
+    public function storeUser(Request $request)
     {
-        $request->validate([
-            'nidn' => 'required|unique:users',
-            'nama' => 'required|string|max:255',
-            'username' => 'required|unique:users',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
-            'program_studi' => 'required|in:D3 Manajemen Informatika,S1 Informatika,S1 Sistem Informasi,S1 Teknologi Informasi',
-            'department_id' => 'required|exists:departments,id',
-            'phone' => 'nullable|string',
-        ]);
+        try {
+            Log::info('Store user request received', [
+                'request_data' => $request->except(['password']),
+                'user_agent' => $request->userAgent()
+            ]);
 
-        // ✅ NEW: Create user with NIDN as default password
-        User::create([
-            'nidn' => $request->nidn,
-            'nama' => $request->nama,
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => Hash::make($request->nidn), // ✅ Password = NIDN
-            'program_studi' => $request->program_studi,
-            'foto' => 'default.png',
-            'role' => 'user', // Always create as user/dosen
-            'phone' => $request->phone,
-            'department_id' => $request->department_id,
-            'is_active' => true,
-        ]);
+            $request->validate([
+                'nidn' => 'required|string|unique:users,nidn',
+                'nama' => 'required|string|max:255',
+                'username' => 'required|string|unique:users,username',
+                'email' => 'required|email|unique:users,email',
+                'program_studi' => 'required|in:D3 Manajemen Informatika,S1 Informatika,S1 Sistem Informasi,S1 Teknologi Informasi',
+                'department_id' => 'required|exists:departments,id',
+                'phone' => 'nullable|string|max:20',
+                'role' => 'required|in:user,admin', // ✅ Add role validation
+                'is_active' => 'nullable|boolean',
+            ], [
+                'nidn.required' => 'NIDN harus diisi',
+                'nidn.unique' => 'NIDN sudah digunakan',
+                'nama.required' => 'Nama harus diisi',
+                'username.required' => 'Username harus diisi',
+                'username.unique' => 'Username sudah digunakan',
+                'email.required' => 'Email harus diisi',
+                'email.unique' => 'Email sudah digunakan',
+                'program_studi.required' => 'Program studi harus dipilih',
+                'department_id.required' => 'Departemen harus dipilih',
+                'role.required' => 'Role harus dipilih',
+            ]);
 
-        return redirect()->route('admin.users.index')
-            ->with('Success', 'User berhasil ditambahkan dengan password default: '. $request->nidn);
+            Log::info('Validation passed, creating user');
+
+            // ✅ FIXED: Create user with all required fields
+            $user = User::create([
+                'nidn' => $request->nidn,
+                'nama' => $request->nama,
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => Hash::make($request->nidn), // ✅ Password = NIDN
+                'program_studi' => $request->program_studi,
+                'foto' => 'default.png',
+                'role' => $request->role ?? 'user', // ✅ Use form input or default to user
+                'phone' => $request->phone,
+                'department_id' => $request->department_id,
+                'is_active' => $request->boolean('is_active', true), // ✅ Default to true
+                'email_verified_at' => now(), // ✅ Mark as verified
+            ]);
+
+            Log::info('User created successfully', [
+                'user_id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email
+            ]);
+
+            // ✅ FIXED: Proper success message with typo fix
+            return redirect()->route('admin.users.index')
+                ->with('success', 'User berhasil ditambahkan dengan password default: ' . $request->nidn);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Validation failed', [
+                'errors' => $e->errors(),
+                'input' => $request->except(['password'])
+            ]);
+            
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+
+        } catch (\Exception $e) {
+            Log::error('User creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->except(['password'])
+            ]);
+
+            return back()
+                ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan user: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     // Show user details

@@ -117,7 +117,7 @@ Route::middleware(['auth'])->group(function () {
         Route::prefix('users')->name('users.')->group(function () {
             Route::get('/', [AdminController::class, 'users'])->name('index');
             Route::get('/create', [AdminController::class, 'createUser'])->name('create');
-            Route::post('/', [AdminController::class, 'storeUser'])->name('store');
+            Route::post('/users', [AdminController::class, 'storeUser'])->name('store');
             Route::get('/{user}', [AdminController::class, 'showUser'])->name('show');
             Route::get('/{user}/edit', [AdminController::class, 'editUser'])->name('edit');
             Route::put('/{user}', [AdminController::class, 'updateUser'])->name('update');
