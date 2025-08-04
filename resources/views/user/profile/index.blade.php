@@ -10,11 +10,11 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 mb-2">
                     <li class="breadcrumb-item"><a href="{{ route('user.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Profile</li>
+                    <li class="breadcrumb-item active">Profil</li>
                 </ol>
             </nav>
-            <h1 class="h3 mb-1 text-gray-800">Profile Pengguna</h1>
-            <p class="text-muted mb-0">Kelola informasi profile dan pengaturan akun Anda</p>
+            <h1 class="h3 mb-1 text-gray-800">Profil Pengguna</h1>
+            <p class="text-muted mb-0">Kelola informasi profil dan pengaturan akun Anda</p>
         </div>
     </div>
 
@@ -24,7 +24,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-person-circle me-2"></i>Foto Profile
+                        <i class="bi bi-person-circle me-2"></i>Foto Profil
                     </h6>
                 </div>
                 <div class="card-body text-center">
@@ -93,7 +93,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-person-badge me-2"></i>Informasi Personal
+                        <i class="bi bi-person-badge me-2"></i>Informasi Pribadi
                     </h6>
                 </div>
                 <div class="card-body">
@@ -144,14 +144,14 @@
                                     <div class="form-text">Program studi tidak dapat diubah</div>
                                 </div>
                             </div>
-                            <div class="col-md-6">
+                           <!--  <div class="col-md-6">
                                 <div class="mb-3">
                                     <label for="department" class="form-label">Departemen</label>
                                     <input type="text" class="form-control bg-light" id="department" 
                                            value="{{ $user->department ? $user->department->name : 'Tidak ada' }}" readonly>
                                     <div class="form-text">Departemen tidak dapat diubah</div>
                                 </div>
-                            </div>
+                            </div> -->
                         </div>
 
                         <div class="d-flex justify-content-end">
@@ -167,7 +167,7 @@
             <div class="card shadow">
                 <div class="card-header py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-shield-lock me-2"></i>Ubah Password
+                        <i class="bi bi-shield-lock me-2"></i>Ubah Kata Sandi
                     </h6>
                 </div>
                 <div class="card-body">
@@ -235,7 +235,7 @@
 
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-warning">
-                                <i class="bi bi-key me-1"></i>Ubah Password
+                                <i class="bi bi-key me-1"></i>Ubah kata sandi
                             </button>
                         </div>
                     </form>

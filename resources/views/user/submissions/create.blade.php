@@ -797,13 +797,13 @@ function updateFormFields() {
 
                 <!-- Documentation File -->
                 <div class="mb-3">
-                    <label for="documentation_file" class="form-label">Dokumentasi Pendukung <span class="text-danger">*</span></label>
+                    <label for="documentation_file" class="form-label">Upload File PDF (Meta Set dan Data Set) <span class="text-danger">*</span></label>
                     <input type="file" class="form-control @error('documentation_file') is-invalid @enderror" 
                         id="documentation_file" name="documentation_file" accept=".pdf,.docx" required>
                     @error('documentation_file')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Format: PDF/DOCX. Maksimal 20MB.</div>
+                    <div class="form-text">Format: . Maksimal 20MB.</div>
                 </div>
             `;
             break;

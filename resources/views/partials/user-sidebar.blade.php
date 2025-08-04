@@ -1,12 +1,10 @@
-<div class="sidebar-header p-3 border-bottom border-light border-opacity-25">
-    <div class="d-flex align-items-center">
+<div class="sidebar-header">
+    <div class="d-flex align-items-center justify-content-center">
         <div class="sidebar-brand">
-            <i class="bi bi-shield-check fs-4 text-white me-2"></i>
-            <span class="sidebar-text">SiHaki User</span>
+            <span class="fs-4">SiHaki</span>
         </div>
     </div>
 </div>
-
 <nav class="sidebar-nav p-2">
     <ul class="nav flex-column">
         <li class="nav-item">

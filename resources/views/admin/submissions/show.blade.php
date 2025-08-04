@@ -61,7 +61,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-info-circle me-2"></i>Informasi Submission
+                        <i class="bi bi-info-circle me-2"></i>Informasi Pengajuan
                     </h6>
                 </div>
                 <div class="card-body">
@@ -114,7 +114,7 @@
                         <div class="col-md-6">
                             <table class="table table-borderless">
                                 <tr>
-                                    <td width="35%"><strong>User:</strong></td>
+                                    <td width="35%"><strong>Pengusul:</strong></td>
                                     <td>
                                         <div>
                                             <strong>{{ $submission->user->nama }}</strong>
@@ -127,10 +127,10 @@
                                     <td><strong>Program Studi:</strong></td>
                                     <td>{{ $submission->user->program_studi }}</td>
                                 </tr>
-                                <tr>
+                                <!-- <tr>
                                     <td><strong>Departemen:</strong></td>
                                     <td>{{ $submission->user->department->name ?? 'N/A' }}</td>
-                                </tr>
+                                </tr> -->
                                 <tr>
                                     <td><strong>Tanggal Submit:</strong></td>
                                     <td>{{ $submission->submission_date ? $submission->submission_date->setTimezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '-' }}</td>
@@ -286,7 +286,7 @@
                                         @if($member->is_leader)
                                             <span class="badge bg-success">Ketua</span>
                                         @else
-                                            <span class="badge bg-secondary">Anggota {{ $member->position }}</span>
+                                            <span class="badge bg-secondary">Anggota {{ $member->id }}</span>
                                         @endif
                                     </td>
                                     <td>

@@ -1,6 +1,6 @@
 <div class="d-flex flex-column h-100 p-3 text-white">
     <a href="{{ route('admin.dashboard') }}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
-        <i class="bi bi-shield-check fs-4 me-2"></i>
+      
         <span class="fs-4">SiHaki Admin</span>
     </a>
 </div>
@@ -14,22 +14,23 @@
                 <span class="sidebar-text">Dashboard</span>
             </a>
         </li>
+
+         <li class="nav-item">
+            <a href="{{ route('admin.users.index') }}" 
+               class="nav-link text-white {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <i class="bi bi-people me-2"></i>
+                <span class="sidebar-text">Kelola Pengguna</span>
+            </a>
+        </li>
         
         <li class="nav-item">
             <a href="{{ route('admin.submissions.index') }}" 
                class="nav-link text-white {{ request()->routeIs('admin.submissions.*') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-check me-2"></i>
-                <span class="sidebar-text">Review Submissions</span>
+                <span class="sidebar-text">Tinjau Pengajuan</span>
             </a>
         </li>
         
-        <li class="nav-item">
-            <a href="{{ route('admin.users.index') }}" 
-               class="nav-link text-white {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
-                <i class="bi bi-people me-2"></i>
-                <span class="sidebar-text">Kelola Users</span>
-            </a>
-        </li>
         
         <li class="nav-item">
             <a href="{{ route('admin.certificates.index') }}" 
@@ -51,19 +52,14 @@
             <small class="text-white-50 text-uppercase px-3 sidebar-text">Account</small>
         </li>
         
-        <li class="nav-item">
-            <a href="#" class="nav-link text-white">
-                <i class="bi bi-person me-2"></i>
-                <span class="sidebar-text">Profile</span>
-            </a>
-        </li>
+     
         
         <li class="nav-item">
             <form method="POST" action="{{ route('logout') }}" class="d-inline w-100">
                 @csrf
                 <button type="submit" class="nav-link text-white bg-transparent border-0 w-100 text-start">
                     <i class="bi bi-box-arrow-right me-2"></i>
-                    <span class="sidebar-text">Logout</span>
+                    <span class="sidebar-text">Keluar</span>
                 </button>
             </form>
         </li>

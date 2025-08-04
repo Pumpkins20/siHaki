@@ -12,11 +12,9 @@
                     <h1 class="h3 mb-0 text-gray-800">My Submissions</h1>
                     <p class="text-muted">Kelola semua submission HKI Anda</p>
                 </div>
-                <div>
-                    <a href="{{ route('user.submissions.create') }}" class="btn btn-success">
-                        <i class="bi bi-plus-circle"></i> Buat Submission Baru
-                    </a>
-                </div>
+                <a href="{{ route('user.submissions.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Pengajuan Baru
+                </a>
             </div>
         </div>
     </div>
@@ -32,6 +30,7 @@
                                 <label for="status" class="form-label">Status</label>
                                 <select name="status" id="status" class="form-select">
                                     <option value="">Semua Status</option>
+                                    {{-- ✅ UPDATED: Hanya tampilkan status aktif --}}
                                     <option value="draft" {{ request('status') == 'draft' ? 'selected' : '' }}>Draft</option>
                                     <option value="submitted" {{ request('status') == 'submitted' ? 'selected' : '' }}>Submitted</option>
                                     <option value="under_review" {{ request('status') == 'under_review' ? 'selected' : '' }}>Under Review</option>

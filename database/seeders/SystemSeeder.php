@@ -84,19 +84,7 @@ class SystemSeeder extends Seeder
                 'department_id' => 3,
                 'is_active' => true,
             ],
-            [
-                'nidn' => '9988776655',
-                'nama' => 'Dr. Dosen Empat',
-                'username' => 'dosen4',
-                'email' => 'dosen4@amikom.ac.id',
-                'password' => Hash::make('9988776655'), // ✅ Password = NIDN
-                'program_studi' => 'S1 Teknologi Informasi',
-                'foto' => 'default.png',
-                'role' => 'user',
-                'phone' => '081234567894',
-                'department_id' => 1,
-                'is_active' => true,
-            ],
+            
         ];
 
         foreach ($users as $userData) {
@@ -106,49 +94,6 @@ class SystemSeeder extends Seeder
             );
         }
 
-        // Create sample submissions
-        $submissions = [
-            [
-                'user_id' => 2, // dosen1
-                'title' => 'Sistem Informasi Akademik Terintegrasi',
-                'type' => 'copyright',
-                'creation_type' => 'program_komputer',
-                'description' => 'Sistem informasi untuk mengelola data akademik mahasiswa dan dosen secara terintegrasi dengan fitur-fitur modern.',
-                'status' => 'approved',
-                'submission_date' => now()->subDays(10),
-                'reviewer_id' => 1, // admin as reviewer
-                'reviewed_at' => now()->subDays(3),
-                'review_notes' => 'Submission sangat baik dan memenuhi semua kriteria HKI.',
-                'member_count' => 2,
-            ],
-            [
-                'user_id' => 3, // dosen2
-                'title' => 'Aplikasi Mobile Learning Berbasis Android',
-                'type' => 'copyright',
-                'creation_type' => 'program_komputer',
-                'description' => 'Aplikasi mobile untuk pembelajaran online berbasis platform Android dengan interface yang user-friendly.',
-                'status' => 'under_review',
-                'submission_date' => now()->subDays(5),
-                'reviewer_id' => 1, // admin as reviewer
-                'member_count' => 3,
-            ],
-            [
-                'user_id' => 4, // dosen3
-                'title' => 'Video Tutorial Pembelajaran Algoritma',
-                'type' => 'copyright',
-                'creation_type' => 'sinematografi',
-                'description' => 'Serie video tutorial untuk pembelajaran algoritma dan struktur data bagi mahasiswa informatika.',
-                'status' => 'submitted',
-                'submission_date' => now()->subDays(2),
-                'member_count' => 2,
-            ],
-        ];
-
-        foreach ($submissions as $submissionData) {
-            HkiSubmission::firstOrCreate(
-                ['title' => $submissionData['title']],
-                $submissionData
-            );
-        }
+        
     }
 }

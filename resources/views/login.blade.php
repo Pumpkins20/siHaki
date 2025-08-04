@@ -50,8 +50,8 @@
                     <!-- Header -->
                     <div class="login-header">
                         <i class="bi bi-shield-lock fs-1 mb-3"></i>
-                        <h2 class="mb-0">SiHaki Login</h2>
-                        <p class="mb-0 opacity-75">Sistem Hak Kekayaan Intelektual</p>
+                        <h2 class="mb-0">SiHaki</h2>
+                        <p class="mb-0 opacity-75">STMIK AMIKOM SURAKARTA</p>
                     </div>
                     
                     <!-- Form -->
@@ -122,27 +122,15 @@
                                 </button>
                             </div>
                         </form>
-                        
-                        <!-- Info -->
-                        <div class="text-center mt-4">
-                            <div class="alert alert-info">
-                                <small>
-                                    <i class="bi bi-info-circle me-1"></i>
-                                    <strong>Info Login:</strong><br>
-                                    • Gunakan NIDN sebagai username<br>
-                                    • Password default sama dengan NIDN<br>
-                                    • Hubungi admin jika mengalami kesulitan
-                                </small>
-                            </div>
-                        </div>
+                       
 
-                        <!-- Contact -->
+                        <!-- 
                         <div class="text-center border-top pt-3">
                             <small class="text-muted">
                                 Butuh bantuan? Hubungi: 
                                 <a href="mailto:hki@amikom.ac.id" class="text-decoration-none">hki@amikom.ac.id</a>
                             </small>
-                        </div>
+                        </div>Contact -->
                     </div>
                 </div>
             </div>
