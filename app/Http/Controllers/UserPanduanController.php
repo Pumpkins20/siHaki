@@ -78,14 +78,14 @@ class UserPanduanController extends Controller
                 'id' => 8,
                 'category' => 'anggota',
                 'question' => 'Bisakah mengganti data anggota setelah submit?',
-                'answer' => 'Data anggota hanya bisa diubah saat status masih Draft atau Revision Needed. Setelah status Under Review, data tidak dapat diubah.',
+                'answer' => 'Data anggota hanya bisa diubah saat status  Revision Needed. Setelah status Under Review atau Submitted, data tidak dapat diubah.',
                 'is_popular' => false
             ],
             [
                 'id' => 9,
                 'category' => 'status',
                 'question' => 'Apa arti dari berbagai status pengajuan?',
-                'answer' => 'Draft (belum submit), Submitted (menunggu review), Under Review (sedang direview), Revision Needed (perlu perbaikan), Approved (disetujui), Rejected (ditolak).',
+                'answer' => 'Submitted (menunggu review), Under Review (sedang direview), Revision Needed (perlu perbaikan), Approved (disetujui), Rejected (ditolak).',
                 'is_popular' => true
             ],
             [
@@ -99,7 +99,7 @@ class UserPanduanController extends Controller
                 'id' => 11,
                 'category' => 'sertifikat',
                 'question' => 'Kapan sertifikat HKI bisa didownload?',
-                'answer' => 'Sertifikat dapat didownload setelah pengajuan berstatus Approved. Anda akan mendapat notifikasi via email dan bisa download melalui halaman riwayat pengajuan.',
+                'answer' => 'Sertifikat dapat didownload setelah pengajuan berstatus Approved dan Reviewer mengirimkan sertifikat. Anda akan mendapat notifikasi via email dan bisa download melalui halaman riwayat pengajuan.',
                 'is_popular' => true
             ],
             [
@@ -148,10 +148,10 @@ class UserPanduanController extends Controller
             [
                 'title' => 'Panduan Lengkap Pengajuan HKI',
                 'description' => 'Panduan step-by-step untuk mengajukan HKI melalui SiHaki',
-                'file' => 'panduan-pengajuan-hki.pdf',
-                'size' => '2.5 MB',
-                'pages' => 15,
-                'updated' => '2024-01-15'
+                'file' => 'Panduan Layanan HKI.pdf',
+                'size' => '175 KB',
+                'pages' => 4,
+                'updated' => '6-08-2025'
             ],
            /* [
                 'title' => 'Template Dokumen HKI',
@@ -184,9 +184,7 @@ class UserPanduanController extends Controller
     public function downloadGuide($filename)
     {
         $allowedFiles = [
-            'panduan-pengajuan-hki.pdf',
-            'template-dokumen-hki.pdf',
-            'faq-sihaki.pdf'
+            'Panduan Layanan HKI.pdf',
         ];
 
         if (!in_array($filename, $allowedFiles)) {

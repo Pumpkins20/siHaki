@@ -223,16 +223,18 @@
                             </div>
                         </div>
 
-                        <div class="alert alert-info">
+                        <div class="p-3 border rounded bg-info-subtle border-info">
+                        <div class="text-info-emphasis">
                             <i class="bi bi-info-circle me-2"></i>
                             <strong>Tips Keamanan:</strong>
-                            <ul class="mb-0 mt-2">
-                                <li>Gunakan kombinasi huruf besar, kecil, angka, dan simbol</li>
-                                <li>Hindari menggunakan informasi personal yang mudah ditebak</li>
-                                <li>Ganti password secara berkala</li>
-                            </ul>
                         </div>
-
+                        <ul class="mb-0 mt-2 text-info-emphasis">
+                            <li>Gunakan kombinasi huruf besar, kecil, angka, dan simbol</li>
+                            <li>Hindari menggunakan informasi personal yang mudah ditebak</li>
+                            <li>Ganti password secara berkala</li>
+                        </ul>
+                    </div>
+                        <br>
                         <div class="d-flex justify-content-end">
                             <button type="submit" class="btn btn-warning">
                                 <i class="bi bi-key me-1"></i>Ubah kata sandi

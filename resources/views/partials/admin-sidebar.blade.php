@@ -1,6 +1,9 @@
-<div class="d-flex flex-column h-100 p-3 text-white">
+<div class="d-flex flex-column h-100 p-3 text-white text-center">
     <a href="{{ route('admin.dashboard') }}" class="d-flex align-items-center mb-3 mb-md-0 me-md-auto text-white text-decoration-none">
+<<<<<<< Updated upstream
       
+=======
+>>>>>>> Stashed changes
         <span class="fs-4">SiHaki Admin</span>
     </a>
 </div>
@@ -23,15 +26,23 @@
             </a>
         </li>
         
+        
         <li class="nav-item">
             <a href="{{ route('admin.submissions.index') }}" 
                class="nav-link text-white {{ request()->routeIs('admin.submissions.*') ? 'active' : '' }}">
                 <i class="bi bi-file-earmark-check me-2"></i>
+<<<<<<< Updated upstream
                 <span class="sidebar-text">Tinjau Pengajuan</span>
             </a>
         </li>
         
         
+=======
+                <span class="sidebar-text">Review Pengajuan</span>
+            </a>
+        </li>
+         
+>>>>>>> Stashed changes
         <li class="nav-item">
             <a href="{{ route('admin.certificates.index') }}" 
                class="nav-link text-white {{ request()->routeIs('admin.certificates.*') ? 'active' : '' }}">
@@ -52,7 +63,17 @@
             <small class="text-white-50 text-uppercase px-3 sidebar-text">Account</small>
         </li>
         
+<<<<<<< Updated upstream
      
+=======
+         <li class="nav-item">
+            <a href="{{ route('admin.users.index') }}" 
+               class="nav-link text-white {{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
+                <i class="bi bi-people me-2"></i>
+                <span class="sidebar-text">Kelola Pengguna</span>
+            </a>
+        </li>
+>>>>>>> Stashed changes
         
         <li class="nav-item">
             <form method="POST" action="{{ route('logout') }}" class="d-inline w-100">

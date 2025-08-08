@@ -19,10 +19,10 @@
                     <p class="text-muted mb-0">Panduan lengkap penggunaan sistem dan FAQ</p>
                 </div>
                 <div>
-                    <a href="{{ route('user.panduan.export-faq') . '?' . http_build_query(request()->query()) }}" 
+                    <!-- <a href="{{ route('user.panduan.export-faq') . '?' . http_build_query(request()->query()) }}" 
                        class="btn btn-success me-2">
                         <i class="bi bi-download"></i> Export FAQ
-                    </a>
+                    </a> -->
                     <a href="{{ route('user.submissions.create') }}" class="btn btn-primary">
                         <i class="bi bi-plus-circle"></i> Ajukan HKI
                     </a>
@@ -195,9 +195,9 @@
                                                 {{ $categories[$faq['category']] }}
                                             </span>
                                             <span class="flex-grow-1">{{ $faq['question'] }}</span>
-                                            @if($faq['is_popular'])
-                                                <span class="badge bg-warning text-dark ms-2">Populer</span>
-                                            @endif
+                                            <!--@if($faq['is_popular'])
+                                                 <span class="badge bg-warning text-dark ms-2">Populer</span>
+                                            @endif -->
                                         </div>
                                     </button>
                                 </h2>
@@ -349,7 +349,16 @@ document.addEventListener('DOMContentLoaded', function() {
 }
 
 .badge {
-    font-size: 0.7em;
+    font-size: 0.85em;
+    padding: 0.5rem 0.8rem;
+    min-width: 90px;
+    text-align: center;
+    display: inline-block;
+    margin-right: 1rem;
+    font-weight: 700; /* Bold text */
+    color: #000 !important; /* Black text color */
+    text-transform: uppercase; /* Optional: uppercase for more emphasis */
+    letter-spacing: 0.5px; /* Optional: improved legibility */
 }
 
 .card-title {

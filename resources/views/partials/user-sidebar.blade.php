@@ -1,7 +1,14 @@
+<<<<<<< Updated upstream
 <div class="sidebar-header">
     <div class="d-flex align-items-center justify-content-center">
         <div class="sidebar-brand">
             <span class="fs-4">SiHaki</span>
+=======
+<div class="sidebar-header p-3 border-light border-opacity-25">
+    <div class="d-flex align-items-center justify-content-center">
+        <div class="sidebar-brand">
+            <h2 class="align-text-center">SiHaki</h2>
+>>>>>>> Stashed changes
         </div>
     </div>
 </div>
@@ -47,7 +54,7 @@
             <a href="{{ route('user.profile') }}" 
                class="nav-link text-white {{ request()->routeIs('user.profile.*') ? 'active' : '' }}">
                 <i class="bi bi-person me-2"></i>
-                <span class="sidebar-text">Profile</span>
+                <span class="sidebar-text">Profil</span>
             </a>
         </li>
         
@@ -56,7 +63,7 @@
                 @csrf
                 <button type="submit" class="nav-link text-white bg-transparent border-0 w-100 text-start">
                     <i class="bi bi-box-arrow-right me-2"></i>
-                    <span class="sidebar-text">Logout</span>
+                    <span class="sidebar-text">Keluar</span>
                 </button>
             </form>
         </li>

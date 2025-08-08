@@ -27,6 +27,12 @@
                         <i class="bi bi-plus-circle"></i> Buat Baru
                     </a>
                 </div>
+<<<<<<< Updated upstream
+=======
+                <!-- <a href="{{ route('user.submissions.create') }}" class="btn btn-primary">
+                    <i class="bi bi-plus-circle me-2"></i>Pengajuan Baru
+                </a> -->
+>>>>>>> Stashed changes
             </div>
         </div>
     </div>
@@ -57,7 +63,7 @@
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['approved'] }}</div>
                         </div>
                         <div class="col-auto">
-                            <i class="bi bi-check-circle fs-2 text-gray-300"></i>
+                            <i class="bi bi-check-circle fs-2 text-green-300"></i>
                         </div>
                     </div>
                 </div>
@@ -198,11 +204,21 @@
                                 <thead class="table-light">
                                     <tr>
                                         <th width="5%">No</th>
+<<<<<<< Updated upstream
                                         <th width="25%">Judul & Jenis</th>
                                         <th width="15%">Status</th>
                                         <th width="15%">Tanggal</th>
                                         <th width="15%">Reviewer</th>
                                         <th width="10%">Anggota</th>
+=======
+                                        <th width="30%">Judul</th>
+                                        <th width="12%">Jumlah Anggota</th>
+                                        <th width="12%">Jenis Ciptaan</th>
+                                        <th width="12%">Status</th>
+                                        <th width="12%">Tanggal</th>
+                                        <!-- <th width="12%">Reviewer</th> -->
+                                       
+>>>>>>> Stashed changes
                                         <th width="15%">Aksi</th>
                                     </tr>
                                 </thead>
@@ -212,6 +228,7 @@
                                         <td>{{ $submissions->firstItem() + $index }}</td>
                                         <td>
                                             <div>
+<<<<<<< Updated upstream
                                                 <h6 class="mb-1">{{ Str::limit($submission->title, 40) }}</h6>
                                                 <small class="text-muted">
                                                     <i class="bi bi-tag me-1"></i>
@@ -227,6 +244,34 @@
                                                 ($submission->status === 'draft' ? 'secondary' : 'info'))) 
                                             }}">
                                                 {{ $submission->status_name }}
+=======
+                                                <strong>{{ Str::limit($submission->title, 50) }}</strong>
+                                                <br>
+                                                <!-- <small class="text-muted">{{ Str::limit($submission->description, 80) }}</small> -->
+                                            </div>
+                                        </td>
+                                        <td>
+                                            @if($submission->members->count() > 0)
+                                                <span class="badge bg-info">{{ $submission->members->count() }} orang</span>
+                                                <div class="small mt-1">
+                                                    <strong>{{ $submission->members->where('is_leader', true)->first()->name ?? 'N/A' }}</strong>
+                                                    @if($submission->members->count() > 1)
+                                                        <br><small class="text-muted">+{{ $submission->members->count() - 1 }} lainnya</small>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-secondary">
+                                                {{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}
+                                            </span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-{{ $statusColor }}">
+                                                <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
+>>>>>>> Stashed changes
                                             </span>
                                             @if($submission->status === 'approved')
                                                 <br><small class="text-success"></small>
@@ -242,7 +287,7 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td>
+                                        <!-- <td>
                                             @if($submission->reviewer)
                                                 <div class="small">
                                                     <strong>{{ $submission->reviewer->nama }}</strong>
@@ -253,20 +298,8 @@
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
-                                        </td>
-                                        <td>
-                                            @if($submission->members->count() > 0)
-                                                <span class="badge bg-info">{{ $submission->members->count() }} orang</span>
-                                                <div class="small mt-1">
-                                                    <strong>{{ $submission->members->where('is_leader', true)->first()->name ?? 'N/A' }}</strong>
-                                                    @if($submission->members->count() > 1)
-                                                        <br><small class="text-muted">+{{ $submission->members->count() - 1 }} lainnya</small>
-                                                    @endif
-                                                </div>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
+                                        </td> -->
+                                        
                                         <td>
                                             <div class="btn-group-vertical" role="group">
                                                 <a href="{{ route('user.submissions.show', $submission) }}" 

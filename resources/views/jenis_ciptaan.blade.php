@@ -49,8 +49,14 @@
         .category-icon i {
             font-size: 2.5rem;
             color: var(--primary-color);
+            margin-left: 3rem; 
         }
 
+/* If you want even more separation, you could also add this */
+.category-card > div {
+    justify-content: space-between; /* Ensures maximum space between elements */
+    width: 100%; /* Ensures the flex container takes full width */
+}
         /* ✅ NEW: Badge enhancements */
         .badge-sm {
             font-size: 0.7rem;

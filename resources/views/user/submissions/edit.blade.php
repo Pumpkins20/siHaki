@@ -35,16 +35,16 @@
                         @method('PUT')
                         
                         <!-- Current Status Info -->
-                        <div class="alert alert-info mb-3">
-                            <i class="bi bi-info-circle"></i>
-                            <strong>Status saat ini:</strong> 
-                            <span class="badge bg-{{ $submission->status === 'draft' ? 'secondary' : 'info' }}">
-                                {{ ucfirst(str_replace('_', ' ', $submission->status)) }}
-                            </span>
-                            @if($submission->status === 'revision_needed')
-                                <br><small class="mt-1 d-block">Lakukan perubahan sesuai catatan reviewer dan submit ulang.</small>
-                            @endif
-                        </div>
+                    <div class="p-3 mb-3 border rounded bg-info-subtle border-info">
+                        <i class="bi bi-info-circle text-info me-2"></i>
+                        <strong class="text-info-emphasis">Status saat ini:</strong> 
+                        <span class="badge bg-{{ $submission->status === 'draft' ? 'secondary' : 'info' }}">
+                            {{ ucfirst(str_replace('_', ' ', $submission->status)) }}
+                        </span>
+                        @if($submission->status === 'revision_needed')
+                            <br><small class="mt-1 d-block text-info-emphasis">Lakukan perubahan sesuai catatan reviewer dan submit ulang.</small>
+                        @endif
+                    </div>
 
                         <!-- Title -->
                         <div class="mb-3">
@@ -99,26 +99,33 @@
                         </div>
 
                         <!-- Reviewer Notes (if any) -->
-                        @if($submission->review_notes && $submission->status === 'revision_needed')
-                        <div class="mb-3">
-                            <label class="form-label">Catatan Reviewer</label>
-                            <div class="alert alert-warning">
-                                <i class="bi bi-exclamation-triangle"></i>
-                                {{ $submission->review_notes }}
-                            </div>
-                        </div>
-                        @endif
+                                     @if($submission->review_notes)
+    <hr>
+    <div class="row">
+        <div class="col-12">
+            <h6><strong>Catatan Reviewer:</strong></h6>
+            <div class="p-3 border rounded 
+                        {{ $submission->status === 'approved' ? 'bg-success-subtle border-success text-success-emphasis' : 
+                           ($submission->status === 'rejected' ? 'bg-danger-subtle border-danger text-danger-emphasis' : 
+                            'bg-warning-subtle border-warning text-warning-emphasis') }}">
+                <i class="bi bi-{{ $submission->status === 'approved' ? 'check-circle' : 
+                                   ($submission->status === 'rejected' ? 'x-circle' : 'exclamation-triangle') }} me-2"></i>
+                <strong>{{ $submission->review_notes }}</strong>
+            </div>
+        </div>
+    </div>
+@endif
 
                         <!-- Current Documents -->
                         @if($submission->documents->count() > 0)
                         <div class="mb-3">
-                            <label class="form-label">Dokumen Saat Ini</label>
+                            <br><h6><strong><label class="form-label">Dokumen Saat Ini</label></strong></h6>
                             <div class="table-responsive">
                                 <table class="table table-sm table-bordered">
                                     <thead>
                                         <tr>
-                                            <th>Jenis</th>
                                             <th>Nama File</th>
+                                            <th>Jenis</th>
                                             <th>Ukuran</th>
                                             <th>Aksi</th>
                                         </tr>
@@ -126,6 +133,8 @@
                                     <tbody>
                                         @foreach($submission->documents as $document)
                                         <tr>
+                                            
+                                            <td>{{ $document->file_name }}</td>
                                             <td>
                                                 @if($document->document_type === 'main_document')
                                                     <span class="badge bg-primary">Dokumen Utama</span>
@@ -133,7 +142,6 @@
                                                     <span class="badge bg-secondary">Dokumen Pendukung</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $document->file_name }}</td>
                                             <td>{{ number_format($document->file_size / 1024, 2) }} KB</td>
                                             <td>
                                                 <a href="{{ route('user.submissions.documents.download', $document) }}" 
@@ -160,7 +168,183 @@
                         </div>
                         @endif
 
+<<<<<<< Updated upstream
                         <!-- Document Upload Section - ✅ UPDATED: Sesuaikan dengan creation_type -->
+=======
+                        {{-- ✅ FIXED: Move Members Section INSIDE the form --}}
+                        @if($submission->members->count() > 0)
+                        <div class="mb-4">
+                            <h6 class="fw-bold text-secondary mb-3">
+                                <i class="bi bi-people me-2"></i>Update Data Anggota Pencipta
+                            </h6>
+                            
+                            @foreach($submission->members as $index => $member)
+                                <div class="member-section {{ !$loop->last ? 'border-bottom pb-4 mb-4' : '' }}">
+                                    <div class="d-flex align-items-center mb-3">
+                                        <i class="bi bi-person-circle text-success fs-5 me-2"></i>
+                                        <h6 class="mb-0 fw-bold">{{ $member->is_leader ? 'Ketua' : 'Anggota' }} {{ $loop->iteration }}</h6>
+                                        @if($member->is_leader)
+                                            <span class="badge bg-success ms-2">Ketua Tim</span>
+                                        @endif
+                                    </div>
+                                    
+                                    <div class="row g-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">Nama Pencipta <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control @error('members.'.$index.'.name') is-invalid @enderror" 
+                                                   name="members[{{ $index }}][name]" 
+                                                   value="{{ old('members.'.$index.'.name', $member->name) }}" 
+                                                   placeholder="Nama lengkap" required>
+                                            <input type="hidden" name="members[{{ $index }}][id]" value="{{ $member->id }}">
+                                            @error('members.'.$index.'.name')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">No. WhatsApp <span class="text-danger">*</span></label>
+                                            <input type="tel" class="form-control @error('members.'.$index.'.whatsapp') is-invalid @enderror" 
+                                                   name="members[{{ $index }}][whatsapp]" 
+                                                   value="{{ old('members.'.$index.'.whatsapp', $member->whatsapp) }}" 
+                                                   placeholder="08xxxxxxxxxx" required>
+                                            @error('members.'.$index.'.whatsapp')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        <div class="col-md-6">
+                                            <label class="form-label">Email <span class="text-danger">*</span></label>
+                                            <input type="email" class="form-control @error('members.'.$index.'.email') is-invalid @enderror" 
+                                                   name="members[{{ $index }}][email]" 
+                                                   value="{{ old('members.'.$index.'.email', $member->email) }}" 
+                                                   placeholder="email@example.com" required>
+                                            @error('members.'.$index.'.email')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                        </div>
+                                        
+                                        {{-- KTP Revision Section --}}
+                                        <div class="col-md-6">
+                                            <label class="form-label">
+                                                <i class="bi bi-credit-card-2-front me-1"></i>
+                                                Update Scan KTP (Opsional)
+                                            </label>
+                                            
+                                            {{-- Current KTP Status --}}
+                                            @if($member->ktp)
+                                                <div class="current-ktp-info mb-2">
+                                                    <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded">
+                                                        <div class="d-flex align-items-center">
+                                                            <i class="bi bi-check-circle text-success me-2"></i>
+                                                            <small class="text-success fw-bold">KTP sudah diupload</small>
+                                                        </div>
+                                                        <div class="btn-group" role="group">
+                                                            <button type="button" class="btn btn-sm btn-outline-info" 
+                                                                    onclick="viewKtp('{{ route('user.submissions.member-ktp-preview', [$submission, $member]) }}')"
+                                                                    title="Lihat KTP">
+                                                                <i class="bi bi-eye"></i>
+                                                            </button>
+                                                            <button type="button" class="btn btn-sm btn-outline-warning" 
+                                                                    onclick="toggleKtpUpload({{ $index }})"
+                                                                    title="Ganti KTP">
+                                                                <i class="bi bi-pencil"></i>
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                    <small class="text-muted">
+                                                        Upload tanggal: {{ $member->updated_at->format('d M Y H:i') }} WIB
+                                                    </small>
+                                                </div>
+                                            @else
+                                                <div class="current-ktp-info mb-2">
+                                                    <div class="alert alert-warning py-2">
+                                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                                        <small><strong>KTP belum diupload</strong></small>
+                                                    </div>
+                                                </div>
+                                            @endif
+                                            
+                                            {{-- KTP Upload Input --}}
+                                            <div class="ktp-upload-section" id="ktpUpload_{{ $index }}" 
+                                                 style="display: {{ $member->ktp ? 'none' : 'block' }};">
+                                                <input type="file" 
+                                                       class="form-control @error('members.'.$index.'.ktp') is-invalid @enderror" 
+                                                       name="members[{{ $index }}][ktp]" 
+                                                       accept=".jpg,.jpeg" 
+                                                       id="ktp_{{ $index }}"
+                                                       onchange="validateKtpFile(this, {{ $index }})">
+                                                @error('members.'.$index.'.ktp')
+                                                    <div class="invalid-feedback">{{ $message }}</div>
+                                                @enderror
+                                                
+                                                <div class="form-text">
+                                                    <i class="bi bi-info-circle text-primary me-1"></i>
+                                                    Upload file KTP baru (JPG/JPEG, maksimal 2MB)
+                                                    @if($member->ktp)
+                                                        <br><small class="text-warning">
+                                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                                            File baru akan mengganti KTP yang sudah ada
+                                                        </small>
+                                                    @endif
+                                                </div>
+                                                
+                                                {{-- Preview untuk file baru --}}
+                                                <div class="ktp-preview mt-2" id="ktpPreview_{{ $index }}" style="display: none;">
+                                                    <div class="border rounded p-2 bg-light">
+                                                        <small class="text-info">
+                                                            <i class="bi bi-image me-1"></i>
+                                                            <span id="ktpFileName_{{ $index }}"></span>
+                                                        </small>
+                                                        <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
+                                                                onclick="clearKtpFile({{ $index }})" title="Hapus file">
+                                                            <i class="bi bi-x"></i>
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                            
+                                            @if($member->ktp)
+                                                <div class="mt-2">
+                                                    <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                                            onclick="cancelKtpUpdate({{ $index }})" 
+                                                            id="cancelKtpBtn_{{ $index }}" 
+                                                            style="display: none;">
+                                                        <i class="bi bi-x-circle me-1"></i>Batal Ganti KTP
+                                                    </button>
+                                                </div>
+                                            @endif
+                                        </div>
+                                    </div>
+                                    
+                                    <!-- {{-- Member revision notes --}}
+                                    @if($submission->status === 'revision_needed' && $submission->review_notes)
+                                        <div class="mt-3">
+                                            <div class="alert alert-warning">
+                                                <small>
+                                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                                    <strong>Catatan Reviewer:</strong> Pastikan data anggota dan KTP sudah sesuai dengan catatan revisi.
+                                                </small>
+                                            </div>
+                                        </div>
+                                    @endif -->
+                                </div>
+                            @endforeach
+                            
+                           <div class="p-3 border rounded bg-info-subtle border-info mt-3">
+                            <h6 class="text-info-emphasis mb-2">
+                                <i class="bi bi-lightbulb me-2"></i>Tips Revisi KTP:
+                            </h6>
+                            <ul class="mb-0 small text-info-emphasis">
+                                <li>Upload ulang KTP jika foto tidak jelas atau terpotong</li>
+                                <li>Pastikan semua informasi di KTP dapat dibaca dengan baik</li>
+                                <li>Format file harus JPG/JPEG dengan ukuran maksimal 2MB</li>
+                                <li>KTP harus asli dan masih berlaku</li>
+                            </ul>
+                        </div>
+                        </div>
+                        @endif
+
+                        
+                        <!-- Document Upload Section -->
+>>>>>>> Stashed changes
                         <div class="mb-4">
                             <h6 class="fw-bold text-secondary mb-3">
                                 <i class="bi bi-file-earmark-arrow-up me-2"></i>Update Dokumen
@@ -204,7 +388,7 @@
                                 </div>
 
                             @elseif($submission->creation_type === 'sinematografi')
-                                <!-- Metadata File -->
+                                <!-- 
                                 <div class="mb-3">
                                     <label for="metadata_file" class="form-label">
                                         {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti File Metadata Video (PDF)' : 'Upload File Metadata Video (PDF)' }}
@@ -224,7 +408,7 @@
                                             <br><small class="text-info"><i class="bi bi-info-circle"></i> File baru akan mengganti file yang sudah ada.</small>
                                         @endif
                                     </div>
-                                </div>
+                                </div>Metadata File -->
 
                                 <!-- Video Link -->
                                 <div class="mb-3">
@@ -262,7 +446,7 @@
                                     </div>
                                 </div>
 
-                                <!-- ISBN -->
+                                <!-- 
                                 <div class="mb-3">
                                     <label for="isbn" class="form-label">ISBN (Opsional)</label>
                                     <input type="text" class="form-control @error('isbn') is-invalid @enderror" 
@@ -273,7 +457,7 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                     <div class="form-text">Jika sudah memiliki ISBN</div>
-                                </div>
+                                </div>ISBN -->
 
                                 <!-- Page Count -->
                                 <div class="mb-3">
@@ -286,11 +470,11 @@
                                     @enderror
                                 </div>
 
-                            @elseif($submission->creation_type === 'poster_fotografi')
+                            @elseif($submission->creation_type === 'poster')
                                 <!-- Image Files -->
                                 <div class="mb-3">
                                     <label for="image_files" class="form-label">
-                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Tambah/Ganti File Gambar (JPG/PNG)' : 'File Gambar (JPG/PNG)' }}
+                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Ganti File Gambar Poster (JPG/PNG)' : 'File Gambar (JPG/PNG)' }}
                                         @if($submission->documents->where('document_type', 'supporting_document')->count() == 0)
                                             <span class="text-danger">*</span>
                                         @endif
@@ -301,7 +485,41 @@
                                     @error('image_files.*')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                    <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 1MB per file.</div>
+                                    <div class="form-text">Upload 1 file yang didukung: image. Maks 1 MB. </div>
+                                </div>
+                                
+                                @elseif($submission->creation_type === 'fotografi')
+                                <div class="mb-3">
+                                    <label for="image_files" class="form-label">
+                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Upload Foto (JPG/PNG)' : 'Upload Foto (JPG/PNG)' }}
+                                        @if($submission->documents->where('document_type', 'supporting_document')->count() == 0)
+                                            <span class="text-danger">*</span>
+                                        @endif
+                                    </label>
+                                    <input type="file" class="form-control @error('image_files.*') is-invalid @enderror" 
+                                           id="image_files" name="image_files[]" accept=".jpg,.jpeg,.png" multiple
+                                           {{ $submission->documents->where('document_type', 'supporting_document')->count() == 0 ? 'required' : '' }}>
+                                    @error('image_files.*')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Upload 1 file yang didukung: image. Maks 1 MB.</div>
+                                </div>
+
+                                 @elseif($submission->creation_type === 'seni_gambar')
+                                <div class="mb-3">
+                                    <label for="image_files" class="form-label">
+                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Upload File Gambar (JPG/PNG)' : 'Upload File Gambar(JPG/PNG)' }}
+                                        @if($submission->documents->where('document_type', 'supporting_document')->count() == 0)
+                                            <span class="text-danger">*</span>
+                                        @endif
+                                    </label>
+                                    <input type="file" class="form-control @error('image_files.*') is-invalid @enderror" 
+                                           id="image_files" name="image_files[]" accept=".jpg,.jpeg,.png" multiple
+                                           {{ $submission->documents->where('document_type', 'supporting_document')->count() == 0 ? 'required' : '' }}>
+                                    @error('image_files.*')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Upload 1 file yang didukung: image. Maks 1 MB.</div>
                                 </div>
 
                             @elseif($submission->creation_type === 'alat_peraga')
@@ -322,7 +540,7 @@
                                     <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 1MB per file.</div>
                                 </div>
 
-                                <!-- Subject -->
+                                <!-- 
                                 <div class="mb-3">
                                     <label for="subject" class="form-label">Mata Pelajaran <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('subject') is-invalid @enderror" 
@@ -334,7 +552,7 @@
                                     @enderror
                                 </div>
 
-                                <!-- Education Level -->
+                                <!-- Education Level
                                 <div class="mb-3">
                                     <label for="education_level" class="form-label">Tingkat Pendidikan <span class="text-danger">*</span></label>
                                     <select class="form-select @error('education_level') is-invalid @enderror" 
@@ -348,13 +566,13 @@
                                     @error('education_level')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div> -->
 
                             @elseif($submission->creation_type === 'basis_data')
                                 <!-- Documentation File -->
                                 <div class="mb-3">
                                     <label for="documentation_file" class="form-label">
-                                        {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti Dokumentasi Basis Data (PDF)' : 'Dokumentasi Basis Data (PDF)' }}
+                                        {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti Dokumentasi Basis Data (Meta Data dan Data Set)' : 'Dokumentasi Basis Data (Meta Data dan Data Set)' }}
                                         @if($submission->documents->where('document_type', 'main_document')->count() == 0)
                                             <span class="text-danger">*</span>
                                         @endif
@@ -368,7 +586,7 @@
                                     <div class="form-text">Format: PDF. Dokumentasi lengkap basis data. Maksimal 20MB.</div>
                                 </div>
 
-                                <!-- Database Type -->
+                                <!-- 
                                 <div class="mb-3">
                                     <label for="database_type" class="form-label">Jenis Database <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('database_type') is-invalid @enderror" 
@@ -378,9 +596,9 @@
                                     @error('database_type')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div> Database Type -->
 
-                                <!-- Record Count -->
+                                <!-- 
                                 <div class="mb-3">
                                     <label for="record_count" class="form-label">Jumlah Record <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control @error('record_count') is-invalid @enderror" 
@@ -389,7 +607,7 @@
                                     @error('record_count')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div>Record Count -->
 
                             @else
                                 <!-- Generic main document upload untuk creation_type lainnya -->
@@ -439,8 +657,13 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
+<<<<<<< Updated upstream
             <!-- Current Status -->
             <div class="card shadow mb-4">
+=======
+            <!-- 
+            <div class="card shadow mb-4"></div>
+>>>>>>> Stashed changes
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Status Submission</h6>
                 </div>
@@ -464,15 +687,67 @@
                                 {{ $submission->submission_date->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
                             </div>
                         @endif
+<<<<<<< Updated upstream
                         
                         @if($submission->reviewed_at)
                             <div class="small text-muted mt-2">
                                 <strong>Tanggal Review:</strong><br>
                                 {{ $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
+=======
+                        Current Status -->
+                        {{-- KTP Upload Input --}}
+                        <div class="ktp-upload-section" id="ktpUpload_{{ $index }}" 
+                             style="display: {{ $member->ktp ? 'none' : 'block' }};">
+                            <input type="file" 
+                                   class="form-control @error('members.'.$index.'.ktp') is-invalid @enderror" 
+                                   name="members[{{ $index }}][ktp]" 
+                                   accept=".jpg,.jpeg" 
+                                   id="ktp_{{ $index }}"
+                                   onchange="validateKtpFile(this, {{ $index }})">
+                            @error('members.'.$index.'.ktp')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            
+                            <div class="form-text">
+                                <i class="bi bi-info-circle text-primary me-1"></i>
+                                Upload file KTP baru (JPG/JPEG, maksimal 2MB)
+                                @if($member->ktp)
+                                    <br><small class="text-warning">
+                                        <i class="bi bi-exclamation-triangle me-1"></i>
+                                        File baru akan mengganti KTP yang sudah ada
+                                    </small>
+                                @endif
+                            </div>
+                            
+                            {{-- Preview untuk file baru --}}
+                            <div class="ktp-preview mt-2" id="ktpPreview_{{ $index }}" style="display: none;">
+                                <div class="border rounded p-2 bg-light">
+                                    <small class="text-info">
+                                        <i class="bi bi-image me-1"></i>
+                                        <span id="ktpFileName_{{ $index }}"></span>
+                                    </small>
+                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
+                                            onclick="clearKtpFile({{ $index }})" title="Hapus file">
+                                        <i class="bi bi-x"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                        
+                        @if($member->ktp)
+                            <div class="mt-2">
+                                <button type="button" class="btn btn-sm btn-outline-secondary" 
+                                        onclick="cancelKtpUpdate({{ $index }})" 
+                                        id="cancelKtpBtn_{{ $index }}" 
+                                        style="display: none;">
+                                    <i class="bi bi-x-circle me-1"></i>Batal Ganti KTP
+                                </button>
+>>>>>>> Stashed changes
                             </div>
                         @endif
                     </div>
                 </div>
+<<<<<<< Updated upstream
             </div>
 
             <!-- Creation Type Info -->
@@ -516,6 +791,12 @@
                             <li>Submit ulang untuk review</li>
                         </ol>
                         
+=======
+                
+                <!--
+                @if($submission->status === 'revision_needed' && $submission->review_notes)
+                    <div class="mt-3">
+>>>>>>> Stashed changes
                         <div class="alert alert-warning">
                             <small>
                                 <i class="bi bi-exclamation-triangle"></i>
@@ -550,8 +831,13 @@
                 </div>
             </div>
         </div>
+<<<<<<< Updated upstream
     </div>
 </div>
+=======
+    </div> -->
+
+>>>>>>> Stashed changes
 
 @push('scripts')
 <script>
@@ -628,3 +914,4 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 @endpush
 @endsection
+
