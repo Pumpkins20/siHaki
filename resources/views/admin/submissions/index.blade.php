@@ -10,16 +10,21 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 mb-2">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Review Submission</li>
+                    <li class="breadcrumb-item active">Tinjau Pengajuan</li>
                 </ol>
             </nav>
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-1 text-gray-800">Review Submission HKI</h1>
-                    <p class="text-muted mb-0">Review dan kelola submission yang sedang dalam proses</p>
+                    <h1 class="h3 mb-1 text-gray-800">Tinjau Pengajuan HKI</h1>
+                    <p class="text-muted mb-0">Tinjau dan kelola pengajuan yang sedang dalam proses</p>
                 </div>
                 <div>
+<<<<<<< Updated upstream
+                   <!-- 
                     <div class="btn-group" role="group">
+=======
+                   <!--<div class="btn-group" role="group">
+>>>>>>> Stashed changes
                         <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
                             <i class="bi bi-download"></i> Export
                         </button>
@@ -35,12 +40,16 @@
                                 </a>
                             </li>
                         </ul>
-                    </div>
+<<<<<<< Updated upstream
+                    </div>-->
+=======
+                    </div> -->
+>>>>>>> Stashed changes
                     <div class="btn-group" role="group">
                        
                         {{-- ✅ NEW: Add link to view all submissions (including completed) --}}
                         <a href="{{ route('admin.review-history.index') }}" class="btn btn-outline-info">
-                            <i class="bi bi-clock-history"></i> Riwayat Review
+                            <i class="bi bi-clock-history"></i> Riwayat Tinjauan
                         </a>
                     </div>
                 </div>
@@ -55,9 +64,13 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Active</div>
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Pengajuan</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total'] ?? 0 }}</div>
-                            <div class="text-xs text-muted">Submission dalam proses</div>
+<<<<<<< Updated upstream
+                            <div class="text-xs text-muted">Pengajuan dalam proses</div>
+=======
+                            <div class="text-xs text-muted">Pengajuan Masuk</div>
+>>>>>>> Stashed changes
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-file-earmark-text fs-2 text-gray-300"></i>
@@ -71,7 +84,7 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Perlu Review</div>
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Perlu Ditunjau</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['need_review'] ?? 0 }}</div>
                             <div class="text-xs text-muted">Belum di-assign</div>
                         </div>
@@ -87,9 +100,9 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
-                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Under Review</div>
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">Dalam Peninjauan</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['under_review'] ?? 0 }}</div>
-                            <div class="text-xs text-muted">Sedang direview</div>
+                            <div class="text-xs text-muted">Sedang ditinjau</div>
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-eye fs-2 text-gray-300"></i>
@@ -103,9 +116,9 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Completed</div>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Selesai Ditinjau</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['completed'] ?? 0 }}</div>
-                            <div class="text-xs text-muted">Sudah selesai direview</div>
+                            <div class="text-xs text-muted">Sudah selesai ditinjau</div>
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-check-circle fs-2 text-gray-300"></i>
@@ -138,7 +151,7 @@
                                 <select name="type" id="type" class="form-select">
                                     <option value="">Semua Jenis</option>
                                     <option value="copyright" {{ request('type') == 'copyright' ? 'selected' : '' }}>Copyright</option>
-                                    <option value="patent" {{ request('type') == 'patent' ? 'selected' : '' }}>Patent</option>
+                                    <!-- <option value="patent" {{ request('type') == 'patent' ? 'selected' : '' }}>Patent</option> -->
                                 </select>
                             </div>
                             <div class="col-md-2">
@@ -167,7 +180,7 @@
                             <div class="col-md-3">
                                 <label for="search" class="form-label">Cari</label>
                                 <input type="text" name="search" id="search" class="form-control" 
-                                       placeholder="Judul, user, atau NIDN..." value="{{ request('search') }}">
+                                       placeholder="Judul, pengusul, atau NIDN..." value="{{ request('search') }}">
                             </div>
                             <div class="col-md-1">
                                 <label class="form-label">&nbsp;</label>
@@ -195,19 +208,19 @@
             <div class="card shadow">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-list-ul me-2"></i>Daftar Submission
+                        <i class="bi bi-list-ul me-2"></i>Daftar Pengajuan
                     </h6>
                     <div class="d-flex align-items-center">
                         <small class="text-muted me-3">
                             Menampilkan {{ $submissions->firstItem() }} - {{ $submissions->lastItem() }} 
-                            dari {{ $submissions->total() }} submission
+                            dari {{ $submissions->total() }} pengajuan
                         </small>
-                        <div class="btn-group btn-group-sm" role="group">
+                        <!--<div class="btn-group btn-group-sm" role="group">
                             <input type="checkbox" class="btn-check" id="selectAll" autocomplete="off">
                             <label class="btn btn-outline-primary" for="selectAll">
                                 <i class="bi bi-check-square"></i> Pilih Semua
                             </label>
-                        </div>
+                        </div>-->
                     </div>
                 </div>
                 <div class="card-body p-0">
@@ -220,11 +233,17 @@
                                             <input type="checkbox" id="selectAllHeader" class="form-check-input">
                                         </th>
                                         <th width="5%">ID</th>
-                                        <th width="25%">Judul & User</th>
+                                        <th width="25%">Judul & Pengusul</th>
+<<<<<<< Updated upstream
                                         <th width="12%">Jenis</th>
                                         <th width="12%">Status</th>
                                         <th width="12%">Tanggal</th>
-                                        <th width="15%">Reviewer</th>
+=======
+                                        <th width="15%">Jenis</th>
+                                        <th width="15%">Status</th>
+                                        <th width="15%">Tanggal</th>
+                                        <!-- <th width="15%">Reviewer</th> -->
+>>>>>>> Stashed changes
                                         <th width="16%">Aksi</th>
                                     </tr>
                                 </thead>
@@ -278,7 +297,11 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td>
+<<<<<<< Updated upstream
+                                        <!--<td>
+=======
+                                       <!--<td>
+>>>>>>> Stashed changes
                                             @if($submission->reviewer)
                                                 <div class="small">
                                                     <strong>{{ $submission->reviewer->nama }}</strong>
@@ -289,7 +312,11 @@
                                             @else
                                                 <span class="text-muted">Belum di-assign</span>
                                             @endif
-                                        </td>
+<<<<<<< Updated upstream
+                                        </td>-->
+=======
+                                        </td> -->
+>>>>>>> Stashed changes
                                         <td>
                                             <div class="btn-group-vertical" role="group">
                                                 <a href="{{ route('admin.submissions.show', $submission) }}" 
@@ -421,9 +448,9 @@
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="revision_notes" class="form-label">Catatan Revisi <span class="text-danger">*</span></label>
+                        <label for="revision_notes" class="form-label">Catatan Revisi </label>
                         <textarea class="form-control" id="revision_notes" name="review_notes" rows="4" 
-                                  placeholder="Jelaskan apa yang perlu diperbaiki..." required></textarea>
+                                  placeholder="Jelaskan apa yang perlu diperbaiki..." ></textarea>
                         <div class="form-text">Berikan panduan yang jelas untuk user melakukan perbaikan</div>
                     </div>
                     <div class="alert alert-warning">

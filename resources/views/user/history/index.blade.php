@@ -32,7 +32,7 @@
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['approved'] }}</div>
                         </div>
                         <div class="col-auto">
-                            <i class="bi bi-check-circle fs-2 text-gray-300"></i>
+                            <i class="bi bi-check-circle fs-2 text-green-300"></i>
                         </div>
                     </div>
                 </div>
@@ -124,13 +124,22 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th width="5%">#</th>
-                                        <th width="30%">Judul & Deskripsi</th>
+                                        <th width="5%">No</th>
+<<<<<<< Updated upstream
+                                        <th width="25%">Judul & Jenis</th>
+                                        <th width="15%">Status</th>
+                                        <th width="15%">Tanggal</th>
+                                        <th width="15%">Reviewer</th>
+                                        <th width="10%">Anggota</th>
+=======
+                                        <th width="30%">Judul</th>
+                                        <th width="12%">Jumlah Anggota</th>
                                         <th width="12%">Jenis Ciptaan</th>
                                         <th width="12%">Status</th>
                                         <th width="12%">Tanggal</th>
-                                        <th width="12%">Reviewer</th>
-                                        <th width="12%">Anggota</th>
+                                        <!-- <th width="12%">Reviewer</th> -->
+                                       
+>>>>>>> Stashed changes
                                         <th width="15%">Aksi</th>
                                     </tr>
                                 </thead>
@@ -170,7 +179,7 @@
                                                 @endif
                                             </div>
                                         </td>
-                                        <td>
+                                        <!-- <td>
                                             @if($submission->reviewer)
                                                 <div class="small">
                                                     <strong>{{ $submission->reviewer->nama }}</strong>
@@ -181,20 +190,8 @@
                                             @else
                                                 <span class="text-muted">-</span>
                                             @endif
-                                        </td>
-                                        <td>
-                                            @if($submission->members->count() > 0)
-                                                <span class="badge bg-info">{{ $submission->members->count() }} orang</span>
-                                                <div class="small mt-1">
-                                                    <strong>{{ $submission->members->where('is_leader', true)->first()->name ?? 'N/A' }}</strong>
-                                                    @if($submission->members->count() > 1)
-                                                        <br><small class="text-muted">+{{ $submission->members->count() - 1 }} lainnya</small>
-                                                    @endif
-                                                </div>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td>
+                                        </td> -->
+                                        
                                         <td>
                                             <div class="btn-group-vertical" role="group">
                                                 <a href="{{ route('user.submissions.show', $submission) }}" 

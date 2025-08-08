@@ -10,14 +10,14 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 mb-2">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.users.index') }}" class="text-decoration-none">Kelola User</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.users.index') }}" class="text-decoration-none">Kelola Pengguna</a></li>
                     <li class="breadcrumb-item active">Tambah Baru</li>
                 </ol>
             </nav>
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-1 text-gray-800">Tambah User Baru</h1>
-                    <p class="text-muted mb-0">Buat akun user baru untuk dosen atau admin</p>
+                    <h1 class="h3 mb-1 text-gray-800">Tambah Pengguna Baru</h1>
+                    <p class="text-muted mb-0">Buat akun pengguna baru untuk dosen atau admin</p>
                 </div>
                 <div>
                     <a href="{{ route('admin.users.index') }}" class="btn btn-outline-secondary">
@@ -34,7 +34,7 @@
             <div class="card shadow">
                 <div class="card-header py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-person-plus me-2"></i>Informasi User Baru
+                        <i class="bi bi-person-plus me-2"></i>Informasi Pengguna Baru
                     </h6>
                 </div>
                 <div class="card-body">
@@ -90,7 +90,7 @@
                                         @error('username')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
-                                        <div class="form-text">Username harus unique</div>
+                                        <div class="form-text">Username sama dengan NIDN</div>
                                     </div>
                                 </div>
                                 <div class="col-md-6">

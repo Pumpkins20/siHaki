@@ -114,7 +114,7 @@
                                     <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
                                 </select>
                             </div>
-                            <div class="col-md-2">
+                            <!--<div class="col-md-2">
                                 <label for="reviewer_id" class="form-label">Reviewer</label>
                                 <select name="reviewer_id" id="reviewer_id" class="form-select">
                                     <option value="">Semua Reviewer</option>
@@ -124,7 +124,7 @@
                                         </option>
                                     @endforeach
                                 </select>
-                            </div>
+                            </div>-->
                             <div class="col-md-2">
                                 <label for="date_from" class="form-label">Dari Tanggal</label>
                                 <input type="date" name="date_from" id="date_from" class="form-control" value="{{ request('date_from') }}">
@@ -133,10 +133,10 @@
                                 <label for="date_to" class="form-label">Sampai Tanggal</label>
                                 <input type="date" name="date_to" id="date_to" class="form-control" value="{{ request('date_to') }}">
                             </div>
-                            <div class="col-md-3">
+                            <div class="col-md-5">
                                 <label for="search" class="form-label">Cari</label>
                                 <input type="text" name="search" id="search" class="form-control" 
-                                       placeholder="Cari judul atau nama user..." value="{{ request('search') }}">
+                                       placeholder="Cari judul atau nama pengusul..." value="{{ request('search') }}">
                             </div>
                             <div class="col-md-1 d-flex align-items-end">
                                 <button type="submit" class="btn btn-primary">

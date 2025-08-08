@@ -68,15 +68,18 @@
                                     <option value="program_komputer" {{ old('creation_type') == 'program_komputer' ? 'selected' : '' }}>Program Komputer</option>
                                     <option value="sinematografi" {{ old('creation_type') == 'sinematografi' ? 'selected' : '' }}>Sinematografi</option>
                                     <option value="buku" {{ old('creation_type') == 'buku' ? 'selected' : '' }}>Buku</option>
-                                    
-                                    {{-- ✅ SEPARATED: Visual creation types --}}
+                                    <option value="poster" {{ old('creation_type') == 'poster' ? 'selected' : '' }}>Poster</option>
+                                    <option value="fotografi" {{ old('creation_type') == 'fotografi' ? 'selected' : '' }}>Fotografi</option>
+                                    <option value="seni_gambar" {{ old('creation_type') == 'seni_gambar' ? 'selected' : '' }}>Seni Gambar</option>
+
+                                    <!-- {{-- ✅ SEPARATED: Visual creation types --}}
                                     <optgroup label="Karya Visual">
                                         <option value="poster" {{ old('creation_type') == 'poster' ? 'selected' : '' }}>Poster</option>
                                         <option value="fotografi" {{ old('creation_type') == 'fotografi' ? 'selected' : '' }}>Fotografi</option>
                                         <option value="seni_gambar" {{ old('creation_type') == 'seni_gambar' ? 'selected' : '' }}>Seni Gambar</option>
-                                        <option value="karakter_animasi" {{ old('creation_type') == 'karakter_animasi' ? 'selected' : '' }}>Karakter Animasi</option>
+                                        <!-- <option value="karakter_animasi" {{ old('creation_type') == 'karakter_animasi' ? 'selected' : '' }}>Karakter Animasi</option> -->
                                     </optgroup>
-                                    
+
                                     <option value="alat_peraga" {{ old('creation_type') == 'alat_peraga' ? 'selected' : '' }}>Alat Peraga</option>
                                     <option value="basis_data" {{ old('creation_type') == 'basis_data' ? 'selected' : '' }}>Basis Data</option>
                                 </select>
@@ -551,7 +554,7 @@ function updateMemberFields() {
                 <div class="d-flex align-items-center mb-3">
                     <i class="bi bi-person-circle text-success fs-5 me-2"></i>
                     <h6 class="mb-0 fw-bold">Anggota Pencipta ${i}</h6>
-                    ${i === 1 ? '<span class="badge bg-success ms-2">Ketua</span>' : ''}
+                    ${i === 1 ? '<span class="badge bg-success ms-2">Pencipta Utama</span>' : ''}
                 </div>
                 
                 <div class="row g-3">
@@ -681,7 +684,7 @@ function updateFormFields() {
                     @error('manual_document')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Format: PDF. Cover, screenshot, dan manual dalam 1 file PDF. Maksimal 20MB.</div>
+                    <div class="form-text">Format: PDF. Cover, screenshot program, dan manual petunjuk penggunaan program dalam 1 file PDF. Maksimal 20MB.</div>
                 </div>
 
                 <!-- Link Program -->
@@ -702,7 +705,6 @@ function updateFormFields() {
                 <ul class="mb-3">
                     <li>File PDF berisi: Cover, Screenshot, Manual penggunaan</li>
                     <li>Link akses program (GitHub/GitLab/dll)</li>
-                    <li>Deskripsi fungsi dan kegunaan program</li>
                 </ul>
             `;
             break;
@@ -824,13 +826,13 @@ function updateFormFields() {
 
                 <!-- Documentation File -->
                 <div class="mb-3">
-                    <label for="documentation_file" class="form-label">Dokumentasi Pendukung <span class="text-danger">*</span></label>
+                    <label for="documentation_file" class="form-label">Upload File PDF (Meta Set dan Data Set) <span class="text-danger">*</span></label>
                     <input type="file" class="form-control @error('documentation_file') is-invalid @enderror" 
                         id="documentation_file" name="documentation_file" accept=".pdf,.docx" required>
                     @error('documentation_file')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Format: PDF/DOCX. Maksimal 20MB.</div>
+                    <div class="form-text">Format: . Maksimal 20MB.</div>
                 </div>
             `;
             break;

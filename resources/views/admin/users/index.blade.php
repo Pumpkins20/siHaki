@@ -11,17 +11,17 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 mb-2">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Kelola User</li>
+                    <li class="breadcrumb-item active">Kelola Pengguna</li>
                 </ol>
             </nav>
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-1 text-gray-800">Kelola User</h1>
-                    <p class="text-muted mb-0">Manajemen user dosen dan admin sistem</p>
+                    <h1 class="h3 mb-1 text-gray-800">Kelola Pengguna</h1>
+                    <p class="text-muted mb-0">Manajemen pengguna dosen dan admin sistem</p>
                 </div>
                 <div>
                     <a href="{{ route('admin.users.create') }}" class="btn btn-success">
-                        <i class="bi bi-person-plus"></i> Tambah User Baru
+                        <i class="bi bi-person-plus"></i> Tambah Pengguna Baru
                     </a>
                 </div>
             </div>
@@ -35,7 +35,7 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total User</div>
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Pengguna</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total'] ?? 0 }}</div>
                         </div>
                         <div class="col-auto">
@@ -50,7 +50,7 @@
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">User Aktif</div>
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Pengguna Aktif</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['active'] ?? 0 }}</div>
                         </div>
                         <div class="col-auto">
@@ -154,11 +154,11 @@
             <div class="card shadow">
                 <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-list-ul me-2"></i>Daftar User
+                        <i class="bi bi-list-ul me-2"></i>Daftar Pengguna
                     </h6>
                     <small class="text-muted">
                         Menampilkan {{ $users->firstItem() }} - {{ $users->lastItem() }} 
-                        dari {{ $users->total() }} user
+                        dari {{ $users->total() }} pengguna
                     </small>
                 </div>
                 <div class="card-body p-0">

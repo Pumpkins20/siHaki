@@ -35,16 +35,16 @@
                         @method('PUT')
                         
                         <!-- Current Status Info -->
-                        <div class="alert alert-info mb-3">
-                            <i class="bi bi-info-circle"></i>
-                            <strong>Status saat ini:</strong> 
-                            <span class="badge bg-{{ $submission->status === 'draft' ? 'secondary' : 'info' }}">
-                                {{ ucfirst(str_replace('_', ' ', $submission->status)) }}
-                            </span>
-                            @if($submission->status === 'revision_needed')
-                                <br><small class="mt-1 d-block">Lakukan perubahan sesuai catatan reviewer dan submit ulang.</small>
-                            @endif
-                        </div>
+                    <div class="p-3 mb-3 border rounded bg-info-subtle border-info">
+                        <i class="bi bi-info-circle text-info me-2"></i>
+                        <strong class="text-info-emphasis">Status saat ini:</strong> 
+                        <span class="badge bg-{{ $submission->status === 'draft' ? 'secondary' : 'info' }}">
+                            {{ ucfirst(str_replace('_', ' ', $submission->status)) }}
+                        </span>
+                        @if($submission->status === 'revision_needed')
+                            <br><small class="mt-1 d-block text-info-emphasis">Lakukan perubahan sesuai catatan reviewer dan submit ulang.</small>
+                        @endif
+                    </div>
 
                         <!-- Title -->
                         <div class="mb-3">
@@ -134,13 +134,13 @@
                         <!-- Current Documents -->
                         @if($submission->documents->count() > 0)
                         <div class="mb-3">
-                            <label class="form-label">Dokumen Saat Ini</label>
+                            <br><h6><strong><label class="form-label">Dokumen Saat Ini</label></strong></h6>
                             <div class="table-responsive">
                                 <table class="table table-sm table-bordered">
                                     <thead>
                                         <tr>
-                                            <th>Jenis</th>
                                             <th>Nama File</th>
+                                            <th>Jenis</th>
                                             <th>Ukuran</th>
                                             <th>Aksi</th>
                                         </tr>
@@ -148,6 +148,8 @@
                                     <tbody>
                                         @foreach($submission->documents as $document)
                                         <tr>
+                                            
+                                            <td>{{ $document->file_name }}</td>
                                             <td>
                                                 @if($document->document_type === 'main_document')
                                                     <span class="badge bg-primary">Dokumen Utama</span>
@@ -155,7 +157,6 @@
                                                     <span class="badge bg-secondary">Dokumen Pendukung</span>
                                                 @endif
                                             </td>
-                                            <td>{{ $document->file_name }}</td>
                                             <td>{{ number_format($document->file_size / 1024, 2) }} KB</td>
                                             <td>
                                                 <a href="{{ route('user.submissions.documents.download', $document) }}" 
@@ -397,7 +398,7 @@
                                 </div>
 
                             @elseif($submission->creation_type === 'sinematografi')
-                                <!-- Metadata File -->
+                                <!-- 
                                 <div class="mb-3">
                                     <label for="metadata_file" class="form-label">
                                         {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti File Metadata Video (PDF)' : 'Upload File Metadata Video (PDF)' }}
@@ -417,7 +418,7 @@
                                             <br><small class="text-info"><i class="bi bi-info-circle"></i> File baru akan mengganti file yang sudah ada.</small>
                                         @endif
                                     </div>
-                                </div>
+                                </div>Metadata File -->
 
                                 <!-- Video Link -->
                                 <div class="mb-3">
@@ -455,7 +456,7 @@
                                     </div>
                                 </div>
 
-                                <!-- ISBN -->
+                                <!-- 
                                 <div class="mb-3">
                                     <label for="isbn" class="form-label">ISBN (Opsional)</label>
                                     <input type="text" class="form-control @error('isbn') is-invalid @enderror" 
@@ -466,7 +467,7 @@
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                     <div class="form-text">Jika sudah memiliki ISBN</div>
-                                </div>
+                                </div>ISBN -->
 
                                 {{-- <!-- Page Count -->
                                 <div class="mb-3">
@@ -479,11 +480,11 @@
                                     @enderror
                                 </div> --}}
 
-                            @elseif($submission->creation_type === 'poster_fotografi')
+                            @elseif($submission->creation_type === 'poster')
                                 <!-- Image Files -->
                                 <div class="mb-3">
                                     <label for="image_files" class="form-label">
-                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Tambah/Ganti File Gambar (JPG/PNG)' : 'File Gambar (JPG/PNG)' }}
+                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Ganti File Gambar Poster (JPG/PNG)' : 'File Gambar (JPG/PNG)' }}
                                         @if($submission->documents->where('document_type', 'supporting_document')->count() == 0)
                                             <span class="text-danger">*</span>
                                         @endif
@@ -494,7 +495,41 @@
                                     @error('image_files.*')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                    <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 1MB per file.</div>
+                                    <div class="form-text">Upload 1 file yang didukung: image. Maks 1 MB. </div>
+                                </div>
+                                
+                                @elseif($submission->creation_type === 'fotografi')
+                                <div class="mb-3">
+                                    <label for="image_files" class="form-label">
+                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Upload Foto (JPG/PNG)' : 'Upload Foto (JPG/PNG)' }}
+                                        @if($submission->documents->where('document_type', 'supporting_document')->count() == 0)
+                                            <span class="text-danger">*</span>
+                                        @endif
+                                    </label>
+                                    <input type="file" class="form-control @error('image_files.*') is-invalid @enderror" 
+                                           id="image_files" name="image_files[]" accept=".jpg,.jpeg,.png" multiple
+                                           {{ $submission->documents->where('document_type', 'supporting_document')->count() == 0 ? 'required' : '' }}>
+                                    @error('image_files.*')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Upload 1 file yang didukung: image. Maks 1 MB.</div>
+                                </div>
+
+                                 @elseif($submission->creation_type === 'seni_gambar')
+                                <div class="mb-3">
+                                    <label for="image_files" class="form-label">
+                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Upload File Gambar (JPG/PNG)' : 'Upload File Gambar(JPG/PNG)' }}
+                                        @if($submission->documents->where('document_type', 'supporting_document')->count() == 0)
+                                            <span class="text-danger">*</span>
+                                        @endif
+                                    </label>
+                                    <input type="file" class="form-control @error('image_files.*') is-invalid @enderror" 
+                                           id="image_files" name="image_files[]" accept=".jpg,.jpeg,.png" multiple
+                                           {{ $submission->documents->where('document_type', 'supporting_document')->count() == 0 ? 'required' : '' }}>
+                                    @error('image_files.*')
+                                        <div class="invalid-feedback">{{ $message }}</div>
+                                    @enderror
+                                    <div class="form-text">Upload 1 file yang didukung: image. Maks 1 MB.</div>
                                 </div>
 
                             @elseif($submission->creation_type === 'alat_peraga')
@@ -515,7 +550,7 @@
                                     <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 1MB per file.</div>
                                 </div>
 
-                                <!-- Subject -->
+                                <!-- 
                                 <div class="mb-3">
                                     <label for="subject" class="form-label">Mata Pelajaran <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('subject') is-invalid @enderror" 
@@ -527,7 +562,7 @@
                                     @enderror
                                 </div>
 
-                                <!-- Education Level -->
+                                <!-- Education Level
                                 <div class="mb-3">
                                     <label for="education_level" class="form-label">Tingkat Pendidikan <span class="text-danger">*</span></label>
                                     <select class="form-select @error('education_level') is-invalid @enderror" 
@@ -541,13 +576,13 @@
                                     @error('education_level')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div> -->
 
                             @elseif($submission->creation_type === 'basis_data')
                                 <!-- Documentation File -->
                                 <div class="mb-3">
                                     <label for="documentation_file" class="form-label">
-                                        {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti Dokumentasi Basis Data (PDF)' : 'Dokumentasi Basis Data (PDF)' }}
+                                        {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti Dokumentasi Basis Data (Meta Data dan Data Set)' : 'Dokumentasi Basis Data (Meta Data dan Data Set)' }}
                                         @if($submission->documents->where('document_type', 'main_document')->count() == 0)
                                             <span class="text-danger">*</span>
                                         @endif
@@ -561,7 +596,7 @@
                                     <div class="form-text">Format: PDF. Dokumentasi lengkap basis data. Maksimal 20MB.</div>
                                 </div>
 
-                                <!-- Database Type -->
+                                <!-- 
                                 <div class="mb-3">
                                     <label for="database_type" class="form-label">Jenis Database <span class="text-danger">*</span></label>
                                     <input type="text" class="form-control @error('database_type') is-invalid @enderror" 
@@ -571,9 +606,9 @@
                                     @error('database_type')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div> Database Type -->
 
-                                <!-- Record Count -->
+                                <!-- 
                                 <div class="mb-3">
                                     <label for="record_count" class="form-label">Jumlah Record <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control @error('record_count') is-invalid @enderror" 
@@ -582,7 +617,7 @@
                                     @error('record_count')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div>Record Count -->
 
                             @else
                                 <!-- Generic main document upload untuk creation_type lainnya -->
@@ -632,8 +667,14 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
+<<<<<<< Updated upstream
             <!-- Current Status -->
             <div class="card shadow mb-4"></div>
+            <div class="card shadow mb-4">
+=======
+            <!-- 
+            <div class="card shadow mb-4"></div>
+>>>>>>> Stashed changes
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Status Submission</h6>
                 </div>
@@ -656,7 +697,14 @@
                                 </div>
                             </div>
                         @endif
+<<<<<<< Updated upstream
                         
+                        @if($submission->reviewed_at)
+                            <div class="small text-muted mt-2">
+                                <strong>Tanggal Review:</strong><br>
+                                {{ $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
+=======
+                        Current Status -->
                         {{-- KTP Upload Input --}}
                         <div class="ktp-upload-section" id="ktpUpload_{{ $index }}" 
                              style="display: {{ $member->ktp ? 'none' : 'block' }};">
@@ -704,14 +752,61 @@
                                         style="display: none;">
                                     <i class="bi bi-x-circle me-1"></i>Batal Ganti KTP
                                 </button>
+>>>>>>> Stashed changes
                             </div>
                         @endif
                     </div>
                 </div>
+<<<<<<< Updated upstream
+            </div>
+
+            <!-- Creation Type Info -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Informasi Pengajuan</h6>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <p class="mb-2">
+                            <strong>Jenis Pengajuan:</strong><br>
+                            <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</span>
+                        </p>
+                        <p class="mb-2">
+                            <strong>Jenis HKI:</strong><br>
+                            <span class="badge bg-info">{{ ucfirst($submission->type) }}</span>
+                        </p>
+                        @if($submission->member_count)
+                            <p class="mb-0">
+                                <strong>Jumlah Anggota:</strong><br>
+                                {{ $submission->member_count }} orang
+                            </p>
+                        @endif
+                    </div>
+                </div>
+            </div>
+
+            <!-- Guidelines for Revision -->
+            @if($submission->status === 'revision_needed')
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Panduan Revisi</h6>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <h6>Langkah-langkah Revisi:</h6>
+                        <ol class="mb-3">
+                            <li>Baca catatan reviewer dengan teliti</li>
+                            <li>Lakukan perubahan sesuai saran</li>
+                            <li>Update dokumen jika diperlukan</li>
+                            <li>Submit ulang untuk review</li>
+                        </ol>
+                        
+=======
                 
-                {{-- Member revision notes --}}
+                <!--
                 @if($submission->status === 'revision_needed' && $submission->review_notes)
                     <div class="mt-3">
+>>>>>>> Stashed changes
                         <div class="alert alert-warning">
                             <small>
                                 <i class="bi bi-exclamation-triangle me-1"></i>
@@ -734,8 +829,13 @@
                 <li>KTP harus asli dan masih berlaku</li>
             </ul>
         </div>
+<<<<<<< Updated upstream
     </div>
+</div>
+=======
+    </div> -->
 
+>>>>>>> Stashed changes
 
 @push('scripts')
 <script>
@@ -898,3 +998,4 @@ function viewKtp(url) {
 </script>
 @endpush
 @endsection
+

@@ -632,7 +632,7 @@ class SubmissionController extends Controller
                     'email' => $memberData['email'],
                     'whatsapp' => $memberData['whatsapp'],
                     'position' => $index + 1,
-                    'is_leader' => $index === 0, // First member is leader
+                    'is_leader' => $index === 1, // First member is leader
                     'ktp' => $ktpPath,
                 ]);
             }
@@ -757,23 +757,20 @@ class SubmissionController extends Controller
                 $rules['ebook_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
                 break;
                 
-            case 'poster_fotografi':
+            case 'poster':
                 $rules['image_files'] = 'nullable|array';
                 $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
                 break;
                 
             case 'alat_peraga':
-                $rules['subject'] = 'required|string|max:255';
-                $rules['education_level'] = 'required|in:sd,smp,sma,kuliah';
                 $rules['photo_files'] = 'nullable|array';
                 $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
                 break;
                 
             case 'basis_data':
-                $rules['database_type'] = 'required|string|max:100';
-                $rules['record_count'] = 'required|integer|min:1';
                 $rules['documentation_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
                 break;
+
         }
     }
 

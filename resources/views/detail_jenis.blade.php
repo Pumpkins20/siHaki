@@ -622,12 +622,12 @@
                                     </span>
                                 </div>
 
-                                <div class="mb-3">
+                               <!--  <div class="mb-3">
                                     <strong>Pencipta Utama:</strong>
                                     <span class="text-primary">
                                         {{ $submission->members->where('is_leader', true)->first()->name ?? $submission->user->nama ?? 'Tidak diketahui' }}
                                     </span>
-                                </div>
+                                </div> -->
 
                                 {{-- ✅ IDENTICAL: Anggota pencipta section sama persis dengan detail_pencipta --}}
                                 @if($submission->members->where('is_leader', false)->count() > 0)
@@ -637,7 +637,12 @@
                                             @foreach($submission->members->where('is_leader', false) as $index => $member)
                                                 <div class="anggota-item">
                                                     <div class="anggota-number">{{ $index + 1 }}</div>
-                                                    <div>{{ $member->name }}</div>
+                                                    <div>
+                                                        {{ $member->name }}
+                                                        @if($index === 0)
+                                                            <span class="badge bg-primary ms-2">(PENCIPTA UTAMA)</span>
+                                                        @endif
+                                                    </div>
                                                 </div>
                                             @endforeach
                                         </div>
@@ -679,19 +684,19 @@
                                     Dibuat: {{ $submission->created_at->format('d M Y') }}
                                 </div>
                                 
-                                <div class="mt-2">
+                                <!--<div class="mt-2">
                                     <span class="badge bg-success">
                                         <i class="bi bi-check-circle me-1"></i>Disetujui
                                     </span>
-                                </div>
+                                </div> -->
 
-                                <!-- Detail Button -->
+                                <!-- Detail Button 
                                 <div class="mt-3">
                                     <a href="{{ route('detail_ciptaan', ['id' => $submission->id]) }}" 
                                        class="btn btn-outline-primary btn-sm">
                                         <i class="bi bi-eye me-1"></i>Lihat Detail Lengkap
                                     </a>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>
@@ -709,11 +714,11 @@
                 <!-- ✅ FALLBACK: Static example data when no results -->
                 <div class="alert alert-info mb-4">
                     <i class="bi bi-info-circle me-2"></i>
-                    <strong>Tidak ada data ditemukan</strong> atau sedang dalam tahap pengembangan.
-                    <br><small>Berikut adalah contoh tampilan data:</small>
+                    <strong>Tidak ada data ditemukan</strong> 
+                    <!--<br><small>Berikut adalah contoh tampilan data:</small> -->
                 </div>
 
-                <!-- Breadcrumb untuk fallback -->
+                <!--
                 <nav aria-label="breadcrumb" class="mb-4">
                     <ol class="breadcrumb">
                         <li class="breadcrumb-item"><a href="{{ route('beranda') }}">Beranda</a></li>
@@ -721,12 +726,12 @@
                         <li class="breadcrumb-item active">Contoh Data</li>
                     </ol>
                 </nav>
-
+                
                 <h4 class="mb-4">
                     <i class="bi bi-file-earmark-text me-2"></i>Contoh Pengajuan HKI (3 item)
                 </h4>
 
-                <!-- Example HKI Cards -->
+                
                 <div class="hki-card">
                     <div class="row">
                         <div class="col-md-8">
@@ -756,7 +761,7 @@
                             <div class="mb-3">
                                 <strong>Pencipta Utama:</strong>
                                 <span class="text-primary">Dr. Ahmad Fauzi, M.Kom</span>
-                            </div>
+                            </div> --
 
                             <div class="mb-3">
                                 <strong>Anggota Pencipta:</strong>
@@ -780,7 +785,7 @@
                                 </span>
                             </div>
 
-                            <button class="btn btn-view-certificate" 
+                            <button class="btn btn-success btn-view-certificate" 
                                     onclick="viewCertificate('1')">
                                 <i class="bi bi-eye me-1"></i>Lihat Sertifikat
                             </button>
@@ -934,7 +939,7 @@
                         </div>
                     </div>
                 </div>
-
+                -->
                 <!-- Static Pagination -->
                 <div class="pagination-wrapper">
                     <nav aria-label="Page navigation">

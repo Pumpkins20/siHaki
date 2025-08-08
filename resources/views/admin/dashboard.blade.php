@@ -12,11 +12,19 @@
                     <div class="row align-items-center">
                         <div class="col-md-8 col-12">
                             <h4 class="card-title mb-2 mb-md-1">Selamat Datang, {{ Auth::user()->nama }}!</h4>
-                            <p class="card-text mb-3 mb-md-0">Dashboard Super Admin - Kelola sistem HKI dan review submission.</p>
+<<<<<<< Updated upstream
+                            <p class="card-text mb-3 mb-md-0">Dashboard Operator - Kelola sistem HKI dan tinjau pengajuan.</p>
                         </div>
                         <div class="col-md-4 col-12 text-md-end text-start">
                             <a href="{{ route('admin.submissions.index') }}" class="btn btn-light btn-lg w-100 w-md-auto">
-                                <i class="bi bi-file-earmark-check"></i> Review Submissions
+                                <i class="bi bi-file-earmark-check"></i> Tinjau Pengajuan
+=======
+                            <p class="card-text mb-3 mb-md-0">Dashboard Operator - Kelola sistem HKI dan review submission.</p>
+                        </div>
+                        <div class="col-md-4 col-12 text-md-end text-start">
+                            <a href="{{ route('admin.submissions.index') }}" class="btn btn-light btn-lg w-100 w-md-auto">
+                                <i class="bi bi-file-earmark-check"></i> Review Pengajuan
+>>>>>>> Stashed changes
                             </a>
                         </div>
                     </div>
@@ -34,7 +42,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
-                                Total Users
+                                Total Pengguna
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_users'] }}</div>
                         </div>
@@ -53,7 +61,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                Total Submissions
+                                Total Pengajuan
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total_submissions'] }}</div>
                         </div>
@@ -72,7 +80,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                Pending Reviews
+                                Menunggu Peninjauan
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pending_reviews'] }}</div>
                         </div>
@@ -91,7 +99,7 @@
                     <div class="row no-gutters align-items-center">
                         <div class="col mr-2">
                             <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                Under Review
+                                Dalam Peninjauan
                             </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['under_review'] }}</div>
                         </div>
@@ -122,11 +130,11 @@
                                 <thead class="d-none d-md-table-header-group">
                                     <tr>
                                         <th>Title</th>
-                                        <th>User</th>
-                                        <th class="d-none d-lg-table-cell">Type</th>
+                                        <th>Pengusul</th>
+                                        <th class="d-none d-lg-table-cell">Tipe Pengajuan</th>
                                         <th>Status</th>
-                                        <th class="d-none d-lg-table-cell">Date</th>
-                                        <th>Action</th>
+                                        <th class="d-none d-lg-table-cell">Tanggal</th>
+                                        <th>Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -232,17 +240,21 @@
             <!-- Today's Stats -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Today's Activity</h6>
+<<<<<<< Updated upstream
+                    <h6 class="m-0 font-weight-bold text-primary">Aktivitas Hari Ini</h6>
+=======
+                    <h6 class="m-0 font-weight-bold text-primary">Aktivitas Harian</h6>
+>>>>>>> Stashed changes
                 </div>
                 <div class="card-body">
                     <div class="row text-center">
                         <div class="col-6 border-end">
                             <div class="h4 mb-0 text-success">{{ $stats['approved_today'] }}</div>
-                            <small class="text-muted">Approved Today</small>
+                            <small class="text-muted">Disetujui Hari Ini</small>
                         </div>
                         <div class="col-6">
                             <div class="h4 mb-0 text-primary">{{ $stats['my_reviews'] }}</div>
-                            <small class="text-muted">My Reviews</small>
+                            <small class="text-muted">Tinjauan Saya</small>
                         </div>
                     </div>
                 </div>
@@ -262,7 +274,7 @@
                                 </div>
                                 <div>
                                     <div class="h6 mb-0">{{ $stats['approved'] ?? 0 }}</div>
-                                    <small class="text-success">Approved</small>
+                                    <small class="text-success">Diterima</small>
                                 </div>
                             </div>
                         </div>
@@ -274,7 +286,7 @@
                                 </div>
                                 <div>
                                     <div class="h6 mb-0">{{ $stats['rejected'] ?? 0 }}</div>
-                                    <small class="text-danger">Rejected</small>
+                                    <small class="text-danger">Ditolak</small>
                                 </div>
                             </div>
                         </div>
@@ -286,7 +298,7 @@
                                 </div>
                                 <div>
                                     <div class="h6 mb-0">{{ $stats['revision_needed'] ?? 0 }}</div>
-                                    <small class="text-warning">Revision</small>
+                                    <small class="text-warning">Revisi</small>
                                 </div>
                             </div>
                         </div>
@@ -298,7 +310,7 @@
                                 </div>
                                 <div>
                                     <div class="h6 mb-0">{{ $stats['submitted'] ?? 0 }}</div>
-                                    <small class="text-primary">Submitted</small>
+                                    <small class="text-primary">Diajukan</small>
                                 </div>
                             </div>
                         </div>
@@ -309,7 +321,7 @@
             <!-- System Info -->
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">System Information</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Informasi Sistem</h6>
                 </div>
                 <div class="card-body">
                     <div class="small">

@@ -19,23 +19,28 @@
             </div>
         </div>
     </div>
-
-    @if(session('warning'))
-        <div class="row mb-4">
-            <div class="col-12">
-                <div class="alert alert-warning alert-dismissible fade show" role="alert">
-                    <i class="bi bi-exclamation-triangle me-2"></i>
-                    <strong>Perhatian!</strong> {{ session('warning') }}
-                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-                    <div class="mt-2">
-                        <a href="#" class="btn btn-sm btn-outline-warning" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
-                            <i class="bi bi-key me-1"></i>Ganti Password Sekarang
-                        </a>
+@if(session('warning'))
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="p-3 border rounded bg-warning-subtle border-warning" role="alert">
+                <div class="d-flex justify-content-between align-items-start">
+                    <div class="flex-grow-1">
+                        <div class="text-warning-emphasis">
+                            <i class="bi bi-exclamation-triangle me-2"></i>
+                            <strong>Perhatian!</strong> {{ session('warning') }}
+                        </div>
+                        <div class="mt-3">
+                            <a href="#" class="btn btn-sm btn-warning" data-bs-toggle="modal" data-bs-target="#changePasswordModal">
+                                <i class="bi bi-key me-1"></i>Ganti Password Sekarang
+                            </a>
+                        </div>
                     </div>
+                    <button type="button" class="btn-close ms-3" onclick="this.parentElement.parentElement.parentElement.style.display='none'"></button>
                 </div>
             </div>
         </div>
-    @endif
+    </div>
+@endif
 
     <div class="row">
         <!-- Progress Bar Pengajuan -->
@@ -75,7 +80,7 @@
                             <div class="row align-items-center">
                                 <div class="col">
                                     <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                        Menunggu Review
+                                        Pending Review
                                     </div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pending_submissions'] }}</div>
                                 </div>
@@ -117,7 +122,7 @@
                             <div class="row align-items-center">
                                 <div class="col">
                                     <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Perlu Revisi
+                                        Revision Needed
                                     </div>
                                     <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['revision_needed'] ?? 0 }}</div>
                                 </div>
@@ -338,10 +343,7 @@
             <form action="{{ route('user.change-password') }}" method="POST">
                 @csrf
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label for="current_password" class="form-label">Password Saat Ini</label>
-                        <input type="password" class="form-control" id="current_password" name="current_password" required>
-                    </div>
+                
                     <div class="mb-3">
                         <label for="new_password" class="form-label">Password Baru</label>
                         <input type="password" class="form-control" id="new_password" name="new_password" required minlength="6">

@@ -13,190 +13,14 @@
     
     <!-- ✅ LOAD: Chart.js CDN di head -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    
+    <link rel="stylesheet" href="{{ asset('landing-page/css/detail_pencipta.css') }}">
+     <!-- Bootstrap CSS -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-icons/1.10.0/font/bootstrap-icons.min.css" rel="stylesheet">
+    <!-- Google Fonts -->
+  
     <style>
-        /* Styling yang sudah ada... */
-        .profile-header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 40px 0;
-        }
-
-        .profile-avatar {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            border: 4px solid rgba(255,255,255,0.3);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 36px;
-            font-weight: bold;
-            overflow: hidden;
-            margin: 0 auto 20px;
-        }
-
-        .profile-avatar img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .statistics-section {
-            background: #f8f9fa;
-            padding: 40px 0;
-        }
-
-        .stats-card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            padding: 25px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-        }
-
-        .chart-container {
-            position: relative;
-            height: 350px;
-            margin: 20px 0;
-        }
-
-        /* ✅ SIMPLIFIED: Simple chart styling */
-        .chart-wrapper {
-            background: white;
-            border-radius: 10px;
-            padding: 20px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-        }
-
-        .stat-item {
-            display: flex;
-            align-items: center;
-            padding: 12px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .stat-item:last-child {
-            border-bottom: none;
-        }
-
-        .stat-color {
-            width: 20px;
-            height: 20px;
-            border-radius: 4px;
-            margin-right: 12px;
-            flex-shrink: 0;
-        }
-
-        .stat-info {
-            flex-grow: 1;
-        }
-
-        .stat-count {
-            background: #667eea;
-            color: white;
-            padding: 4px 12px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: 600;
-        }
-
-        .summary-card {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            border-radius: 15px;
-            padding: 25px;
-            text-align: center;
-        }
-
-        .summary-number {
-            font-size: 3rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        /* Card styling untuk HKI submissions */
-        .hki-card {
-            background: white;
-            border-radius: 12px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-            padding: 25px;
-            margin-bottom: 20px;
-            transition: all 0.3s ease;
-            border-left: 4px solid #667eea;
-        }
-
-        .hki-card:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.15);
-        }
-
-        .certificate-badge {
-            background: #27ae60;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .no-certificate-badge {
-            background: #95a5a6;
-            color: white;
-            padding: 6px 12px;
-            border-radius: 20px;
-            font-size: 12px;
-            font-weight: 500;
-        }
-
-        .btn-view-certificate {
-            background: #27ae60;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            font-size: 14px;
-            transition: all 0.3s ease;
-        }
-
-        .btn-view-certificate:hover {
-            background: #219a52;
-            color: white;
-            transform: translateY(-2px);
-        }
-
-        .anggota-list {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 15px;
-            margin-top: 10px;
-        }
-
-        .anggota-item {
-            display: flex;
-            align-items: center;
-            padding: 8px 0;
-            border-bottom: 1px solid #e9ecef;
-        }
-
-        .anggota-item:last-child {
-            border-bottom: none;
-        }
-
-        .anggota-number {
-            background: #667eea;
-            color: white;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 12px;
-            font-weight: bold;
-            margin-right: 12px;
-        }
+       
     </style>
 </head>
 
@@ -216,10 +40,10 @@
                 <div class="collapse navbar-collapse" id="navbarNav">
                     <ul class="navbar-nav ms-auto">
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('beranda') }}">Beranda</a>
+                          <a class="nav-link" href="{{ route('beranda') }}">Beranda</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{{ route('pencipta') }}">Pencipta</a>
+                            <a class="nav-link active" href="{{ route('pencipta') }}">Pencipta</a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{{ route('jenis_ciptaan') }}">Jenis Ciptaan</a>
@@ -382,24 +206,29 @@
                                     <span class="text-muted">{{ $submission->tanggal_publikasi }}</span>
                                 </div>
 
-                                <div class="mb-3">
+                                <!--<div class="mb-3">
                                     <strong>Pencipta Utama:</strong>
                                     <span class="text-primary">{{ $submission->pencipta_utama }}</span>
-                                </div>
+                                </div> -->
 
-                                @if(count($submission->anggota_pencipta) > 0)
-                                    <div class="mb-3">
-                                        <strong>Anggota Pencipta:</strong>
-                                        <div class="anggota-list">
-                                            @foreach($submission->anggota_pencipta as $index => $anggota)
-                                                <div class="anggota-item">
-                                                    <div class="anggota-number">{{ $index + 1 }}</div>
-                                                    <div>{{ $anggota }}</div>
-                                                </div>
-                                            @endforeach
-                                        </div>
-                                    </div>
-                                @endif
+                               @if(count($submission->anggota_pencipta) > 0)
+    <div class="mb-3">
+        <strong>Anggota Pencipta:</strong>
+        <div class="anggota-list">
+            @foreach($submission->anggota_pencipta as $index => $anggota)
+                <div class="anggota-item">
+                    <div class="anggota-number">{{ $index + 1 }}</div>
+                    <div>
+                        {{ $anggota }}
+                        @if($index === 0)
+                            <span class="badge bg-primary ms-2">(PENCIPTA UTAMA)</span>
+                        @endif
+                    </div>
+                </div>
+            @endforeach
+        </div>
+    </div>
+@endif
                             </div>
 
                             <div class="col-md-4 text-end">
@@ -416,7 +245,7 @@
                                 </div>
 
                                 @if($submission->has_certificate)
-                                    <button class="btn btn-view-certificate" 
+                                    <button class="btn btn-success btn-view-certificate" 
                                             onclick="viewCertificate('{{ $submission->id }}')">
                                         <i class="bi bi-eye me-1"></i>Lihat Sertifikat
                                     </button>
@@ -431,12 +260,12 @@
                                     Dibuat: {{ $submission->created_at->format('d M Y') }}
                                 </div>
                                 
-                                {{-- ✅ NEW: Show status --}}
+                               <!-- {{-- ✅ NEW: Show status --}}
                                 <div class="mt-2">
                                     <span class="badge bg-success">
                                         <i class="bi bi-check-circle me-1"></i>Disetujui
                                     </span>
-                                </div>
+                                </div> -->
                             </div>
                         </div>
                     </div>

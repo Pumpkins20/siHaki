@@ -10,7 +10,7 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 mb-2">
                     <li class="breadcrumb-item"><a href="{{ route('admin.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('admin.submissions.index') }}" class="text-decoration-none">Kelola Submission</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('admin.submissions.index') }}" class="text-decoration-none">Review Pengajuan</a></li>
                     <li class="breadcrumb-item active">Detail #{{ str_pad($submission->id, 4, '0', STR_PAD_LEFT) }}</li>
                 </ol>
             </nav>
@@ -61,7 +61,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-info-circle me-2"></i>Informasi Submission
+                        <i class="bi bi-info-circle me-2"></i>Informasi Pengajuan
                     </h6>
                 </div>
                 <div class="card-body">
@@ -114,7 +114,7 @@
                         <div class="col-md-6">
                             <table class="table table-borderless">
                                 <tr>
-                                    <td width="35%"><strong>User:</strong></td>
+                                    <td width="35%"><strong>Pengusul:</strong></td>
                                     <td>
                                         <div>
                                             <strong>{{ $submission->user->nama }}</strong>
@@ -127,10 +127,10 @@
                                     <td><strong>Program Studi:</strong></td>
                                     <td>{{ $submission->user->program_studi }}</td>
                                 </tr>
-                                <tr>
+                                <!-- <tr>
                                     <td><strong>Departemen:</strong></td>
                                     <td>{{ $submission->user->department->name ?? 'N/A' }}</td>
-                                </tr>
+                                </tr> -->
                                 <tr>
                                     <td><strong>Tanggal Submit:</strong></td>
                                     <td>{{ $submission->submission_date ? $submission->submission_date->setTimezone('Asia/Jakarta')->format('d M Y H:i') . ' WIB' : '-' }}</td>
@@ -163,22 +163,33 @@
                     </div>
 
                     @if($submission->review_notes)
-                    <hr>
-                    <div class="row">
-                        <div class="col-12">
-                            <h6><strong>Catatan Review:</strong></h6>
-                            <div class="alert alert-{{ $submission->status === 'approved' ? 'success' : ($submission->status === 'rejected' ? 'danger' : 'warning') }}">
-                                <i class="bi bi-{{ $submission->status === 'approved' ? 'check-circle' : ($submission->status === 'rejected' ? 'x-circle' : 'exclamation-triangle') }} me-2"></i>
-                                {{ $submission->review_notes }}
-                                @if($submission->reviewed_at)
-                                    <br><small class="text-muted mt-2">
-                                        <i class="bi bi-clock"></i> {{ $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
-                                    </small>
-                                @endif
-                            </div>
-                        </div>
+    <hr>
+    <div class="row">
+        <div class="col-12">
+            <h6><strong>Catatan Review:</strong></h6>
+            <div class="p-3 border rounded 
+                        {{ $submission->status === 'approved' ? 'bg-success-subtle border-success' : 
+                           ($submission->status === 'rejected' ? 'bg-danger-subtle border-danger' : 
+                            'bg-warning-subtle border-warning') }}">
+                <div class="{{ $submission->status === 'approved' ? 'text-success-emphasis' : 
+                               ($submission->status === 'rejected' ? 'text-danger-emphasis' : 
+                                'text-warning-emphasis') }}">
+                    <i class="bi bi-{{ $submission->status === 'approved' ? 'check-circle' : 
+                                       ($submission->status === 'rejected' ? 'x-circle' : 'exclamation-triangle') }} me-2"></i>
+                    <strong>{{ $submission->review_notes }}</strong>
+                </div>
+                @if($submission->reviewed_at)
+                    <div class="mt-2">
+                        <small class="text-muted">
+                            <i class="bi bi-clock me-1"></i> 
+                            {{ $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
+                        </small>
                     </div>
-                    @endif
+                @endif
+            </div>
+        </div>
+    </div>
+@endif
 
                     <!-- Additional Data berdasarkan creation_type -->
                     @if($submission->additional_data)
@@ -264,12 +275,12 @@
                             <tbody>
                                 @foreach($submission->members->sortBy('position') as $index => $member)
                                 <tr>
-                                    <td>{{ $member->position }}</td>
+                                    <td>{{ $member->position - 1}}</td>
                                     <td>
                                         <strong>{{ $member->name }}</strong>
-                                        @if($member->is_leader)
+                                       <!-- @if($member->is_leader)
                                             <br><span class="badge bg-success">Ketua</span>
-                                        @endif
+                                        @endif -->
                                     </td>
                                     <td>
                                         <a href="mailto:{{ $member->email }}" class="text-decoration-none">
@@ -284,9 +295,13 @@
                                     </td>
                                     <td>
                                         @if($member->is_leader)
-                                            <span class="badge bg-success">Ketua</span>
+                                            <span class="badge bg-success">Pencipta Utama</span>
                                         @else
-                                            <span class="badge bg-secondary">Anggota {{ $member->position }}</span>
+<<<<<<< Updated upstream
+                                            <span class="badge bg-secondary">Anggota {{ $member->id }}</span>
+=======
+                                            <span class="badge bg-secondary">Anggota <!--{{ $member->position }} --></span>
+>>>>>>> Stashed changes
                                         @endif
                                     </td>
                                     <td>
@@ -389,7 +404,7 @@
             <div class="card shadow">
                 <div class="card-header py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-clock-history me-2"></i>Riwayat Activity
+                        <i class="bi bi-clock-history me-2"></i>Riwayat Aktivitas
                     </h6>
                 </div>
                 <div class="card-body">
@@ -421,7 +436,7 @@
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-lightning me-2"></i>Quick Actions
+                        <i class="bi bi-lightning me-2"></i>Aksi Cepat
                     </h6>
                 </div>
                 <div class="card-body">
@@ -448,12 +463,12 @@
                         @endif
                         
                         <a href="{{ route('admin.users.show', $submission->user) }}" class="btn btn-outline-info">
-                            <i class="bi bi-person"></i> Lihat Profile User
+                            <i class="bi bi-person"></i> Lihat Profile Pengusul
                         </a>
                         
-                        <button type="button" class="btn btn-outline-secondary" onclick="printSubmission()">
+                        <!--<button type="button" class="btn btn-outline-secondary" onclick="printSubmission()">
                             <i class="bi bi-printer"></i> Print Detail
-                        </button>
+                        </button> -->
                     </div>
                 </div>
             </div>
@@ -501,7 +516,7 @@
                         
                         <div class="status-step {{ $submission->status === 'approved' ? 'active completed' : ($submission->status === 'rejected' ? 'active rejected' : ($submission->status === 'revision_needed' ? 'active revision' : '')) }}">
                             <div class="status-icon">
-                                <i class="bi bi-{{ \App\Helpers\StatusHelper::getStatusIcon($submission->status); }}"></i>
+                                <i class="bi bi-{{ \App\Helpers\StatusHelper::getStatusIcon($submission->status) }}"></i>
                             </div>
                             <div class="status-text">
                                 <strong>{{ \App\Helpers\StatusHelper::getStatusName($submission->status) }}</strong>
