@@ -47,14 +47,7 @@
                                     <option value="program_komputer" {{ request('creation_type') == 'program_komputer' ? 'selected' : '' }}>Program Komputer</option>
                                     <option value="sinematografi" {{ request('creation_type') == 'sinematografi' ? 'selected' : '' }}>Sinematografi</option>
                                     <option value="buku" {{ request('creation_type') == 'buku' ? 'selected' : '' }}>Buku</option>
-<<<<<<< Updated upstream
                                     <option value="poster_fotografi" {{ request('creation_type') == 'poster_fotografi' ? 'selected' : '' }}>Poster/Fotografi</option>
-=======
-                                    <option value="poster" {{ request('creation_type') == 'poster' ? 'selected' : '' }}>Poster</option>
-                                    <option value="fotografi" {{ request('creation_type') == 'fotografi' ? 'selected' : '' }}>Fotografi</option>
-                                    <option value="seni_gambar" {{ request('creation_type') == 'seni_gambar' ? 'selected' : '' }}>Seni Gambar</option>
-                                    <!-- <option value="karakter_animasi" {{ request('creation_type') == 'karakter_animasi' ? 'selected' : '' }}>Karakter Animasi</option> -->
->>>>>>> Stashed changes
                                     <option value="alat_peraga" {{ request('creation_type') == 'alat_peraga' ? 'selected' : '' }}>Alat Peraga</option>
                                     <option value="basis_data" {{ request('creation_type') == 'basis_data' ? 'selected' : '' }}>Basis Data</option>
                                 </select>
@@ -93,14 +86,8 @@
                             <table class="table table-hover">
                                 <thead class="table-light">
                                     <tr>
-<<<<<<< Updated upstream
                                         <th width="5%">#</th>
                                         <th width="25%">Judul & Deskripsi</th>
-=======
-                                        <th width="5%">No</th>
-                                        <th width="20%">Judul</th>
-                                        <th width="10%">Jumlah Anggota</th>
->>>>>>> Stashed changes
                                         <th width="15%">Jenis Ciptaan</th>
                                         <th width="12%">Status</th>
                                         <th width="15%">Tanggal Submit</th>
@@ -128,19 +115,6 @@
                                                     <br><span class="badge bg-info badge-sm">{{ $submission->member_count }} anggota</span>
                                                 @endif -->
                                             </div>
-                                        </td>
-                                         <td>
-                                            @if($submission->members->count() > 0)
-                                                <span class="badge bg-info">{{ $submission->members->count() }} orang</span>
-                                                <div class="small mt-1">
-                                                    <strong>{{ $submission->members->where('is_leader', true)->first()->name ?? 'N/A' }}</strong>
-                                                    @if($submission->members->count() > 1)
-                                                        <br><small class="text-muted">+{{ $submission->members->count() - 1 }} lainnya</small>
-                                                    @endif
-                                                </div>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
                                         </td>
                                         <td>
                                             <span class="badge bg-secondary">

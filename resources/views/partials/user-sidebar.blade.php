@@ -1,14 +1,7 @@
-<<<<<<< Updated upstream
 <div class="sidebar-header">
     <div class="d-flex align-items-center justify-content-center">
         <div class="sidebar-brand">
             <span class="fs-4">SiHaki</span>
-=======
-<div class="sidebar-header p-3 border-light border-opacity-25">
-    <div class="d-flex align-items-center justify-content-center">
-        <div class="sidebar-brand">
-            <h2 class="align-text-center">SiHaki</h2>
->>>>>>> Stashed changes
         </div>
     </div>
 </div>

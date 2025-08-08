@@ -60,6 +60,7 @@ class UserHistoryController extends Controller
         $stats = [
             'total' => HkiSubmission::where('user_id', $user->id)->count(),
             'approved' => HkiSubmission::where('user_id', $user->id)->where('status', 'approved')->count(),
+            'rejected' => HkiSubmission::where('user_id', $user->id)->where('status', 'rejected')->count(),
             'pending' => HkiSubmission::where('user_id', $user->id)->whereIn('status', ['submitted', 'under_review'])->count(),
             'draft' => HkiSubmission::where('user_id', $user->id)->where('status', 'draft')->count(),
             'revision' => HkiSubmission::where('user_id', $user->id)->where('status', 'revision_needed')->count(),

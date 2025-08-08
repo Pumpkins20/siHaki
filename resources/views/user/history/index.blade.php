@@ -7,59 +7,28 @@
     <!-- Page Header -->
     <div class="row mb-4">
         <div class="col-12">
-            <nav aria-label="breadcrumb">
-                <ol class="breadcrumb bg-transparent p-0 mb-2">
-                    <li class="breadcrumb-item"><a href="{{ route('user.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item active">Riwayat Pengajuan</li>
-                </ol>
-            </nav>
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-1 text-gray-800">Riwayat Pengajuan HKI</h1>
-                    <p class="text-muted mb-0">Lihat semua pengajuan HKI yang pernah Anda submit</p>
+                    <h1 class="h3 mb-0 text-gray-800">Riwayat Pengajuan HKI</h1>
+                    <p class="text-muted">Pengajuan yang sudah selesai diproses (Approved & Rejected)</p>
                 </div>
-                <div>
-                    <a href="{{ route('user.history.export') . '?' . http_build_query(request()->query()) }}" 
-                       class="btn btn-success me-2">
-                        <i class="bi bi-download"></i> Export CSV
-                    </a>
-                    <a href="{{ route('user.submissions.create') }}" class="btn btn-primary">
-                        <i class="bi bi-plus-circle"></i> Buat Baru
-                    </a>
-                </div>
-<<<<<<< Updated upstream
-=======
-                <!-- <a href="{{ route('user.submissions.create') }}" class="btn btn-primary">
+                <a href="{{ route('user.submissions.create') }}" class="btn btn-primary">
                     <i class="bi bi-plus-circle me-2"></i>Pengajuan Baru
-                </a> -->
->>>>>>> Stashed changes
+                </a>
             </div>
         </div>
     </div>
 
     <!-- Statistics Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
-            <div class="card border-start border-primary border-4 shadow-sm h-100">
+        <div class="col-md-6">
+            <div class="card border-left-success shadow h-100 py-2">
                 <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total'] }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="bi bi-file-earmark-text fs-2 text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-start border-success border-4 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">Approved</div>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Approved
+                            </div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['approved'] }}</div>
                         </div>
                         <div class="col-auto">
@@ -69,31 +38,18 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
-            <div class="card border-start border-warning border-4 shadow-sm h-100">
+        <div class="col-md-6">
+            <div class="card border-left-danger shadow h-100 py-2">
                 <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Pending</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pending'] }}</div>
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Rejected
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['rejected'] }}</div>
                         </div>
                         <div class="col-auto">
-                            <i class="bi bi-hourglass-split fs-2 text-gray-300"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-        <div class="col-md-3">
-            <div class="card border-start border-danger border-4 shadow-sm h-100">
-                <div class="card-body">
-                    <div class="row align-items-center">
-                        <div class="col">
-                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">Revision</div>
-                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['revision'] }}</div>
-                        </div>
-                        <div class="col-auto">
-                            <i class="bi bi-arrow-clockwise fs-2 text-gray-300"></i>
+                            <i class="bi bi-x-circle fs-2 text-gray-300"></i>
                         </div>
                     </div>
                 </div>
@@ -101,81 +57,50 @@
         </div>
     </div>
 
-    <!-- Filter and Search -->
+    <!-- Filter Section -->
     <div class="row mb-4">
         <div class="col-12">
-            <div class="card shadow-sm">
-                <div class="card-header bg-white py-3">
-                    <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-funnel me-2"></i>Filter & Pencarian
-                    </h6>
-                </div>
+            <div class="card shadow">
                 <div class="card-body">
-                    <form method="GET" action="{{ route('user.history.index') }}" id="filterForm">
+                    <form method="GET" action="{{ route('user.history.index') }}">
                         <div class="row g-3">
+                            <div class="col-md-3">
+                                <label for="status" class="form-label">Status</label>
+                                <select name="status" id="status" class="form-select">
+                                    <option value="">Semua Status</option>
+                                    <option value="approved" {{ request('status') == 'approved' ? 'selected' : '' }}>Approved</option>
+                                    <option value="rejected" {{ request('status') == 'rejected' ? 'selected' : '' }}>Rejected</option>
+                                </select>
+                            </div>
                             <div class="col-md-2">
                                 <label for="year" class="form-label">Tahun</label>
                                 <select name="year" id="year" class="form-select">
                                     <option value="">Semua Tahun</option>
                                     @foreach($years as $year)
-                                        <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>
-                                            {{ $year }}
-                                        </option>
+                                        <option value="{{ $year }}" {{ request('year') == $year ? 'selected' : '' }}>{{ $year }}</option>
                                     @endforeach
                                 </select>
                             </div>
-                            <div class="col-md-2">
-                                <label for="status" class="form-label">Status</label>
-                                <select name="status" id="status" class="form-select">
-                                    <option value="">Semua Status</option>
-                                    @foreach($statuses as $key => $value)
-                                        <option value="{{ $key }}" {{ request('status') == $key ? 'selected' : '' }}>
-                                            {{ $value }}
-                                        </option>
-                                    @endforeach
-                                </select>
-                            </div>
-                            <div class="col-md-2">
+                            <div class="col-md-3">
                                 <label for="creation_type" class="form-label">Jenis Ciptaan</label>
                                 <select name="creation_type" id="creation_type" class="form-select">
                                     <option value="">Semua Jenis</option>
-                                    @foreach($creationTypes as $key => $value)
-                                        <option value="{{ $key }}" {{ request('creation_type') == $key ? 'selected' : '' }}>
-                                            {{ $value }}
+                                    @foreach($creationTypes as $type)
+                                        <option value="{{ $type }}" {{ request('creation_type') == $type ? 'selected' : '' }}>
+                                            {{ ucfirst(str_replace('_', ' ', $type)) }}
                                         </option>
                                     @endforeach
                                 </select>
                             </div>
                             <div class="col-md-3">
-                                <label for="search" class="form-label">Cari Judul</label>
+                                <label for="search" class="form-label">Pencarian</label>
                                 <input type="text" name="search" id="search" class="form-control" 
-                                       placeholder="Masukkan judul pengajuan..." value="{{ request('search') }}">
+                                       placeholder="Cari judul..." value="{{ request('search') }}">
                             </div>
-                            <div class="col-md-2">
-                                <label for="sort_by" class="form-label">Urutkan</label>
-                                <select name="sort_by" id="sort_by" class="form-select">
-                                    <option value="created_at" {{ request('sort_by') == 'created_at' ? 'selected' : '' }}>Tanggal Buat</option>
-                                    <option value="submission_date" {{ request('sort_by') == 'submission_date' ? 'selected' : '' }}>Tanggal Submit</option>
-                                    <option value="title" {{ request('sort_by') == 'title' ? 'selected' : '' }}>Judul</option>
-                                    <option value="status" {{ request('sort_by') == 'status' ? 'selected' : '' }}>Status</option>
-                                </select>
-                            </div>
-                            <div class="col-md-1">
-                                <label for="sort_order" class="form-label">Order</label>
-                                <select name="sort_order" id="sort_order" class="form-select">
-                                    <option value="desc" {{ request('sort_order') == 'desc' ? 'selected' : '' }}>↓</option>
-                                    <option value="asc" {{ request('sort_order') == 'asc' ? 'selected' : '' }}>↑</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="row mt-3">
-                            <div class="col-12">
-                                <button type="submit" class="btn btn-primary me-2">
-                                    <i class="bi bi-search"></i> Cari
+                            <div class="col-md-1 d-flex align-items-end">
+                                <button type="submit" class="btn btn-primary w-100">
+                                    <i class="bi bi-search"></i>
                                 </button>
-                                <a href="{{ route('user.history.index') }}" class="btn btn-outline-secondary">
-                                    <i class="bi bi-arrow-clockwise"></i> Reset
-                                </a>
                             </div>
                         </div>
                     </form>
@@ -184,76 +109,49 @@
         </div>
     </div>
 
-    <!-- Results -->
+    <!-- History Table -->
     <div class="row">
         <div class="col-12">
             <div class="card shadow">
-                <div class="card-header bg-white py-3 d-flex justify-content-between align-items-center">
-                    <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-list-ul me-2"></i>Daftar Pengajuan
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        Riwayat Pengajuan ({{ $submissions->total() }} riwayat)
                     </h6>
-                    <small class="text-muted">
-                        Menampilkan {{ $submissions->firstItem() }} - {{ $submissions->lastItem() }} 
-                        dari {{ $submissions->total() }} hasil
-                    </small>
                 </div>
-                <div class="card-body p-0">
+                <div class="card-body">
                     @if($submissions->count() > 0)
                         <div class="table-responsive">
-                            <table class="table table-hover mb-0">
-                                <thead class="table-light">
+                            <table class="table table-hover">
+                                <thead>
                                     <tr>
-                                        <th width="5%">No</th>
-<<<<<<< Updated upstream
-                                        <th width="25%">Judul & Jenis</th>
-                                        <th width="15%">Status</th>
-                                        <th width="15%">Tanggal</th>
-                                        <th width="15%">Reviewer</th>
-                                        <th width="10%">Anggota</th>
-=======
-                                        <th width="30%">Judul</th>
-                                        <th width="12%">Jumlah Anggota</th>
+                                        <th width="5%">#</th>
+                                        <th width="30%">Judul & Deskripsi</th>
+                                        <th width="12%">Anggota Pencipta</th>
                                         <th width="12%">Jenis Ciptaan</th>
                                         <th width="12%">Status</th>
                                         <th width="12%">Tanggal</th>
-                                        <!-- <th width="12%">Reviewer</th> -->
-                                       
->>>>>>> Stashed changes
-                                        <th width="15%">Aksi</th>
+                                        <th width="17%">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
                                     @foreach($submissions as $index => $submission)
+                                    @php
+                                        $statusColor = \App\Helpers\StatusHelper::getStatusColor($submission->status);
+                                        $statusIcon = \App\Helpers\StatusHelper::getStatusIcon($submission->status);
+                                        $statusName = \App\Helpers\StatusHelper::getStatusName($submission->status);
+                                    @endphp
                                     <tr>
                                         <td>{{ $submissions->firstItem() + $index }}</td>
                                         <td>
                                             <div>
-<<<<<<< Updated upstream
-                                                <h6 class="mb-1">{{ Str::limit($submission->title, 40) }}</h6>
-                                                <small class="text-muted">
-                                                    <i class="bi bi-tag me-1"></i>
-                                                    {{ $submission->creation_type_name ?? $submission->type }}
-                                                </small>
-                                            </div>
-                                        </td>
-                                        <td>
-                                            <span class="badge bg-{{ 
-                                                $submission->status === 'approved' ? 'success' : 
-                                                ($submission->status === 'rejected' ? 'danger' : 
-                                                ($submission->status === 'revision_needed' ? 'warning' : 
-                                                ($submission->status === 'draft' ? 'secondary' : 'info'))) 
-                                            }}">
-                                                {{ $submission->status_name }}
-=======
-                                                <strong>{{ Str::limit($submission->title, 50) }}</strong>
-                                                <br>
-                                                <!-- <small class="text-muted">{{ Str::limit($submission->description, 80) }}</small> -->
+                                                <strong class="d-block">{{ Str::limit($submission->title, 50) }}</strong>
+                                                <small class="text-muted">{{ Str::limit($submission->description, 80) }}</small>
                                             </div>
                                         </td>
                                         <td>
                                             @if($submission->members->count() > 0)
-                                                <span class="badge bg-info">{{ $submission->members->count() }} orang</span>
-                                                <div class="small mt-1">
+                                                <span class="badge bg-info mb-1">{{ $submission->members->count() }} orang</span>
+                                                <div class="small">
                                                     <strong>{{ $submission->members->where('is_leader', true)->first()->name ?? 'N/A' }}</strong>
                                                     @if($submission->members->count() > 1)
                                                         <br><small class="text-muted">+{{ $submission->members->count() - 1 }} lainnya</small>
@@ -271,42 +169,27 @@
                                         <td>
                                             <span class="badge bg-{{ $statusColor }}">
                                                 <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
->>>>>>> Stashed changes
                                             </span>
-                                            @if($submission->status === 'approved')
-                                                <br><small class="text-success"></small>
-                                            @endif
                                         </td>
                                         <td>
                                             <div class="small">
-                                                <strong>Dibuat:</strong><br>
-                                                {{ $submission->created_at->format('d M Y') }}
-                                                @if($submission->submission_date)
-                                                    <br><strong>Submit:</strong><br>
-                                                    {{ $submission->submission_date->format('d M Y') }}
+                                                <strong>Submit:</strong><br>
+                                                {{ $submission->submission_date->format('d M Y') }}
+                                                @if($submission->reviewed_at)
+                                                    <br><strong>Review:</strong><br>
+                                                    {{ $submission->reviewed_at->format('d M Y') }}
                                                 @endif
                                             </div>
                                         </td>
-                                        <!-- <td>
-                                            @if($submission->reviewer)
-                                                <div class="small">
-                                                    <strong>{{ $submission->reviewer->nama }}</strong>
-                                                    @if($submission->reviewed_at)
-                                                        <br><small class="text-muted">{{ $submission->reviewed_at->format('d M Y') }}</small>
-                                                    @endif
-                                                </div>
-                                            @else
-                                                <span class="text-muted">-</span>
-                                            @endif
-                                        </td> -->
-                                        
                                         <td>
-                                            <div class="btn-group-vertical" role="group">
+                                            <div class="btn-group-vertical d-grid gap-1" role="group">
+                                                <!-- Detail Button -->
                                                 <a href="{{ route('user.submissions.show', $submission) }}" 
-                                                   class="btn btn-sm btn-outline-primary mb-1" title="Lihat Detail">
-                                                    <i class="bi bi-eye"></i> Detail
+                                                   class="btn btn-sm btn-outline-primary" title="Lihat Detail">
+                                                    <i class="bi bi-eye me-1"></i>Detail
                                                 </a>
                                                 
+                                                <!-- Certificate Button -->
                                                 @if($submission->status === 'approved')
                                                     @php
                                                         $certificate = $submission->documents()->where('document_type', 'certificate')->first();
@@ -314,42 +197,27 @@
                                                     @endphp
                                                     
                                                     @if($hasCertificate)
-                                                        {{-- Certificate available - Green button --}}
-                                                        <a href="{{ route('user.history.certificate', $submission) }}" 
-                                                        class="btn btn-sm btn-success mb-1" 
-                                                        title="Sertifikat tersedia - Klik untuk download"
-                                                        data-bs-toggle="tooltip">
-                                                            <i class="bi bi-download"></i> Sertifikat
+                                                        <a href="{{ route('user.submissions.documents.download', $certificate) }}" 
+                                                           class="btn btn-sm btn-success" 
+                                                           title="Download Sertifikat">
+                                                            <i class="bi bi-download me-1"></i>Sertifikat
                                                         </a>
                                                     @else
-                                                        {{-- Certificate not available - Gray button with info --}}
-                                                        <button class="btn btn-sm btn-secondary mb-1" 
-                                                                title="Sertifikat sedang diproses oleh admin"
-                                                                data-bs-toggle="tooltip" disabled>
-                                                            <i class="bi bi-hourglass-split"></i> Menunggu
+                                                        <button class="btn btn-sm btn-secondary" 
+                                                                title="Sertifikat sedang diproses"
+                                                                disabled>
+                                                            <i class="bi bi-hourglass-split me-1"></i>Proses
                                                         </button>
                                                     @endif
                                                 @endif
                                                 
-                                                @if($submission->documents->count() > 0)
-                                                    <div class="dropdown">
-                                                        <button class="btn btn-sm btn-outline-secondary dropdown-toggle" 
-                                                                type="button" data-bs-toggle="dropdown">
-                                                            <i class="bi bi-file-earmark-arrow-down"></i> Dokumen
-                                                        </button>
-                                                        <ul class="dropdown-menu">
-                                                            @foreach($submission->documents as $document)
-                                                                <li>
-                                                                    <a class="dropdown-item" 
-                                                                       href="{{ route('user.history.document', [$submission, $document]) }}">
-                                                                        <i class="bi bi-file-earmark"></i> 
-                                                                        {{ Str::limit($document->file_name, 25) }}
-                                                                    </a>
-                                                                </li>
-                                                            @endforeach
-                                                        </ul>
-                                                    </div>
-                                                @endif
+                                                <!-- Print Summary Button -->
+                                                <button type="button" 
+                                                        class="btn btn-sm btn-outline-info"
+                                                        onclick="printSummary({{ $submission->id }})"
+                                                        title="Print Ringkasan">
+                                                    <i class="bi bi-printer me-1"></i>Print
+                                                </button>
                                             </div>
                                         </td>
                                     </tr>
@@ -363,12 +231,13 @@
                             {{ $submissions->appends(request()->query())->links('custom.pagination') }}
                         </div>
                     @else
-                        <div class="text-center py-4">
-                            <i class="bi bi-inbox fs-1 text-muted"></i>
-                            <h5 class="mt-2 text-muted">Tidak ada data ditemukan</h5>
-                            <p class="text-muted">Coba ubah filter pencarian atau buat pengajuan baru</p>
+                        <!-- Empty State -->
+                        <div class="text-center py-5">
+                            <i class="bi bi-archive fs-1 text-muted mb-3"></i>
+                            <h5 class="text-muted">Belum ada riwayat pengajuan</h5>
+                            <p class="text-muted mb-4">Riwayat akan muncul setelah pengajuan selesai diproses</p>
                             <a href="{{ route('user.submissions.create') }}" class="btn btn-success">
-                                <i class="bi bi-plus-circle"></i> Buat Pengajuan Baru
+                                <i class="bi bi-plus-circle me-2"></i>Buat Pengajuan
                             </a>
                         </div>
                     @endif
@@ -378,77 +247,234 @@
     </div>
 </div>
 
+<!-- Print Summary Modal -->
+<div class="modal fade" id="printModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Ringkasan Pengajuan HKI</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body" id="printContent">
+                <!-- Content will be loaded here -->
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                <button type="button" class="btn btn-primary" onclick="window.print()">
+                    <i class="bi bi-printer me-1"></i>Print
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+@endsection
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
-    // Auto-submit form when select changes
-    const selects = document.querySelectorAll('#year, #status, #creation_type, #sort_by, #sort_order');
-    selects.forEach(select => {
-        select.addEventListener('change', function() {
-            document.getElementById('filterForm').submit();
+    // Auto submit form on filter change
+    document.querySelectorAll('#status, #year, #creation_type').forEach(function(element) {
+        element.addEventListener('change', function() {
+            this.form.submit();
         });
     });
 
-    // Search input with delay
-    const searchInput = document.getElementById('search');
+    // Search with delay
     let searchTimeout;
-    
-    searchInput.addEventListener('input', function() {
+    document.getElementById('search').addEventListener('input', function() {
         clearTimeout(searchTimeout);
         searchTimeout = setTimeout(() => {
-            document.getElementById('filterForm').submit();
-        }, 1000); // 1 second delay
+            // Optional: Auto-submit search after delay
+            // this.form.submit();
+        }, 1000);
     });
 
-    // Prevent form submission on Enter key in search
-    searchInput.addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            e.preventDefault();
-            clearTimeout(searchTimeout);
-            document.getElementById('filterForm').submit();
+    // Enhanced filter reset
+    if (window.location.search) {
+        const resetBtn = document.createElement('button');
+        resetBtn.type = 'button';
+        resetBtn.className = 'btn btn-outline-secondary btn-sm mt-2';
+        resetBtn.innerHTML = '<i class="bi bi-arrow-clockwise me-1"></i>Reset Filter';
+        resetBtn.onclick = function() {
+            window.location.href = '{{ route("user.history.index") }}';
+        };
+        
+        const formElement = document.querySelector('form');
+        if (formElement) {
+            formElement.appendChild(resetBtn);
         }
-    });
+    }
 });
+
+// Print summary function
+function printSummary(submissionId) {
+    // Show loading
+    const modal = new bootstrap.Modal(document.getElementById('printModal'));
+    const printContent = document.getElementById('printContent');
+    
+    printContent.innerHTML = `
+        <div class="text-center py-4">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p class="mt-2">Memuat data...</p>
+        </div>
+    `;
+    
+    modal.show();
+    
+    // Fetch submission data (you'll need to create this endpoint)
+    fetch(`/user/submissions/${submissionId}/summary`)
+        .then(response => response.json())
+        .then(data => {
+            printContent.innerHTML = `
+                <div class="print-summary">
+                    <div class="text-center mb-4">
+                        <h4>RINGKASAN PENGAJUAN HKI</h4>
+                        <p class="text-muted">STMIK AMIKOM Surakarta</p>
+                    </div>
+                    
+                    <table class="table table-borderless">
+                        <tr>
+                            <td width="30%"><strong>ID Pengajuan</strong></td>
+                            <td>: #${data.id}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Judul</strong></td>
+                            <td>: ${data.title}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Jenis Ciptaan</strong></td>
+                            <td>: ${data.creation_type}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Status</strong></td>
+                            <td>: <span class="badge bg-${data.status_color}">${data.status_name}</span></td>
+                        </tr>
+                        <tr>
+                            <td><strong>Tanggal Submit</strong></td>
+                            <td>: ${data.submission_date}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Anggota Pencipta</strong></td>
+                            <td>: ${data.members.join(', ')}</td>
+                        </tr>
+                    </table>
+                    
+                    <div class="mt-4">
+                        <p class="small text-muted text-center">
+                            Dicetak pada: ${new Date().toLocaleString('id-ID')} WIB
+                        </p>
+                    </div>
+                </div>
+            `;
+        })
+        .catch(error => {
+            printContent.innerHTML = `
+                <div class="alert alert-danger">
+                    <i class="bi bi-exclamation-triangle me-2"></i>
+                    Gagal memuat data. Silakan coba lagi.
+                </div>
+            `;
+        });
+}
 </script>
 @endpush
 
 @push('styles')
 <style>
+/* Table enhancements */
 .table th {
-    background-color: #f8f9fa;
-    border-color: #dee2e6;
+    background-color: #f8f9fc;
+    border-top: none;
     font-weight: 600;
-    color: #495057;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+    color: #5a5c69;
 }
 
-.table-hover tbody tr:hover {
-    background-color: rgba(0,123,255,.075);
+.table td {
+    vertical-align: middle;
+    padding: 1rem 0.75rem;
 }
 
+/* Button group improvements */
 .btn-group-vertical .btn {
-    border-radius: 0.25rem !important;
-    margin-bottom: 2px;
+    margin-bottom: 0;
 }
 
-.dropdown-menu {
-    max-height: 200px;
-    overflow-y: auto;
-}
-
+/* Badge improvements */
 .badge {
-    font-size: 0.75em;
+    font-size: 0.75rem;
+    padding: 0.35em 0.65em;
 }
 
+/* Print styles */
+@media print {
+    .modal-header,
+    .modal-footer {
+        display: none !important;
+    }
+    
+    .print-summary {
+        font-size: 12px;
+    }
+    
+    .print-summary h4 {
+        font-size: 16px;
+        margin-bottom: 20px;
+    }
+    
+    .table td,
+    .table th {
+        padding: 8px;
+        border: 1px solid #ddd;
+    }
+}
+
+/* Responsive improvements */
 @media (max-width: 768px) {
+    .btn-group-vertical {
+        width: 100%;
+    }
+    
     .btn-group-vertical .btn {
         font-size: 0.75rem;
         padding: 0.25rem 0.5rem;
     }
     
-    .table-responsive {
-        font-size: 0.875rem;
+    .table td {
+        padding: 0.5rem 0.25rem;
+        font-size: 0.85rem;
     }
+}
+
+/* Statistics card improvements */
+.border-left-success {
+    border-left: 0.25rem solid #1cc88a !important;
+}
+
+.border-left-danger {
+    border-left: 0.25rem solid #e74a3b !important;
+}
+
+.text-green-300 {
+    color: #1cc88a !important;
+}
+
+/* Filter section improvements */
+.card-body form .row {
+    align-items: end;
+}
+
+/* Loading and empty states */
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+.empty-state {
+    padding: 3rem 1rem;
 }
 </style>
 @endpush
-@endsection
