@@ -14,51 +14,51 @@ class UserHistoryController extends Controller
     {
         $user = Auth::user();
         
-        // Base query
-        $query = HkiSubmission::where('user_id', $user->id)
-            ->with(['documents', 'histories.user', 'reviewer', 'members']);
+        $query = HkiSubmission::with(['reviewer', 'members', 'documents'])
+            ->where('user_id', $user->id)
+            ->whereIn('status', ['approved', 'rejected'])
+            ->latest('reviewed_at');
 
-        // Filter by year
+        // Filter berdasarkan status
+        if ($request->filled('status')) {
+            $allowedStatuses = ['approved', 'rejected'];
+            if (in_array($request->status, $allowedStatuses)) {
+                $query->where('status', $request->status);
+            }
+        }
+
+        // Filter berdasarkan tahun
         if ($request->filled('year')) {
             $query->whereYear('created_at', $request->year);
         }
 
-        // Filter by status
-        if ($request->filled('status')) {
-            $query->where('status', $request->status);
-        }
-
-        // Filter by creation type
+        // Filter berdasarkan creation_type
         if ($request->filled('creation_type')) {
             $query->where('creation_type', $request->creation_type);
         }
 
-        // Search by title
+        // Search berdasarkan judul
         if ($request->filled('search')) {
             $query->where('title', 'like', '%' . $request->search . '%');
         }
 
-        // Sort by date
-        $sortBy = $request->get('sort_by', 'created_at');
-        $sortOrder = $request->get('sort_order', 'desc');
-        $query->orderBy($sortBy, $sortOrder);
+        $submissions = $query->paginate(10);
 
-        // Paginate results
-        $submissions = $query->paginate(10)->appends($request->query());
-
-        // Get filter options
+        // Data untuk filter dropdown
         $years = HkiSubmission::where('user_id', $user->id)
+            ->whereIn('status', ['approved', 'rejected'])
             ->selectRaw('YEAR(created_at) as year')
             ->distinct()
             ->orderBy('year', 'desc')
             ->pluck('year');
 
-        $statuses = HkiSubmission::STATUSES;
-        $creationTypes = HkiSubmission::CREATION_TYPES;
+        $creationTypes = HkiSubmission::where('user_id', $user->id)
+            ->whereIn('status', ['approved', 'rejected'])
+            ->distinct()
+            ->pluck('creation_type');
 
-        // Statistics
+        // Statistics untuk cards
         $stats = [
-            'total' => HkiSubmission::where('user_id', $user->id)->count(),
             'approved' => HkiSubmission::where('user_id', $user->id)->where('status', 'approved')->count(),
             'rejected' => HkiSubmission::where('user_id', $user->id)->where('status', 'rejected')->count(),
             'pending' => HkiSubmission::where('user_id', $user->id)->whereIn('status', ['submitted', 'under_review'])->count(),
@@ -69,7 +69,6 @@ class UserHistoryController extends Controller
         return view('user.history.index', compact(
             'submissions', 
             'years', 
-            'statuses', 
             'creationTypes', 
             'stats'
         ));

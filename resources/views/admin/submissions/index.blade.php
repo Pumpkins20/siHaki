@@ -19,12 +19,7 @@
                     <p class="text-muted mb-0">Tinjau dan kelola pengajuan yang sedang dalam proses</p>
                 </div>
                 <div>
-<<<<<<< Updated upstream
-                   <!-- 
-                    <div class="btn-group" role="group">
-=======
                    <!--<div class="btn-group" role="group">
->>>>>>> Stashed changes
                         <button type="button" class="btn btn-outline-success dropdown-toggle" data-bs-toggle="dropdown">
                             <i class="bi bi-download"></i> Export
                         </button>
@@ -40,11 +35,7 @@
                                 </a>
                             </li>
                         </ul>
-<<<<<<< Updated upstream
-                    </div>-->
-=======
                     </div> -->
->>>>>>> Stashed changes
                     <div class="btn-group" role="group">
                        
                         {{-- ✅ NEW: Add link to view all submissions (including completed) --}}
@@ -66,11 +57,7 @@
                         <div class="col">
                             <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">Total Pengajuan</div>
                             <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['total'] ?? 0 }}</div>
-<<<<<<< Updated upstream
-                            <div class="text-xs text-muted">Pengajuan dalam proses</div>
-=======
                             <div class="text-xs text-muted">Pengajuan Masuk</div>
->>>>>>> Stashed changes
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-file-earmark-text fs-2 text-gray-300"></i>
@@ -234,16 +221,10 @@
                                         </th>
                                         <th width="5%">ID</th>
                                         <th width="25%">Judul & Pengusul</th>
-<<<<<<< Updated upstream
-                                        <th width="12%">Jenis</th>
-                                        <th width="12%">Status</th>
-                                        <th width="12%">Tanggal</th>
-=======
                                         <th width="15%">Jenis</th>
                                         <th width="15%">Status</th>
                                         <th width="15%">Tanggal</th>
                                         <!-- <th width="15%">Reviewer</th> -->
->>>>>>> Stashed changes
                                         <th width="16%">Aksi</th>
                                     </tr>
                                 </thead>
@@ -297,11 +278,7 @@
                                                 @endif
                                             </div>
                                         </td>
-<<<<<<< Updated upstream
-                                        <!--<td>
-=======
                                        <!--<td>
->>>>>>> Stashed changes
                                             @if($submission->reviewer)
                                                 <div class="small">
                                                     <strong>{{ $submission->reviewer->nama }}</strong>
@@ -312,11 +289,7 @@
                                             @else
                                                 <span class="text-muted">Belum di-assign</span>
                                             @endif
-<<<<<<< Updated upstream
-                                        </td>-->
-=======
                                         </td> -->
->>>>>>> Stashed changes
                                         <td>
                                             <div class="btn-group-vertical" role="group">
                                                 <a href="{{ route('admin.submissions.show', $submission) }}" 

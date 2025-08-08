@@ -1,4 +1,3 @@
-
 @extends('layouts.admin')
 
 @section('title', 'Tambah User Baru')
@@ -42,6 +41,13 @@
                     <form action="{{ route('admin.users.store') }}" method="POST" id="createUserForm">
                         @csrf
                         
+                        <!-- ✅ DEBUG: Add form debugging in development -->
+                        @if(config('app.debug'))
+                            <div class="alert alert-info">
+                                <strong>DEBUG:</strong> Form akan submit ke: {{ route('admin.users.store') }}
+                            </div>
+                        @endif
+                        
                         <!-- Basic Information -->
                         <div class="mb-4">
                             <h6 class="fw-bold text-secondary mb-3">
@@ -53,8 +59,8 @@
                                     <div class="mb-3">
                                         <label for="nidn" class="form-label">NIDN <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control @error('nidn') is-invalid @enderror" 
-                                               id="nidn" name="nidn" value="{{ old('nidn') }}" 
-                                               placeholder="Masukkan NIDN" required>
+                                            id="nidn" name="nidn" value="{{ old('nidn') }}" 
+                                            placeholder="Masukkan NIDN" required>
                                         @error('nidn')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -65,8 +71,8 @@
                                     <div class="mb-3">
                                         <label for="nama" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control @error('nama') is-invalid @enderror" 
-                                               id="nama" name="nama" value="{{ old('nama') }}" 
-                                               placeholder="Masukkan nama lengkap" required>
+                                            id="nama" name="nama" value="{{ old('nama') }}" 
+                                            placeholder="Masukkan nama lengkap" required>
                                         @error('nama')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -79,8 +85,8 @@
                                     <div class="mb-3">
                                         <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
                                         <input type="text" class="form-control @error('username') is-invalid @enderror" 
-                                               id="username" name="username" value="{{ old('username') }}" 
-                                               placeholder="Username untuk login" required>
+                                            id="username" name="username" value="{{ old('username') }}" 
+                                            placeholder="Username untuk login" required>
                                         @error('username')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -91,8 +97,8 @@
                                     <div class="mb-3">
                                         <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
                                         <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                                               id="email" name="email" value="{{ old('email') }}" 
-                                               placeholder="email@example.com" required>
+                                            id="email" name="email" value="{{ old('email') }}" 
+                                            placeholder="Masukkan email" required>
                                         @error('email')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -103,10 +109,10 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
-                                        <label for="phone" class="form-label">No. Telepon</label>
-                                        <input type="tel" class="form-control @error('phone') is-invalid @enderror" 
-                                               id="phone" name="phone" value="{{ old('phone') }}" 
-                                               placeholder="Nomor telepon">
+                                        <label for="phone" class="form-label">Nomor Telepon</label>
+                                        <input type="text" class="form-control @error('phone') is-invalid @enderror" 
+                                            id="phone" name="phone" value="{{ old('phone') }}" 
+                                            placeholder="Contoh: 08123456789">
                                         @error('phone')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror
@@ -118,11 +124,10 @@
                                         <select class="form-select @error('program_studi') is-invalid @enderror" 
                                                 id="program_studi" name="program_studi" required>
                                             <option value="">Pilih Program Studi</option>
-                                            @foreach(App\Models\User::PROGRAM_STUDI_OPTIONS as $prodi)
-                                                <option value="{{ $prodi }}" {{ old('program_studi') == $prodi ? 'selected' : '' }}>
-                                                    {{ $prodi }}
-                                                </option>
-                                            @endforeach
+                                            <option value="D3 Manajemen Informatika" {{ old('program_studi') == 'D3 Manajemen Informatika' ? 'selected' : '' }}>D3 Manajemen Informatika</option>
+                                            <option value="S1 Informatika" {{ old('program_studi') == 'S1 Informatika' ? 'selected' : '' }}>S1 Informatika</option>
+                                            <option value="S1 Sistem Informasi" {{ old('program_studi') == 'S1 Sistem Informasi' ? 'selected' : '' }}>S1 Sistem Informasi</option>
+                                            <option value="S1 Teknologi Informasi" {{ old('program_studi') == 'S1 Teknologi Informasi' ? 'selected' : '' }}>S1 Teknologi Informasi</option>
                                         </select>
                                         @error('program_studi')
                                             <div class="invalid-feedback">{{ $message }}</div>
@@ -130,14 +135,7 @@
                                     </div>
                                 </div>
                             </div>
-                        </div>
 
-                        <!-- Department & Role -->
-                        <div class="mb-4">
-                            <h6 class="fw-bold text-secondary mb-3">
-                                <i class="bi bi-building me-2"></i>Departemen & Role
-                            </h6>
-                            
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="mb-3">
@@ -146,7 +144,8 @@
                                                 id="department_id" name="department_id" required>
                                             <option value="">Pilih Departemen</option>
                                             @foreach($departments as $department)
-                                                <option value="{{ $department->id }}" {{ old('department_id') == $department->id ? 'selected' : '' }}>
+                                                <option value="{{ $department->id }}" 
+                                                        {{ old('department_id') == $department->id ? 'selected' : '' }}>
                                                     {{ $department->name }}
                                                 </option>
                                             @endforeach
@@ -185,7 +184,7 @@
                                     <div class="mb-3">
                                         <div class="form-check form-switch">
                                             <input class="form-check-input" type="checkbox" id="is_active" 
-                                                   name="is_active" value="1" {{ old('is_active', '1') ? 'checked' : '' }}>
+                                                name="is_active" value="1" {{ old('is_active', '1') ? 'checked' : '' }}>
                                             <label class="form-check-label" for="is_active">
                                                 Akun Aktif
                                             </label>
@@ -205,7 +204,7 @@
                                 <button type="reset" class="btn btn-outline-warning me-2">
                                     <i class="bi bi-arrow-clockwise"></i> Reset
                                 </button>
-                                <button type="submit" class="btn btn-success">
+                                <button type="submit" class="btn btn-success" id="submitBtn">
                                     <i class="bi bi-save"></i> Simpan User
                                 </button>
                             </div>
@@ -287,23 +286,50 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Form submission handling
+    // Form submission handling with debug
     document.getElementById('createUserForm').addEventListener('submit', function(e) {
         const submitBtn = this.querySelector('button[type="submit"]');
+        
+        // ✅ DEBUG: Log form data
+        if (window.console) {
+            const formData = new FormData(this);
+            console.log('Form submission data:');
+            for (let [key, value] of formData.entries()) {
+                if (key !== 'password') { // Don't log password
+                    console.log(key + ': ' + value);
+                }
+            }
+        }
+        
+        // Disable button and show loading
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Menyimpan...';
         
-        // Re-enable after 10 seconds if still processing
+        // Re-enable after 15 seconds if still processing (likely an error)
         setTimeout(() => {
-            submitBtn.disabled = false;
-            submitBtn.innerHTML = '<i class="bi bi-save"></i> Simpan User';
-        }, 10000);
+            if (submitBtn.disabled) {
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="bi bi-save"></i> Simpan User';
+                console.error('Form submission took too long, re-enabling button');
+            }
+        }, 15000);
     });
 
     // Phone number validation - only numbers
     document.getElementById('phone').addEventListener('input', function() {
         this.value = this.value.replace(/[^0-9+\-\s]/g, '');
     });
+
+    // ✅ Add form validation feedback
+    const form = document.getElementById('createUserForm');
+    form.addEventListener('invalid', function(e) {
+        e.preventDefault();
+        const firstInvalid = form.querySelector(':invalid');
+        if (firstInvalid) {
+            firstInvalid.focus();
+            firstInvalid.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }
+    }, true);
 });
 </script>
 @endpush

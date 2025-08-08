@@ -144,14 +144,15 @@
                                         <td>{{ $submissions->firstItem() + $index }}</td>
                                         <td>
                                             <div>
-                                                <strong class="d-block">{{ Str::limit($submission->title, 50) }}</strong>
+                                                <strong>{{ Str::limit($submission->title, 50) }}</strong>
+                                                <br>
                                                 <small class="text-muted">{{ Str::limit($submission->description, 80) }}</small>
                                             </div>
                                         </td>
                                         <td>
                                             @if($submission->members->count() > 0)
-                                                <span class="badge bg-info mb-1">{{ $submission->members->count() }} orang</span>
-                                                <div class="small">
+                                                <span class="badge bg-info">{{ $submission->members->count() }} orang</span>
+                                                <div class="small mt-1">
                                                     <strong>{{ $submission->members->where('is_leader', true)->first()->name ?? 'N/A' }}</strong>
                                                     @if($submission->members->count() > 1)
                                                         <br><small class="text-muted">+{{ $submission->members->count() - 1 }} lainnya</small>
@@ -226,7 +227,6 @@
                             </table>
                         </div>
                         
-                        <!-- Pagination -->
                         <div class="d-flex justify-content-center mt-3">
                             {{ $submissions->appends(request()->query())->links('custom.pagination') }}
                         </div>

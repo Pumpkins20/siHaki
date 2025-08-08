@@ -58,7 +58,6 @@
                             <div class="form-text">Gunakan judul yang jelas dan deskriptif</div>
                         </div>
 
-                        {{-- ✅ REMOVED: Jenis HKI field - tidak perlu diedit --}}
                         {{-- Show current creation type as read-only info --}}
                         <div class="mb-3">
                             <label class="form-label">Jenis Pengajuan</label>
@@ -98,23 +97,39 @@
                             <div class="form-text">Maksimal 1000 karakter</div>
                         </div>
 
+                        <!-- Alamat -->
+                        <div class="mb-3">
+                            <label for="alamat" class="form-label">Alamat Lengkap <span class="text-danger">*</span></label>
+                            <textarea class="form-control @error('alamat') is-invalid @enderror" 
+                                    id="alamat" name="alamat" rows="3" 
+                                    placeholder="Masukkan alamat lengkap" required>{{ old('alamat', $submission->alamat) }}</textarea>
+                            @error('alamat')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                            <div class="form-text">Alamat lengkap untuk surat pengalihan</div>
+                        </div>
+
+                        <!-- Kode Pos -->
+                        <div class="mb-3">
+                            <label for="kode_pos" class="form-label">Kode Pos <span class="text-danger">*</span></label>
+                            <input type="text" class="form-control @error('kode_pos') is-invalid @enderror" 
+                                   id="kode_pos" name="kode_pos" value="{{ old('kode_pos', $submission->kode_pos) }}" 
+                                   placeholder="Masukkan kode pos" maxlength="10" pattern="[0-9]{5}" required>
+                            @error('kode_pos')
+                                <div class="invalid-feedback">{{ $message }}</div>
+                            @enderror
+                        </div>
+
                         <!-- Reviewer Notes (if any) -->
-                                     @if($submission->review_notes)
-    <hr>
-    <div class="row">
-        <div class="col-12">
-            <h6><strong>Catatan Reviewer:</strong></h6>
-            <div class="p-3 border rounded 
-                        {{ $submission->status === 'approved' ? 'bg-success-subtle border-success text-success-emphasis' : 
-                           ($submission->status === 'rejected' ? 'bg-danger-subtle border-danger text-danger-emphasis' : 
-                            'bg-warning-subtle border-warning text-warning-emphasis') }}">
-                <i class="bi bi-{{ $submission->status === 'approved' ? 'check-circle' : 
-                                   ($submission->status === 'rejected' ? 'x-circle' : 'exclamation-triangle') }} me-2"></i>
-                <strong>{{ $submission->review_notes }}</strong>
-            </div>
-        </div>
-    </div>
-@endif
+                        @if($submission->review_notes && $submission->status === 'revision_needed')
+                        <div class="mb-3">
+                            <label class="form-label">Catatan Reviewer</label>
+                            <div class="alert alert-warning">
+                                <i class="bi bi-exclamation-triangle"></i>
+                                {{ $submission->review_notes }}
+                            </div>
+                        </div>
+                        @endif
 
                         <!-- Current Documents -->
                         @if($submission->documents->count() > 0)
@@ -168,9 +183,6 @@
                         </div>
                         @endif
 
-<<<<<<< Updated upstream
-                        <!-- Document Upload Section - ✅ UPDATED: Sesuaikan dengan creation_type -->
-=======
                         {{-- ✅ FIXED: Move Members Section INSIDE the form --}}
                         @if($submission->members->count() > 0)
                         <div class="mb-4">
@@ -314,7 +326,7 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- {{-- Member revision notes --}}
+                                    {{-- Member revision notes --}}
                                     @if($submission->status === 'revision_needed' && $submission->review_notes)
                                         <div class="mt-3">
                                             <div class="alert alert-warning">
@@ -324,27 +336,25 @@
                                                 </small>
                                             </div>
                                         </div>
-                                    @endif -->
+                                    @endif
                                 </div>
                             @endforeach
                             
-                           <div class="p-3 border rounded bg-info-subtle border-info mt-3">
-                            <h6 class="text-info-emphasis mb-2">
-                                <i class="bi bi-lightbulb me-2"></i>Tips Revisi KTP:
-                            </h6>
-                            <ul class="mb-0 small text-info-emphasis">
-                                <li>Upload ulang KTP jika foto tidak jelas atau terpotong</li>
-                                <li>Pastikan semua informasi di KTP dapat dibaca dengan baik</li>
-                                <li>Format file harus JPG/JPEG dengan ukuran maksimal 2MB</li>
-                                <li>KTP harus asli dan masih berlaku</li>
-                            </ul>
-                        </div>
+                            <div class="alert alert-info mt-3">
+                                <h6 class="alert-heading">
+                                    <i class="bi bi-lightbulb me-2"></i>Tips Revisi KTP:
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li>Upload ulang KTP jika foto tidak jelas atau terpotong</li>
+                                    <li>Pastikan semua informasi di KTP dapat dibaca dengan baik</li>
+                                    <li>Format file harus JPG/JPEG dengan ukuran maksimal 2MB</li>
+                                    <li>KTP harus asli dan masih berlaku</li>
+                                </ul>
+                            </div>
                         </div>
                         @endif
 
-                        
                         <!-- Document Upload Section -->
->>>>>>> Stashed changes
                         <div class="mb-4">
                             <h6 class="fw-bold text-secondary mb-3">
                                 <i class="bi bi-file-earmark-arrow-up me-2"></i>Update Dokumen
@@ -459,7 +469,7 @@
                                     <div class="form-text">Jika sudah memiliki ISBN</div>
                                 </div>ISBN -->
 
-                                <!-- Page Count -->
+                                {{-- <!-- Page Count -->
                                 <div class="mb-3">
                                     <label for="page_count" class="form-label">Jumlah Halaman <span class="text-danger">*</span></label>
                                     <input type="number" class="form-control @error('page_count') is-invalid @enderror" 
@@ -468,7 +478,7 @@
                                     @error('page_count')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                </div>
+                                </div> --}}
 
                             @elseif($submission->creation_type === 'poster')
                                 <!-- Image Files -->
@@ -659,6 +669,7 @@
         <div class="col-lg-4">
 <<<<<<< Updated upstream
             <!-- Current Status -->
+            <div class="card shadow mb-4"></div>
             <div class="card shadow mb-4">
 =======
             <!-- 
@@ -674,17 +685,16 @@
                                 <i class="bi bi-file-earmark-text fs-1 text-secondary"></i>
                                 <h5 class="mt-2">Draft</h5>
                                 <p class="text-muted">Submission dalam bentuk draft</p>
-                            @elseif($submission->status === 'revision_needed')
-                                <i class="bi bi-arrow-clockwise fs-1 text-warning"></i>
-                                <h5 class="mt-2">Perlu Revisi</h5>
-                                <p class="text-muted">Lakukan perubahan sesuai catatan reviewer</p>
-                            @endif
-                        </div>
-                        
-                        @if($submission->submission_date)
-                            <div class="small text-muted">
-                                <strong>Tanggal Submit:</strong><br>
-                                {{ $submission->submission_date->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
+                                <small class="text-muted">
+                                    Upload tanggal: {{ $member->updated_at->format('d M Y H:i') }} WIB
+                                </small>
+                            </div>
+                        @else
+                            <div class="current-ktp-info mb-2">
+                                <div class="alert alert-warning py-2">
+                                    <i class="bi bi-exclamation-triangle me-2"></i>
+                                    <small><strong>KTP belum diupload</strong></small>
+                                </div>
                             </div>
                         @endif
 <<<<<<< Updated upstream
@@ -799,37 +809,25 @@
 >>>>>>> Stashed changes
                         <div class="alert alert-warning">
                             <small>
-                                <i class="bi bi-exclamation-triangle"></i>
-                                Pastikan semua saran reviewer telah diterapkan sebelum submit ulang.
+                                <i class="bi bi-exclamation-triangle me-1"></i>
+                                <strong>Catatan Reviewer:</strong> Pastikan data anggota dan KTP sudah sesuai dengan catatan revisi.
                             </small>
                         </div>
                     </div>
-                </div>
+                @endif
             </div>
-            @endif
-
-            <!-- Help Section -->
-            <div class="card shadow">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Butuh Bantuan?</h6>
-                </div>
-                <div class="card-body">
-                    <div class="small">
-                        <p class="mb-2">
-                            <i class="bi bi-envelope"></i> 
-                            Email: hki@amikom.ac.id
-                        </p>
-                        <p class="mb-2">
-                            <i class="bi bi-telephone"></i> 
-                            Telp: (0271) 7851507
-                        </p>
-                        <p class="mb-0">
-                            <i class="bi bi-clock"></i> 
-                            Senin-Jumat: 08:00-16:00 WIB
-                        </p>
-                    </div>
-                </div>
-            </div>
+        
+        
+        <div class="alert alert-info mt-3">
+            <h6 class="alert-heading">
+                <i class="bi bi-lightbulb me-2"></i>Tips Revisi KTP:
+            </h6>
+            <ul class="mb-0 small">
+                <li>Upload ulang KTP jika foto tidak jelas atau terpotong</li>
+                <li>Pastikan semua informasi di KTP dapat dibaca dengan baik</li>
+                <li>Format file harus JPG/JPEG dengan ukuran maksimal 2MB</li>
+                <li>KTP harus asli dan masih berlaku</li>
+            </ul>
         </div>
 <<<<<<< Updated upstream
     </div>
@@ -844,56 +842,55 @@
 document.addEventListener('DOMContentLoaded', function() {
     // Character counter for description
     const description = document.getElementById('description');
-    const counter = document.createElement('div');
-    counter.className = 'form-text text-end';
-    description.parentNode.appendChild(counter);
-    
-    function updateCounter() {
-        const length = description.value.length;
-        counter.textContent = `${length}/1000 karakter`;
-        counter.className = `form-text text-end ${length > 1000 ? 'text-danger' : 'text-muted'}`;
-    }
-    
-    description.addEventListener('input', updateCounter);
-    updateCounter();
-
-    // File size validation for different file types
-    const fileInputs = {
-        'manual_document': 20 * 1024 * 1024, // 20MB
-        'metadata_file': 20 * 1024 * 1024,   // 20MB
-        'ebook_file': 20 * 1024 * 1024,      // 20MB
-        'documentation_file': 20 * 1024 * 1024, // 20MB
-        'image_files': 1 * 1024 * 1024,      // 1MB per file
-        'photo_files': 1 * 1024 * 1024,      // 1MB per file
-        'main_document': 10 * 1024 * 1024    // 10MB
-    };
-
-    Object.keys(fileInputs).forEach(inputId => {
-        const input = document.getElementById(inputId);
-        if (input) {
-            input.addEventListener('change', function() {
-                const maxSize = fileInputs[inputId];
-                
-                if (this.multiple) {
-                    // For multiple files
-                    for (let file of this.files) {
-                        if (file.size > maxSize) {
-                            alert(`Ukuran file ${file.name} terlalu besar. Maksimal ${maxSize / (1024 * 1024)}MB per file.`);
-                            this.value = '';
-                            break;
-                        }
-                    }
-                } else {
-                    // For single file
-                    const file = this.files[0];
-                    if (file && file.size > maxSize) {
-                        alert(`Ukuran file terlalu besar. Maksimal ${maxSize / (1024 * 1024)}MB.`);
-                        this.value = '';
-                    }
-                }
-            });
+    if (description) {
+        const counter = document.createElement('div');
+        counter.className = 'form-text text-end';
+        description.parentNode.appendChild(counter);
+        
+        function updateCounter() {
+            const length = description.value.length;
+            counter.textContent = `${length}/1000 karakter`;
+            counter.className = `form-text text-end ${length > 1000 ? 'text-danger' : 'text-muted'}`;
         }
-    });
+        
+        description.addEventListener('input', updateCounter);
+        updateCounter();
+    }
+
+    // Alamat and Kode Pos validation
+    const alamatTextarea = document.getElementById('alamat');
+    if (alamatTextarea) {
+        const alamatCounter = document.createElement('div');
+        alamatCounter.className = 'form-text text-end';
+        alamatTextarea.parentNode.appendChild(alamatCounter);
+        
+        function updateAlamatCounter() {
+            const length = alamatTextarea.value.length;
+            alamatCounter.textContent = `${length}/500 karakter`;
+            
+            if (length > 450) {
+                alamatCounter.className = 'form-text text-end text-warning';
+            } else if (length > 500) {
+                alamatCounter.className = 'form-text text-end text-danger';
+            } else {
+                alamatCounter.className = 'form-text text-end text-muted';
+            }
+        }
+        
+        alamatTextarea.addEventListener('input', updateAlamatCounter);
+        updateAlamatCounter();
+    }
+
+    const kodePosInput = document.getElementById('kode_pos');
+    if (kodePosInput) {
+        kodePosInput.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            if (this.value.length > 5) {
+                this.value = this.value.slice(0, 5);
+            }
+        });
+    }
 
     // Form submission handling
     document.getElementById('submissionEditForm').addEventListener('submit', function(e) {
@@ -903,7 +900,6 @@ document.addEventListener('DOMContentLoaded', function() {
             const originalText = submitButton.innerHTML;
             submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
             
-            // Re-enable after 5 seconds if still processing
             setTimeout(() => {
                 submitButton.disabled = false;
                 submitButton.innerHTML = originalText;
@@ -911,6 +907,94 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 });
+
+// KTP Management Functions
+function toggleKtpUpload(index) {
+    const uploadSection = document.getElementById(`ktpUpload_${index}`);
+    const cancelBtn = document.getElementById(`cancelKtpBtn_${index}`);
+    
+    if (uploadSection.style.display === 'none') {
+        uploadSection.style.display = 'block';
+        if (cancelBtn) cancelBtn.style.display = 'inline-block';
+    } else {
+        uploadSection.style.display = 'none';
+        if (cancelBtn) cancelBtn.style.display = 'none';
+        clearKtpFile(index);
+    }
+}
+
+function cancelKtpUpdate(index) {
+    const uploadSection = document.getElementById(`ktpUpload_${index}`);
+    const cancelBtn = document.getElementById(`cancelKtpBtn_${index}`);
+    const fileInput = document.getElementById(`ktp_${index}`);
+    
+    uploadSection.style.display = 'none';
+    cancelBtn.style.display = 'none';
+    
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    const preview = document.getElementById(`ktpPreview_${index}`);
+    if (preview) {
+        preview.style.display = 'none';
+    }
+}
+
+function validateKtpFile(input, index) {
+    const file = input.files[0];
+    if (!file) {
+        clearKtpFile(index);
+        return;
+    }
+    
+    // Validate file size (2MB max)
+    if (file.size > 2 * 1024 * 1024) {
+        alert('Ukuran file KTP terlalu besar. Maksimal 2MB.');
+        input.value = '';
+        clearKtpFile(index);
+        return;
+    }
+    
+    // Validate file type
+    const allowedTypes = ['image/jpeg', 'image/jpg'];
+    if (!allowedTypes.includes(file.type)) {
+        alert('Format file KTP harus JPG atau JPEG.');
+        input.value = '';
+        clearKtpFile(index);
+        return;
+    }
+    
+    // Show preview
+    showKtpPreview(index, file.name);
+}
+
+function showKtpPreview(index, fileName) {
+    const preview = document.getElementById(`ktpPreview_${index}`);
+    const fileNameSpan = document.getElementById(`ktpFileName_${index}`);
+    
+    if (preview && fileNameSpan) {
+        fileNameSpan.textContent = fileName;
+        preview.style.display = 'block';
+    }
+}
+
+function clearKtpFile(index) {
+    const fileInput = document.getElementById(`ktp_${index}`);
+    const preview = document.getElementById(`ktpPreview_${index}`);
+    
+    if (fileInput) {
+        fileInput.value = '';
+    }
+    
+    if (preview) {
+        preview.style.display = 'none';
+    }
+}
+
+function viewKtp(url) {
+    window.open(url, '_blank', 'width=800,height=600,scrollbars=yes,resizable=yes');
+}
 </script>
 @endpush
 @endsection

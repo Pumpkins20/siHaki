@@ -1,4 +1,3 @@
-
 @extends('layouts.user')
 
 @section('title', 'Detail Submission')
@@ -141,23 +140,20 @@
                                         <span class="badge bg-info">{{ $submission->member_count }} orang</span>
                                     </td>
                                 </tr>
-<<<<<<< Updated upstream
                             </table>
                         </div>
                         <div class="col-md-6">
                             <table class="table table-borderless">
                                 <tr>
                                     <td width="40%"><strong>Tanggal Submit:</strong></td>
-=======
+
                                 <tr>
                                     <td><strong>Kode Pos:</strong></td>
                                     <td>{{ $submission->kode_pos ?: '-' }}</td>
                                 </tr>
                                 <tr>
-<<<<<<< Updated upstream
                                     <td width="40%"><strong>Tanggal Pengajuan:</strong></td>
->>>>>>> Stashed changes
-=======
+
                                     <td><strong>Alamat Lengkap:</strong></td>
                                     <td>
                                         @if($submission->alamat && $submission->kode_pos)
@@ -745,15 +741,8 @@
         }
     </style>
 @endpush
-<<<<<<< Updated upstream
-@endsection
-=======
-<<<<<<< Updated upstream
-=======
 
->>>>>>> Stashed changes
 
-{{--  
 @if($submission->members->count() > 0)
 <div class="card shadow mb-4">
     <div class="card-header py-3">
@@ -825,10 +814,7 @@
             </table>
         </div>
         
-<<<<<<< Updated upstream
-        
-=======
->>>>>>> Stashed changes
+        {{-- ✅ NEW: KTP Edit Info Card --}}
         @if(in_array($submission->status, ['submitted', 'under_review', 'revision_needed', 'approved']))
             <div class="alert alert-info mt-3">
                 <h6 class="alert-heading">
@@ -872,10 +858,7 @@
     </div>
 </div>
 
-<<<<<<< Updated upstream
-{{-- 
-=======
->>>>>>> Stashed changes
+{{-- ✅ NEW: KTP Edit Modal --}}
 <div class="modal fade" id="ktpEditModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
@@ -912,7 +895,7 @@
                                     <div class="card-body">
                                         <div class="row align-items-center">
                                             <div class="col-md-6">
-                                                
+                                                {{-- Current KTP Status --}}
                                                 @if($member->ktp)
                                                     <div class="d-flex align-items-center mb-2">
                                                         <i class="bi bi-check-circle text-success me-2"></i>
@@ -934,6 +917,7 @@
                                                 @endif
                                             </div>
                                             <div class="col-md-6">
+                                                {{-- File Upload --}}
                                                 <label class="form-label small">
                                                     {{ $member->ktp ? 'Upload KTP Baru:' : 'Upload KTP:' }}
                                                 </label>
@@ -953,7 +937,7 @@
                                                     @endif
                                                 </div>
                                                 
-                                           
+                                                {{-- Preview --}}
                                                 <div class="ktp-preview-modal mt-2" 
                                                      id="ktpPreviewModal_{{ $member->id }}" 
                                                      style="display: none;">
@@ -990,137 +974,5 @@
         </div>
     </div>
 </div>
-@endif --}}
-@endsection
-
-@push('scripts')
-<script>
-// ✅ NEW: Show KTP Edit Modal
-function showKtpEditModal() {
-    new bootstrap.Modal(document.getElementById('ktpEditModal')).show();
-}
-
-// ✅ NEW: Validate KTP file in modal
-function validateKtpFileInModal(input, memberId) {
-    const file = input.files[0];
-    if (!file) {
-        clearKtpFileInModal(memberId);
-        return;
-    }
-    
-    // Validate file size (2MB max)
-    if (file.size > 2 * 1024 * 1024) {
-        alert('Ukuran file KTP terlalu besar. Maksimal 2MB.');
-        input.value = '';
-        clearKtpFileInModal(memberId);
-        return;
-    }
-    
-    // Validate file type
-    const allowedTypes = ['image/jpeg', 'image/jpg'];
-    if (!allowedTypes.includes(file.type)) {
-        alert('Format file KTP harus JPG atau JPEG.');
-        input.value = '';
-        clearKtpFileInModal(memberId);
-        return;
-    }
-    
-    // Show preview
-    showKtpPreviewInModal(memberId, file.name);
-}
-
-// ✅ NEW: Show preview in modal
-function showKtpPreviewInModal(memberId, fileName) {
-    const preview = document.getElementById(`ktpPreviewModal_${memberId}`);
-    const fileNameSpan = document.getElementById(`ktpFileNameModal_${memberId}`);
-    
-    if (preview && fileNameSpan) {
-        fileNameSpan.textContent = fileName;
-        preview.style.display = 'block';
-    }
-}
-
-// ✅ NEW: Clear KTP file in modal
-function clearKtpFileInModal(memberId) {
-    const fileInput = document.querySelector(`input[name="ktp_files[${memberId}]"]`);
-    const preview = document.getElementById(`ktpPreviewModal_${memberId}`);
-    
-    if (fileInput) {
-        fileInput.value = '';
-    }
-    
-    if (preview) {
-        preview.style.display = 'none';
-    }
-}
-
-// ✅ NEW: Handle form submission
-document.addEventListener('DOMContentLoaded', function() {
-    const ktpEditForm = document.getElementById('ktpEditForm');
-    if (ktpEditForm) {
-        ktpEditForm.addEventListener('submit', function(e) {
-            const submitBtn = document.getElementById('ktpEditSubmitBtn');
-            const fileInputs = this.querySelectorAll('input[type="file"]');
-            
-            // Check if at least one file is selected
-            let hasFile = false;
-            fileInputs.forEach(input => {
-                if (input.files.length > 0) {
-                    hasFile = true;
-                }
-            });
-            
-            if (!hasFile) {
-                e.preventDefault();
-                alert('Pilih minimal satu file KTP untuk diupdate.');
-                return false;
-            }
-            
-            // Disable button and show loading
-            if (submitBtn) {
-                submitBtn.disabled = true;
-                const originalText = submitBtn.innerHTML;
-                submitBtn.innerHTML = '<i class="bi bi-hourglass-split"></i> Mengupload...';
-                
-                // Re-enable after timeout
-                setTimeout(() => {
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = originalText;
-                }, 10000);
-            }
-        });
-    }
-});
-
-// ✅ Handle auto-close modal on success
-@if(session('ktp_updated'))
-    document.addEventListener('DOMContentLoaded', function() {
-        const modal = bootstrap.Modal.getInstance(document.getElementById('ktpEditModal'));
-        if (modal) {
-            modal.hide();
-        }
-        
-        // Show success message
-        const alertContainer = document.createElement('div');
-        alertContainer.className = 'alert alert-success alert-dismissible fade show';
-        alertContainer.innerHTML = `
-            <i class="bi bi-check-circle me-2"></i>
-            <strong>KTP berhasil diupdate!</strong> File KTP anggota telah diperbarui.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-        `;
-        document.querySelector('.container-fluid').prepend(alertContainer);
-        
-        // Auto hide after 5 seconds
-        setTimeout(() => {
-            alertContainer.remove();
-        }, 5000);
-    });
 @endif
-</script>
-@endpush
-<<<<<<< Updated upstream
->>>>>>> Stashed changes
-=======
-
--->
->>>>>>> Stashed changes
+@endsection

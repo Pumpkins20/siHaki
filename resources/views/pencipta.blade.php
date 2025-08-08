@@ -274,7 +274,10 @@
                             <!-- Avatar -->
                             <div class="pencipta-avatar">
                                 @if($result->foto && $result->foto !== 'default.png')
-                                    <img src="{{ asset('storage/users/' . $result->foto) }}" alt="{{ $result->nama }}">
+                                    {{-- ✅ FIXED: Change from storage/users/ to storage/profile_photos/ --}}
+                                    <img src="{{ asset('storage/profile_photos/' . $result->foto) }}" 
+                                        alt="{{ $result->nama }}"
+                                        onerror="this.style.display='none'; this.parentElement.innerHTML='{{ substr($result->nama, 0, 2) }}';">
                                 @else
                                     {{ substr($result->nama, 0, 2) }}
                                 @endif

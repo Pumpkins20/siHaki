@@ -1,4 +1,3 @@
-
 @extends('layouts.admin')
 
 @section('title', 'Kirim Sertifikat - ' . $submission->title)
@@ -84,6 +83,20 @@
                                 <tr>
                                     <td><strong>Reviewer:</strong></td>
                                     <td>{{ $submission->reviewer->nama ?? '-' }}</td>
+                                </tr>
+                                <tr>
+                                    <td><strong>Alamat Pengalihan:</strong></td>
+                                    <td>
+                                        @if($submission->alamat && $submission->kode_pos)
+                                            <div class="alert alert-info">
+                                                <strong>Alamat untuk Surat Pengalihan:</strong><br>
+                                                <i class="bi bi-geo-alt me-1"></i>
+                                                {{ $submission->formatted_address }}
+                                            </div>
+                                        @else
+                                            <span class="text-muted">Alamat tidak tersedia</span>
+                                        @endif
+                                    </td>
                                 </tr>
                             </table>
                         </div>

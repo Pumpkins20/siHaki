@@ -12,19 +12,11 @@
                     <div class="row align-items-center">
                         <div class="col-md-8 col-12">
                             <h4 class="card-title mb-2 mb-md-1">Selamat Datang, {{ Auth::user()->nama }}!</h4>
-<<<<<<< Updated upstream
                             <p class="card-text mb-3 mb-md-0">Dashboard Operator - Kelola sistem HKI dan tinjau pengajuan.</p>
                         </div>
                         <div class="col-md-4 col-12 text-md-end text-start">
                             <a href="{{ route('admin.submissions.index') }}" class="btn btn-light btn-lg w-100 w-md-auto">
                                 <i class="bi bi-file-earmark-check"></i> Tinjau Pengajuan
-=======
-                            <p class="card-text mb-3 mb-md-0">Dashboard Operator - Kelola sistem HKI dan review submission.</p>
-                        </div>
-                        <div class="col-md-4 col-12 text-md-end text-start">
-                            <a href="{{ route('admin.submissions.index') }}" class="btn btn-light btn-lg w-100 w-md-auto">
-                                <i class="bi bi-file-earmark-check"></i> Review Pengajuan
->>>>>>> Stashed changes
                             </a>
                         </div>
                     </div>
@@ -240,11 +232,7 @@
             <!-- Today's Stats -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-<<<<<<< Updated upstream
                     <h6 class="m-0 font-weight-bold text-primary">Aktivitas Hari Ini</h6>
-=======
-                    <h6 class="m-0 font-weight-bold text-primary">Aktivitas Harian</h6>
->>>>>>> Stashed changes
                 </div>
                 <div class="card-body">
                     <div class="row text-center">

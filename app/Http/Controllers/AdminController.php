@@ -103,36 +103,86 @@ class AdminController extends Controller
         return view('admin.users.index', compact('users', 'stats'));
     }
 
-    public function storeUser(request $request)
+    public function storeUser(Request $request)
     {
-        $request->validate([
-            'nidn' => 'required|unique:users',
-            'nama' => 'required|string|max:255',
-            'username' => 'required|unique:users',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|min:6',
-            'program_studi' => 'required|in:D3 Manajemen Informatika,S1 Informatika,S1 Sistem Informasi,S1 Teknologi Informasi',
-            'department_id' => 'required|exists:departments,id',
-            'phone' => 'nullable|string',
-        ]);
+        try {
+            Log::info('Store user request received', [
+                'request_data' => $request->except(['password']),
+                'user_agent' => $request->userAgent()
+            ]);
 
-        // ✅ NEW: Create user with NIDN as default password
-        User::create([
-            'nidn' => $request->nidn,
-            'nama' => $request->nama,
-            'username' => $request->username,
-            'email' => $request->email,
-            'password' => Hash::make($request->nidn), // ✅ Password = NIDN
-            'program_studi' => $request->program_studi,
-            'foto' => 'default.png',
-            'role' => 'user', // Always create as user/dosen
-            'phone' => $request->phone,
-            'department_id' => $request->department_id,
-            'is_active' => true,
-        ]);
+            $request->validate([
+                'nidn' => 'required|string|unique:users,nidn',
+                'nama' => 'required|string|max:255',
+                'username' => 'required|string|unique:users,username',
+                'email' => 'required|email|unique:users,email',
+                'program_studi' => 'required|in:D3 Manajemen Informatika,S1 Informatika,S1 Sistem Informasi,S1 Teknologi Informasi',
+                'department_id' => 'required|exists:departments,id',
+                'phone' => 'nullable|string|max:20',
+                'role' => 'required|in:user,admin', // ✅ Add role validation
+                'is_active' => 'nullable|boolean',
+            ], [
+                'nidn.required' => 'NIDN harus diisi',
+                'nidn.unique' => 'NIDN sudah digunakan',
+                'nama.required' => 'Nama harus diisi',
+                'username.required' => 'Username harus diisi',
+                'username.unique' => 'Username sudah digunakan',
+                'email.required' => 'Email harus diisi',
+                'email.unique' => 'Email sudah digunakan',
+                'program_studi.required' => 'Program studi harus dipilih',
+                'department_id.required' => 'Departemen harus dipilih',
+                'role.required' => 'Role harus dipilih',
+            ]);
 
-        return redirect()->route('admin.users.index')
-            ->with('Success', 'User berhasil ditambahkan dengan password default: '. $request->nidn);
+            Log::info('Validation passed, creating user');
+
+            // ✅ FIXED: Create user with all required fields
+            $user = User::create([
+                'nidn' => $request->nidn,
+                'nama' => $request->nama,
+                'username' => $request->username,
+                'email' => $request->email,
+                'password' => Hash::make($request->nidn), // ✅ Password = NIDN
+                'program_studi' => $request->program_studi,
+                'foto' => 'default.png',
+                'role' => $request->role ?? 'user', // ✅ Use form input or default to user
+                'phone' => $request->phone,
+                'department_id' => $request->department_id,
+                'is_active' => $request->boolean('is_active', true), // ✅ Default to true
+                'email_verified_at' => now(), // ✅ Mark as verified
+            ]);
+
+            Log::info('User created successfully', [
+                'user_id' => $user->id,
+                'username' => $user->username,
+                'email' => $user->email
+            ]);
+
+            // ✅ FIXED: Proper success message with typo fix
+            return redirect()->route('admin.users.index')
+                ->with('success', 'User berhasil ditambahkan dengan password default: ' . $request->nidn);
+
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::warning('Validation failed', [
+                'errors' => $e->errors(),
+                'input' => $request->except(['password'])
+            ]);
+            
+            return back()
+                ->withErrors($e->errors())
+                ->withInput();
+
+        } catch (\Exception $e) {
+            Log::error('User creation failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString(),
+                'input' => $request->except(['password'])
+            ]);
+
+            return back()
+                ->withErrors(['error' => 'Terjadi kesalahan saat menyimpan user: ' . $e->getMessage()])
+                ->withInput();
+        }
     }
 
     // Show user details
@@ -1315,6 +1365,12 @@ class AdminController extends Controller
             'leader_name' => $leader ? $leader->name : $submission->user->nama,
             'leader_email' => $leader ? $leader->email : $submission->user->email,
             'leader_whatsapp' => $leader ? $leader->whatsapp : '',
+
+            // ✅ ADDED: Alamat data untuk surat pengalihan
+            'alamat' => $submission->alamat ?: '',
+            'kode_pos' => $submission->kode_pos ?: '',
+            'alamat_lengkap' => $this->getFormattedAlamat($submission),
+            
             'submission_date' => $submission->submission_date->format('d M Y'),
             'reviewed_at' => $submission->reviewed_at->format('d M Y'),
             'current_date' => now()->format('d M Y'),
@@ -1402,6 +1458,31 @@ class AdminController extends Controller
         $objWriter->save($filePath);
         
         return $filePath;
+    }
+
+
+    /**
+     * ✅ NEW: Helper method untuk format alamat lengkap
+     */
+    private function getFormattedAlamat(HkiSubmission $submission)
+    {
+        // Jika alamat dan kode pos ada, gabungkan
+        if ($submission->alamat && $submission->kode_pos) {
+            return $submission->alamat . ' ' . $submission->kode_pos;
+        }
+        
+        // Jika hanya alamat ada
+        if ($submission->alamat) {
+            return $submission->alamat;
+        }
+        
+        // Jika hanya kode pos ada (unlikely)
+        if ($submission->kode_pos) {
+            return 'Kode Pos: ' . $submission->kode_pos;
+        }
+        
+        // Fallback jika tidak ada data alamat
+        return '_____________________________________';
     }
 
     /**
@@ -1734,7 +1815,9 @@ class AdminController extends Controller
         $pihak1Table->addRow();
         $pihak1Table->addCell(2000)->addText('Alamat', $textStyle);
         $pihak1Table->addCell(300)->addText(':', $textStyle);
-        $pihak1Table->addCell(6000)->addText(' ', $textStyle); // Kosong untuk diisi manual
+        // ✅ UPDATED: Alamat diisi otomatis dari data submission
+        $alamatLengkap = $this->getFormattedAlamat($submission);
+        $pihak1Table->addCell(6000)->addText($alamatLengkap, $textStyle);
 
         $section->addTextBreak(1);
 
