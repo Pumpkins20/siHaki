@@ -1374,4 +1374,134 @@ class SubmissionController extends Controller
             // Instead, log the error and continue
         }
     }
+
+    /**
+     * ✅ FIXED: Build validation rules with alamat and kode_pos for each member
+     */
+    private function buildValidationRules($creationType, $memberCount = null)
+    {
+        // Base validation rules
+        $rules = [
+            'title' => 'required|string|max:255',
+            'description' => 'required|string|max:1000',
+            'creation_type' => 'required|string',
+            'first_publication_date' => 'required|date|before_or_equal:today',
+            'member_count' => 'required|integer|min:2|max:6', // ✅ UPDATED: max 6
+            'members' => 'required|array|min:2|max:6', // ✅ UPDATED: max 6
+            'members.*.name' => 'required|string|max:255',
+            'members.*.whatsapp' => 'required|string|regex:/^[0-9]{10,13}$/',
+            'members.*.email' => 'required|email',
+            'members.*.alamat' => 'required|string|max:500', // ✅ NEW: alamat required for each member
+            'members.*.kode_pos' => 'required|string|size:5|regex:/^[0-9]+$/', // ✅ NEW: kode_pos required for each member
+            'members.*.ktp' => 'required|file|mimes:jpg,jpeg|max:2048', // KTP required
+        ];
+
+        // Add dynamic validation based on creation type
+        $this->addDynamicValidation($rules, $creationType);
+
+        return $rules;
+    }
+
+    /**
+     * ✅ FIXED: Store members with alamat and kode_pos
+     */
+    private function storeMembers(HkiSubmission $submission, $membersData)
+    {
+        $memberPosition = 1;
+        
+        foreach ($membersData as $memberData) {
+            // Create member record with alamat and kode_pos
+            $member = SubmissionMember::create([
+                'submission_id' => $submission->id,
+                'name' => $memberData['name'],
+                'email' => $memberData['email'],
+                'whatsapp' => $memberData['whatsapp'],
+                'alamat' => $memberData['alamat'], // ✅ NEW: store alamat
+                'kode_pos' => $memberData['kode_pos'], // ✅ NEW: store kode_pos
+                'position' => $memberPosition,
+                'is_leader' => $memberPosition === 1, // First member is leader
+            ]);
+
+            // Handle KTP upload
+            if (isset($memberData['ktp'])) {
+                $ktpFile = $memberData['ktp'];
+                $ktpPath = $this->uploadKtpFile($ktpFile, $submission->id, $member->id);
+                
+                if ($ktpPath) {
+                    $member->update(['ktp' => $ktpPath]);
+                }
+            }
+
+            $memberPosition++;
+        }
+    }
+
+    /**
+     * ✅ UPDATED: Update validation rules for edit with alamat and kode_pos
+     */
+    private function addDynamicValidationForUpdate(&$rules, $creationType)
+    {
+        // Update member validation to include alamat and kode_pos
+        $rules['members.*.alamat'] = 'required|string|max:500'; // ✅ NEW
+        $rules['members.*.kode_pos'] = 'required|string|size:5|regex:/^[0-9]+$/'; // ✅ NEW
+    
+        try {
+            switch ($creationType) {
+                case 'program_komputer':
+                    $rules['program_link'] = 'required|url';
+                    $rules['manual_document'] = 'nullable|file|mimes:pdf|max:20480';
+                    break;
+                    
+                case 'sinematografi':
+                    $rules['video_link'] = 'required|url';
+                    $rules['video_metadata_file'] = 'nullable|file|mimes:pdf|max:20480';
+                    break;
+                    
+                case 'buku':
+                    $rules['isbn'] = 'nullable|string|max:20';
+                    $rules['page_count'] = 'nullable|integer|min:1|max:10000';
+                    $rules['ebook_file'] = 'nullable|file|mimes:pdf|max:20480';
+                    break;
+                    
+                case 'poster':
+                case 'fotografi':
+                case 'seni_gambar':
+                case 'karakter_animasi':
+                    $rules['image_files'] = 'nullable|array';
+                    $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024';
+                    $rules['width'] = 'nullable|numeric|min:1';
+                    $rules['height'] = 'nullable|numeric|min:1';
+                    $rules['image_description'] = 'nullable|string|max:500';
+                    break;
+                    
+                case 'alat_peraga':
+                    $rules['photo_files'] = 'nullable|array';
+                    $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024';
+                    $rules['subject'] = 'nullable|string|max:255';
+                    $rules['education_level'] = 'nullable|string|max:255';
+                    break;
+                    
+                case 'basis_data':
+                    $rules['documentation_file'] = 'nullable|file|mimes:pdf|max:20480';
+                    $rules['database_type'] = 'nullable|string|max:255';
+                    $rules['record_count'] = 'nullable|integer|min:1';
+                    break;
+
+                default:
+                    $rules['main_document'] = 'nullable|file|mimes:pdf,doc,docx|max:10240';
+                    break;
+            }
+
+            Log::info('Dynamic validation rules added', [
+                'creation_type' => $creationType,
+                'member_rules_added' => ['alamat', 'kode_pos']
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to add dynamic validation rules', [
+                'creation_type' => $creationType,
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
 }

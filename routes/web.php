@@ -26,6 +26,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [PublicSearchController::class, 'searchOnBeranda'])->name('beranda');
 
 Route::get('/pencipta', [PublicSearchController::class, 'searchPencipta'])->name('pencipta');
+Route::get('/pencipta', [PublicSearchController::class, 'pencipta'])->name('pencipta');
+Route::get('/pencipta/all', [PublicSearchController::class, 'showAllPencipta'])->name('pencipta.all');
 
 Route::get('/jenis_ciptaan', [PublicSearchController::class, 'searchJenisCiptaan'])->name('jenis_ciptaan');
 

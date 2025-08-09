@@ -448,10 +448,10 @@ class AdminController extends Controller
     public function revisionSubmission(Request $request, HkiSubmission $submission)
     {
         $request->validate([
-            'review_notes' => 'required|string|min:20|max:1000'
+            'review_notes' => 'required|string|min:10|max:1000'
         ], [
             'review_notes.required' => 'Catatan revisi harus diisi',
-            'review_notes.min' => 'Catatan revisi minimal 20 karakter untuk memberikan panduan yang jelas',
+            'review_notes.min' => 'Catatan revisi minimal 10 karakter untuk memberikan panduan yang jelas',
             'review_notes.max' => 'Catatan revisi maksimal 1000 karakter'
         ]);
 

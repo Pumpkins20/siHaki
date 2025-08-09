@@ -8,6 +8,7 @@ use Doctrine\DBAL\Types\StringType;
 use Doctrine\DBAL\Types\Types;
 use Illuminate\Database\Connection;
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\View;
 use App\Helpers\StatusHelper;
 
@@ -30,6 +31,10 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot()
     {
+        // ✅ ADDED: Use custom pagination view globally
+        Paginator::defaultView('custom.pagination');
+        Paginator::defaultSimpleView('custom.simple-pagination');
+
         // Cek jika DBAL aktif & enum belum diregister
         if (class_exists(\Doctrine\DBAL\Types\Type::class)) {
             /** @var \Illuminate\Database\Connection $connection */

@@ -3,11 +3,10 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\HkiSubmission;
-use App\Models\SubmissionMember;
 use App\Models\User;
+use App\Models\HkiSubmission;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-
 
 class PublicSearchController extends Controller
 {
@@ -33,7 +32,7 @@ class PublicSearchController extends Controller
                 
             case 'institusi':
                 return redirect()->route('pencipta', [
-                    'search_by' => 'program_studi',
+                    'search_by' => 'jurusan',
                     'q' => $query
                 ]);
                 
@@ -73,15 +72,17 @@ class PublicSearchController extends Controller
             ->where(function($q) use ($query, $filter) {
                 if ($filter === 'nama') {
                     // Search by creator name
-                    $q->whereHas('members', function($memberQuery) use ($query) {
+                    $q->whereHas('user', function($userQuery) use ($query) {
+                        $userQuery->where('nama', 'like', '%' . $query . '%');
+                    })
+                    ->orWhereHas('members', function($memberQuery) use ($query) {
                         $memberQuery->where('name', 'like', '%' . $query . '%');
                     });
                 } elseif ($filter === 'institusi') {
-                    // Search by department/jurusan
+                    // Search by department/institution
                     $q->whereHas('user', function($userQuery) use ($query) {
-                        $userQuery->whereHas('department', function($deptQuery) use ($query) {
-                            $deptQuery->where('name', 'like', '%' . $query . '%');
-                        });
+                        $userQuery->where('jurusan', 'like', '%' . $query . '%')
+                               ->orWhere('institusi', 'like', '%' . $query . '%');
                     });
                 } elseif ($filter === 'judul') {
                     // Search by title
@@ -90,7 +91,7 @@ class PublicSearchController extends Controller
                     // Search by creation type
                     $q->where('creation_type', 'like', '%' . $query . '%');
                 } else {
-                    // General search across all fields
+                    // Default: search all fields
                     $q->where('title', 'like', '%' . $query . '%')
                       ->orWhere('creation_type', 'like', '%' . $query . '%')
                       ->orWhereHas('members', function($memberQuery) use ($query) {
@@ -107,7 +108,7 @@ class PublicSearchController extends Controller
                 'judul' => $submission->title,
                 'pencipta' => $submission->members->where('is_leader', true)->first()->name ?? 'N/A',
                 'pencipta_id' => $submission->user_id,
-                'jurusan' => $submission->user->department->name ?? 'N/A',
+                'jurusan' => $submission->user->jurusan ?? 'N/A',
                 'tipe' => ucfirst(str_replace('_', ' ', $submission->creation_type)),
                 'tahun' => $submission->created_at->format('Y')
             ];
@@ -620,5 +621,108 @@ class PublicSearchController extends Controller
         ]);
         
         return view('detail_jenis', compact('submissions', 'type', 'searchBy', 'query'));
+    }
+
+    /**
+     * ✅ FIXED: Pencipta method with proper search and show all functionality
+     */
+    public function pencipta(Request $request)
+    {
+        try {
+            $perPage = 6; // 6 pencipta per page
+            $query = $request->get('q');
+            $searchBy = $request->get('search_by', 'nama_pencipta');
+
+            Log::info('Pencipta search request', [
+                'query' => $query,
+                'search_by' => $searchBy,
+                'per_page' => $perPage
+            ]);
+
+            // ✅ FIXED: Base query for users with approved HKI submissions
+            $usersQuery = User::select([
+                'users.id',
+                'users.nama',
+                'users.email',
+                'users.institusi',
+                'users.jurusan',
+                'users.foto',
+                DB::raw('COUNT(DISTINCT hki_submissions.id) as total_hki')
+            ])
+            ->join('hki_submissions', 'users.id', '=', 'hki_submissions.user_id') // Use inner join to ensure only users with submissions
+            ->where('users.role', 'user') // Only show users with role 'user'
+            ->where('hki_submissions.status', 'approved') // Only count approved submissions
+            ->groupBy([
+                'users.id',
+                'users.nama', 
+                'users.email',
+                'users.institusi',
+                'users.jurusan',
+                'users.foto'
+            ])
+            ->having('total_hki', '>', 0); // Only users with approved HKI
+
+            // ✅ FIXED: Apply search filters only if query is provided
+            if (!empty($query)) {
+                switch ($searchBy) {
+                    case 'nama_pencipta':
+                        $usersQuery->where('users.nama', 'like', '%' . $query . '%');
+                        break;
+                    case 'jurusan':
+                        $usersQuery->where('users.jurusan', 'like', '%' . $query . '%');
+                        break;
+                    default:
+                        // Default to nama_pencipta if invalid search_by
+                        $usersQuery->where('users.nama', 'like', '%' . $query . '%');
+                        break;
+                }
+            }
+
+            // ✅ FIXED: Get paginated results
+            $results = $usersQuery->orderBy('total_hki', 'desc')
+                                 ->orderBy('users.nama')
+                                 ->paginate($perPage)
+                                 ->appends($request->query()); // Preserve query parameters
+
+            // ✅ FIXED: Load recent submissions for each paginated user
+            $results->getCollection()->transform(function ($user) {
+                $user->submissions = HkiSubmission::where('user_id', $user->id)
+                    ->where('status', 'approved')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(5)
+                    ->get(['id', 'title', 'created_at']);
+                return $user;
+            });
+
+            Log::info('Pencipta search completed', [
+                'total_results' => $results->total(),
+                'current_page' => $results->currentPage(),
+                'per_page' => $results->perPage(),
+                'last_page' => $results->lastPage(),
+                'query' => $query,
+                'search_by' => $searchBy
+            ]);
+
+            return view('pencipta', compact('results', 'query', 'searchBy'));
+
+        } catch (\Exception $e) {
+            Log::error('Error in pencipta search', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            // ✅ FIXED: Return empty paginated results on error
+            $results = User::whereRaw('1 = 0')->paginate($perPage ?? 6);
+            return view('pencipta', compact('results'))->with('error', 'Terjadi kesalahan saat mencari data pencipta.');
+        }
+    }
+
+    /**
+     * ✅ ENHANCED: Show all pencipta (same as pencipta method but clearer intent)
+     */
+    public function showAllPencipta(Request $request)
+    {
+        // Just redirect to main pencipta route without search parameters
+        return redirect()->route('pencipta');
     }
 }
