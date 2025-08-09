@@ -71,15 +71,7 @@
                                     <option value="poster" {{ old('creation_type') == 'poster' ? 'selected' : '' }}>Poster</option>
                                     <option value="fotografi" {{ old('creation_type') == 'fotografi' ? 'selected' : '' }}>Fotografi</option>
                                     <option value="seni_gambar" {{ old('creation_type') == 'seni_gambar' ? 'selected' : '' }}>Seni Gambar</option>
-
-                                    <!-- {{-- ✅ SEPARATED: Visual creation types --}}
-                                    <optgroup label="Karya Visual">
-                                        <option value="poster" {{ old('creation_type') == 'poster' ? 'selected' : '' }}>Poster</option>
-                                        <option value="fotografi" {{ old('creation_type') == 'fotografi' ? 'selected' : '' }}>Fotografi</option>
-                                        <option value="seni_gambar" {{ old('creation_type') == 'seni_gambar' ? 'selected' : '' }}>Seni Gambar</option>
-                                        <!-- <option value="karakter_animasi" {{ old('creation_type') == 'karakter_animasi' ? 'selected' : '' }}>Karakter Animasi</option> -->
-                                    </optgroup>
-
+                                    <option value="karakter_animasi" {{ old('creation_type') == 'karakter_animasi' ? 'selected' : '' }}>Karakter Animasi</option>
                                     <option value="alat_peraga" {{ old('creation_type') == 'alat_peraga' ? 'selected' : '' }}>Alat Peraga</option>
                                     <option value="basis_data" {{ old('creation_type') == 'basis_data' ? 'selected' : '' }}>Basis Data</option>
                                 </select>
@@ -115,34 +107,7 @@
                                 @error('description')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
-                                <div class="form-text"> Maksimal 1000 karakter</div>
-                            </div>
-
-                            {{-- filepath: resources/views/user/submissions/create.blade.php --}}
-
-                            {{-- Add after description field --}}
-                            <!-- Alamat -->
-                            <div class="mb-3">
-                                <label for="alamat" class="form-label">Alamat Lengkap <span class="text-danger">*</span></label>
-                                <textarea class="form-control @error('alamat') is-invalid @enderror" 
-                                        id="alamat" name="alamat" rows="3" 
-                                        placeholder="Masukkan alamat lengkap (Jalan, Kelurahan, Kecamatan, Kota/Kabupaten, Provinsi)" required>{{ old('alamat') }}</textarea>
-                                @error('alamat')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text">Contoh: Jl. Ring Road Utara, Condong Catur, Depok, Sleman, Yogyakarta</div>
-                            </div>
-
-                            <!-- Kode Pos -->
-                            <div class="mb-3">
-                                <label for="kode_pos" class="form-label">Kode Pos <span class="text-danger">*</span></label>
-                                <input type="text" class="form-control @error('kode_pos') is-invalid @enderror" 
-                                       id="kode_pos" name="kode_pos" value="{{ old('kode_pos') }}" 
-                                       placeholder="Masukkan kode pos" maxlength="10" pattern="[0-9]{5}" required>
-                                @error('kode_pos')
-                                    <div class="invalid-feedback">{{ $message }}</div>
-                                @enderror
-                                <div class="form-text">5 digit kode pos sesuai alamat</div>
+                                <div class="form-text">Maksimal 1000 karakter</div>
                             </div>
                         </div>
 
@@ -162,12 +127,13 @@
                                     <option value="3" {{ old('member_count') == '3' ? 'selected' : '' }}>3 Orang</option>
                                     <option value="4" {{ old('member_count') == '4' ? 'selected' : '' }}>4 Orang</option>
                                     <option value="5" {{ old('member_count') == '5' ? 'selected' : '' }}>5 Orang</option>
+                                    <option value="6" {{ old('member_count') == '6' ? 'selected' : '' }}>6 Orang</option>
                                 </select>
                                 @error('member_count')
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                                 <div class="form-text">
-                                    Minimal 2 orang, maksimal 5 orang. 
+                                    Minimal 2 orang, maksimal 6 orang. 
                                     <strong>Catatan:</strong> Apabila jumlah pencipta lebih dari yang disediakan, silakan menghubungi LPPM.
                                 </div>
                             </div>
@@ -196,7 +162,6 @@
                                 <i class="bi bi-arrow-left"></i> Kembali
                             </a>
                             <div>
-                                {{-- ✅ CHANGED: Replace Save Draft with Reset button --}}
                                 <button type="button" id="resetBtn" class="btn btn-outline-warning me-2" onclick="resetForm()">
                                     <i class="bi bi-arrow-clockwise"></i> Reset Form
                                 </button>
@@ -242,10 +207,11 @@
                         <h6 class="fw-bold">Persyaratan Anggota:</h6>
                         <ul class="mb-3">
                             <li>Minimal 2 orang pencipta</li>
-                            <li>Maksimal 5 orang pencipta</li>
+                            <li>Maksimal 6 orang pencipta</li>
                             <li>Semua data harus diisi lengkap</li>
                             <li>Nomor WhatsApp aktif untuk komunikasi</li>
                             <li>Email yang valid</li>
+                            <li>Alamat lengkap dan kode pos setiap anggota</li>
                             <li><strong>Scan foto KTP dalam format JPG (maksimal 2MB)</strong></li>
                         </ul>
                         
@@ -397,6 +363,16 @@ function restoreMemberData(oldMembers) {
                 const emailInput = document.querySelector(`input[name="members[${index}][email]"]`);
                 if (emailInput) emailInput.value = member.email;
             }
+
+            if (member.alamat) {
+                const alamatInput = document.querySelector(`textarea[name="members[${index}][alamat]"]`);
+                if (alamatInput) alamatInput.value = member.alamat;
+            }
+
+            if (member.kode_pos) {
+                const kodePosInput = document.querySelector(`input[name="members[${index}][kode_pos]"]`);
+                if (kodePosInput) kodePosInput.value = member.kode_pos;
+            }
             
             // Note: File inputs cannot be restored for security reasons
             // Show notice that file needs to be re-uploaded
@@ -515,7 +491,7 @@ function updateMemberFields() {
     const memberCount = parseInt(document.getElementById('member_count').value);
     const membersSection = document.getElementById('members-section');
     
-    if (!memberCount || memberCount < 2 || memberCount > 5) {
+    if (!memberCount || memberCount < 2 || memberCount > 6) {
         membersSection.innerHTML = '';
         return;
     }
@@ -536,6 +512,8 @@ function updateMemberFields() {
         let oldName = '';
         let oldWhatsapp = '';
         let oldEmail = '';
+        let oldAlamat = '';
+        let oldKodePos = '';
         let oldKtp = '';
         
         // Check if old values exist from server-side
@@ -545,6 +523,8 @@ function updateMemberFields() {
                 oldName = oldMembersData[i].name || '';
                 oldWhatsapp = oldMembersData[i].whatsapp || '';
                 oldEmail = oldMembersData[i].email || '';
+                oldAlamat = oldMembersData[i].alamat || '';
+                oldKodePos = oldMembersData[i].kode_pos || '';
                 oldKtp = oldMembersData[i].ktp ? true : false;
             }
         @endif
@@ -557,7 +537,8 @@ function updateMemberFields() {
                     ${i === 1 ? '<span class="badge bg-success ms-2">Pencipta Utama</span>' : ''}
                 </div>
                 
-                <div class="row g-3">
+                <!-- Data Pribadi -->
+                <div class="row g-3 mb-3">
                     <div class="col-md-6">
                         <label for="member_${i}_name" class="form-label">Nama Pencipta <span class="text-danger">*</span></label>
                         <input type="text" class="form-control" 
@@ -588,6 +569,24 @@ function updateMemberFields() {
                         ${oldKtp ? '<small class="text-warning d-block mt-1"><i class="bi bi-exclamation-triangle"></i> File KTP perlu diupload ulang</small>' : ''}
                     </div>
                 </div>
+
+                <!-- Alamat -->
+                <div class="row g-3">
+                    <div class="col-md-8">
+                        <label for="member_${i}_alamat" class="form-label">Alamat Lengkap <span class="text-danger">*</span></label>
+                        <textarea class="form-control" 
+                                  id="member_${i}_alamat" name="members[${i}][alamat]" rows="3" 
+                                  placeholder="Masukkan alamat lengkap (Jalan, Kelurahan, Kecamatan, Kota/Kabupaten, Provinsi)" required>${oldAlamat}</textarea>
+                        <div class="form-text">Contoh: Jl. Ring Road Utara, Condong Catur, Depok, Sleman, Yogyakarta</div>
+                    </div>
+                    <div class="col-md-4">
+                        <label for="member_${i}_kode_pos" class="form-label">Kode Pos <span class="text-danger">*</span></label>
+                        <input type="text" class="form-control" 
+                               id="member_${i}_kode_pos" name="members[${i}][kode_pos]" value="${oldKodePos}" 
+                               placeholder="12345" maxlength="5" pattern="[0-9]{5}" required>
+                        <div class="form-text">5 digit kode pos sesuai alamat</div>
+                    </div>
+                </div>
             </div>
         `;
     }
@@ -599,7 +598,7 @@ function updateMemberFields() {
 
     membersSection.innerHTML = html;
 
-    // Add validation for KTP and WhatsApp
+    // Add validation for all member fields
     addMemberValidation();
     
     // ✅ NEW: Show error messages if there are validation errors
@@ -611,6 +610,16 @@ function addMemberValidation() {
     document.querySelectorAll('input[name*="[whatsapp]"]').forEach(input => {
         input.addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9]/g, '');
+        });
+    });
+
+    // Kode Pos validation - only numbers, max 5 digits
+    document.querySelectorAll('input[name*="[kode_pos]"]').forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            if (this.value.length > 5) {
+                this.value = this.value.slice(0, 5);
+            }
         });
     });
 
@@ -628,6 +637,29 @@ function addMemberValidation() {
                 this.classList.remove('is-invalid');
             }
         });
+    });
+
+    // Alamat character counter
+    document.querySelectorAll('textarea[name*="[alamat]"]').forEach(textarea => {
+        const counter = document.createElement('div');
+        counter.className = 'form-text text-end text-muted';
+        textarea.parentNode.appendChild(counter);
+        
+        function updateAlamatCounter() {
+            const length = textarea.value.length;
+            counter.textContent = `${length}/500 karakter`;
+            
+            if (length > 450) {
+                counter.className = 'form-text text-end text-warning';
+            } else if (length > 500) {
+                counter.className = 'form-text text-end text-danger';
+            } else {
+                counter.className = 'form-text text-end text-muted';
+            }
+        }
+        
+        textarea.addEventListener('input', updateAlamatCounter);
+        updateAlamatCounter();
     });
 
     // KTP file validation
@@ -770,7 +802,6 @@ function updateFormFields() {
         case 'fotografi':
         case 'seni_gambar':
         case 'karakter_animasi':
-            // ✅ UNIFIED: Form yang sama untuk semua jenis visual
             dynamicFields.innerHTML = `
                 <!-- Image Files -->
                 <div class="mb-3">
@@ -782,7 +813,6 @@ function updateFormFields() {
                     @enderror
                     <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 2MB per file.</div>
                 </div>
-
             `;
 
             const visualTypeNames = {
@@ -810,20 +840,29 @@ function updateFormFields() {
             dynamicFields.innerHTML = `
                 <!-- Photo of Teaching Aid -->
                 <div class="mb-3">
-                    <label for="tool_photo" class="form-label">Foto Alat Peraga <span class="text-danger">*</span></label>
-                    <input type="file" class="form-control @error('tool_photo') is-invalid @enderror" 
-                           id="tool_photo" name="tool_photo" accept=".jpg,.jpeg,.png" required>
-                    @error('tool_photo')
+                    <label for="photo_files" class="form-label">Foto Alat Peraga <span class="text-danger">*</span></label>
+                    <input type="file" class="form-control @error('photo_files.*') is-invalid @enderror" 
+                           id="photo_files" name="photo_files[]" accept=".jpg,.jpeg,.png" multiple required>
+                    @error('photo_files.*')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Format: JPG, PNG. Maksimal 1MB.</div>
+                    <div class="form-text">Format: JPG, PNG. Maksimal 1MB per file. Dapat upload multiple foto.</div>
                 </div>
+            `;
+
+            guidelinesContent.innerHTML = `
+                <h6 class="fw-bold">Persyaratan Alat Peraga:</h6>
+                <ul class="mb-3">
+                    <li>Foto alat peraga dari berbagai sudut</li>
+                    <li>Resolusi yang cukup untuk melihat detail</li>
+                    <li>Background yang bersih dan kontras</li>
+                    <li>Ukuran file maksimal 1MB per foto</li>
+                </ul>
             `;
             break;
 
         case 'basis_data':
             dynamicFields.innerHTML = `
-
                 <!-- Documentation File -->
                 <div class="mb-3">
                     <label for="documentation_file" class="form-label">Upload File PDF (Meta Set dan Data Set) <span class="text-danger">*</span></label>
@@ -832,8 +871,18 @@ function updateFormFields() {
                     @error('documentation_file')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Format: . Maksimal 20MB.</div>
+                    <div class="form-text">Format: PDF/DOCX. Maksimal 20MB.</div>
                 </div>
+            `;
+
+            guidelinesContent.innerHTML = `
+                <h6 class="fw-bold">Persyaratan Basis Data:</h6>
+                <ul class="mb-3">
+                    <li>Dokumentasi lengkap basis data</li>
+                    <li>Struktur database dan relasi</li>
+                    <li>Sample data (jika memungkinkan)</li>
+                    <li>Penjelasan penggunaan dan tujuan</li>
+                </ul>
             `;
             break;
 
@@ -857,7 +906,7 @@ function addFileValidation() {
     fileInputs.forEach(input => {
         input.addEventListener('change', function() {
             const maxSize = input.accept.includes('video') || input.id === 'metadata_file' || input.id === 'manual_document' || input.id === 'ebook_file' ? 20 * 1024 * 1024 : // 20MB
-                            input.accept.includes('image') || input.id.includes('photo') || input.id.includes('image') ? 1 * 1024 * 1024 : // 1MB
+                            input.accept.includes('image') || input.id.includes('photo') || input.id.includes('image') ? 2 * 1024 * 1024 : // 2MB
                             5 * 1024 * 1024; // 5MB default
             
             if (this.files.length > 0) {
@@ -882,6 +931,7 @@ function addFileValidation() {
     background-color: #f8f9fa;
     border-radius: 8px;
     transition: all 0.3s ease;
+    padding: 1rem;
 }
 
 .member-section:hover {
@@ -918,6 +968,27 @@ function addFileValidation() {
 
 .bi-hourglass-split {
     animation: spin 1s linear infinite;
+}
+
+/* Enhanced member section */
+.member-section {
+    border: 1px solid #e9ecef;
+    margin-bottom: 1rem;
+}
+
+.member-section .row {
+    margin-bottom: 0;
+}
+
+.member-section .form-text {
+    font-size: 0.8rem;
+}
+
+/* Better spacing for member cards */
+.card-body > .member-section:last-child {
+    margin-bottom: 0;
+    border-bottom: none;
+    padding-bottom: 1rem;
 }
 </style>
 @endpush

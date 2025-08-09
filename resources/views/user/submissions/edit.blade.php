@@ -6,8 +6,86 @@
 
 @section('content')
 <div class="container-fluid">
-    <!-- Page Header -->
-    <div class="row mb-4">
+    <!-- Success/Error Alerts - Persistent -->
+    @if(session('success'))
+        <div class="alert alert-success alert-dismissible fade show sticky-alert" role="alert" id="successAlert">
+            <i class="bi bi-check-circle me-2"></i>
+            <strong>Berhasil!</strong> {{ session('success') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show sticky-alert" role="alert" id="errorAlert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Error!</strong> {{ session('error') }}
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    @if($errors->any())
+        <div class="alert alert-danger alert-dismissible fade show sticky-alert" role="alert" id="validationAlert">
+            <i class="bi bi-exclamation-triangle me-2"></i>
+            <strong>Terdapat kesalahan:</strong>
+            <ul class="mb-0 mt-2">
+                @foreach($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    @endif
+
+    <!-- FIXED: Reviewer Notes sebagai Fixed Header Banner -->
+    @if($submission->review_notes && $submission->status === 'revision_needed')
+    <div class="reviewer-notes-banner" id="reviewerNotesBanner">
+        <div class="container-fluid">
+            <div class="row align-items-center">
+                <div class="col-1 text-center d-none d-md-block">
+                    <i class="bi bi-megaphone fs-4 text-warning"></i>
+                </div>
+                <div class="col-md-10 col-11">
+                    <div class="reviewer-notes-content">
+                        <div class="d-flex align-items-start">
+                            <div class="me-2 d-md-none">
+                                <i class="bi bi-megaphone fs-5 text-warning"></i>
+                            </div>
+                            <div class="flex-grow-1">
+                                <h6 class="mb-2 text-white fs-6">
+                                    <i class="bi bi-clipboard-check me-1"></i>
+                                    <strong>CATATAN REVIEWER</strong>
+                                </h6>
+                                <div class="reviewer-note-text bg-white p-2 rounded">
+                                    <p class="mb-1 fw-bold text-dark small">{{ $submission->review_notes }}</p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <small class="text-muted">
+                                            <i class="bi bi-clock me-1"></i>
+                                            {{ $submission->reviewed_at ? $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') : '-' }} WIB
+                                        </small>
+                                        <small class="text-warning fw-bold">
+                                            <i class="bi bi-exclamation-triangle me-1"></i>
+                                            Perbaiki sesuai catatan!
+                                        </small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-1 col-1 text-center">
+                    <button type="button" class="btn btn-outline-light btn-sm" 
+                            onclick="toggleReviewerNotes()" id="toggleReviewerNotesBtn"
+                            title="Sembunyikan catatan">
+                        <i class="bi bi-eye-slash" id="toggleIcon"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+    @endif
+
+    <!-- Page Header dengan margin yang disesuaikan -->
+    <div class="row mb-4" style="margin-top: {{ $submission->review_notes && $submission->status === 'revision_needed' ? '80px' : '0' }};">
         <div class="col-12">
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb">
@@ -35,30 +113,42 @@
                         @method('PUT')
                         
                         <!-- Current Status Info -->
-                    <div class="p-3 mb-3 border rounded bg-info-subtle border-info">
-                        <i class="bi bi-info-circle text-info me-2"></i>
-                        <strong class="text-info-emphasis">Status saat ini:</strong> 
-                        <span class="badge bg-{{ $submission->status === 'draft' ? 'secondary' : 'info' }}">
-                            {{ ucfirst(str_replace('_', ' ', $submission->status)) }}
-                        </span>
-                        @if($submission->status === 'revision_needed')
-                            <br><small class="mt-1 d-block text-info-emphasis">Lakukan perubahan sesuai catatan reviewer dan submit ulang.</small>
-                        @endif
-                    </div>
+                        <div class="p-3 mb-3 border rounded bg-info-subtle border-info position-relative">
+                            <i class="bi bi-info-circle text-info me-2"></i>
+                            <strong class="text-info-emphasis">Status saat ini:</strong> 
+                            <span class="badge bg-{{ $submission->status === 'draft' ? 'secondary' : 'info' }}">
+                                {{ ucfirst(str_replace('_', ' ', $submission->status)) }}
+                            </span>
+                            @if($submission->status === 'revision_needed')
+                                <br><small class="mt-1 d-block text-info-emphasis">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    Lakukan perubahan sesuai catatan reviewer di atas dan submit ulang.
+                                </small>
+                            @endif
+                            
+                            <!-- Persistent Edit Warning -->
+                            <div class="mt-2">
+                                <div class="alert alert-warning alert-sm mb-0" id="editWarningAlert">
+                                    <i class="bi bi-exclamation-triangle me-1"></i>
+                                    <small><strong>Perhatian:</strong> Anda sedang dalam mode edit. Pastikan untuk menyimpan perubahan sebelum meninggalkan halaman.</small>
+                                </div>
+                            </div>
+                        </div>
 
                         <!-- Title -->
                         <div class="mb-3">
                             <label for="title" class="form-label">Judul HKI <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('title') is-invalid @enderror" 
                                    id="title" name="title" value="{{ old('title', $submission->title) }}" 
-                                   placeholder="Masukkan judul HKI Anda" required>
+                                   placeholder="Masukkan judul HKI Anda" required
+                                   onchange="trackFormChanges()">
                             @error('title')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                             <div class="form-text">Gunakan judul yang jelas dan deskriptif</div>
                         </div>
 
-                        {{-- Show current creation type as read-only info --}}
+                        <!-- Creation Type - Read Only -->
                         <div class="mb-3">
                             <label class="form-label">Jenis Pengajuan</label>
                             <div class="alert alert-light border">
@@ -68,14 +158,15 @@
                             </div>
                         </div>
 
-                        <!-- Tanggal publish -->
+                        <!-- Tanggal Publikasi -->
                         <div class="mb-3">
                             <label for="first_publication_date" class="form-label">
                                 Tanggal Pertama Kali Diumumkan/Digunakan/Dipublikasikan <span class="text-danger">*</span>
                             </label>
                             <input type="date" class="form-control @error('first_publication_date') is-invalid @enderror" 
                                 id="first_publication_date" name="first_publication_date" 
-                                value="{{ old('first_publication_date', $submission->first_publication_date?->format('Y-m-d')) }}" required>
+                                value="{{ old('first_publication_date', $submission->first_publication_date?->format('Y-m-d')) }}" 
+                                required onchange="trackFormChanges()">
                             @error('first_publication_date')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -90,7 +181,8 @@
                             <label for="description" class="form-label">Deskripsi <span class="text-danger">*</span></label>
                             <textarea class="form-control @error('description') is-invalid @enderror" 
                                       id="description" name="description" rows="5" 
-                                      placeholder="Jelaskan secara detail tentang HKI yang akan diajukan" required>{{ old('description', $submission->description) }}</textarea>
+                                      placeholder="Jelaskan secara detail tentang HKI yang akan diajukan" 
+                                      required oninput="trackFormChanges()">{{ old('description', $submission->description) }}</textarea>
                             @error('description')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -102,7 +194,8 @@
                             <label for="alamat" class="form-label">Alamat Lengkap <span class="text-danger">*</span></label>
                             <textarea class="form-control @error('alamat') is-invalid @enderror" 
                                     id="alamat" name="alamat" rows="3" 
-                                    placeholder="Masukkan alamat lengkap" required>{{ old('alamat', $submission->alamat) }}</textarea>
+                                    placeholder="Masukkan alamat lengkap" 
+                                    required oninput="trackFormChanges()">{{ old('alamat', $submission->alamat) }}</textarea>
                             @error('alamat')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
@@ -114,30 +207,20 @@
                             <label for="kode_pos" class="form-label">Kode Pos <span class="text-danger">*</span></label>
                             <input type="text" class="form-control @error('kode_pos') is-invalid @enderror" 
                                    id="kode_pos" name="kode_pos" value="{{ old('kode_pos', $submission->kode_pos) }}" 
-                                   placeholder="Masukkan kode pos" maxlength="10" pattern="[0-9]{5}" required>
+                                   placeholder="Masukkan kode pos" maxlength="5" pattern="[0-9]{5}" 
+                                   required onchange="trackFormChanges()">
                             @error('kode_pos')
                                 <div class="invalid-feedback">{{ $message }}</div>
                             @enderror
                         </div>
 
-                        <!-- Reviewer Notes (if any) -->
-                        @if($submission->review_notes && $submission->status === 'revision_needed')
-                        <div class="mb-3">
-                            <label class="form-label">Catatan Reviewer</label>
-                            <div class="alert alert-warning">
-                                <i class="bi bi-exclamation-triangle"></i>
-                                {{ $submission->review_notes }}
-                            </div>
-                        </div>
-                        @endif
-
-                        <!-- Current Documents -->
+                        <!-- Current Documents - sama seperti sebelumnya -->
                         @if($submission->documents->count() > 0)
-                        <div class="mb-3">
-                            <br><h6><strong><label class="form-label">Dokumen Saat Ini</label></strong></h6>
+                        <div class="mb-4">
+                            <h6><strong>Dokumen Saat Ini</strong></h6>
                             <div class="table-responsive">
                                 <table class="table table-sm table-bordered">
-                                    <thead>
+                                    <thead class="table-light">
                                         <tr>
                                             <th>Nama File</th>
                                             <th>Jenis</th>
@@ -148,8 +231,7 @@
                                     <tbody>
                                         @foreach($submission->documents as $document)
                                         <tr>
-                                            
-                                            <td>{{ $document->file_name }}</td>
+                                            <td class="text-break">{{ $document->file_name }}</td>
                                             <td>
                                                 @if($document->document_type === 'main_document')
                                                     <span class="badge bg-primary">Dokumen Utama</span>
@@ -159,21 +241,23 @@
                                             </td>
                                             <td>{{ number_format($document->file_size / 1024, 2) }} KB</td>
                                             <td>
-                                                <a href="{{ route('user.submissions.documents.download', $document) }}" 
-                                                   class="btn btn-sm btn-outline-success" title="Download">
-                                                    <i class="bi bi-download"></i>
-                                                </a>
-                                                @if($document->document_type !== 'main_document')
-                                                    <form action="{{ route('user.submissions.documents.delete', $document) }}" 
-                                                          method="POST" class="d-inline"
-                                                          onsubmit="return confirm('Yakin ingin menghapus dokumen ini?')">
-                                                        @csrf
-                                                        @method('DELETE')
-                                                        <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
-                                                            <i class="bi bi-trash"></i>
-                                                        </button>
-                                                    </form>
-                                                @endif
+                                                <div class="btn-group" role="group">
+                                                    <a href="{{ route('user.submissions.documents.download', $document) }}" 
+                                                       class="btn btn-sm btn-outline-success" title="Download">
+                                                        <i class="bi bi-download"></i>
+                                                    </a>
+                                                    @if($document->document_type !== 'main_document')
+                                                        <form action="{{ route('user.submissions.documents.delete', $document) }}" 
+                                                              method="POST" class="d-inline"
+                                                              onsubmit="return confirm('Yakin ingin menghapus dokumen ini?')">
+                                                            @csrf
+                                                            
+                                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                                                <i class="bi bi-trash"></i>
+                                                            </button>
+                                                        </form>
+                                                    @endif
+                                                </div>
                                             </td>
                                         </tr>
                                         @endforeach
@@ -183,13 +267,14 @@
                         </div>
                         @endif
 
-                        {{-- ✅ FIXED: Move Members Section INSIDE the form --}}
+                        <!-- Members Section -->
                         @if($submission->members->count() > 0)
                         <div class="mb-4">
                             <h6 class="fw-bold text-secondary mb-3">
                                 <i class="bi bi-people me-2"></i>Update Data Anggota Pencipta
                             </h6>
                             
+
                             @foreach($submission->members as $index => $member)
                                 <div class="member-section {{ !$loop->last ? 'border-bottom pb-4 mb-4' : '' }}">
                                     <div class="d-flex align-items-center mb-3">
@@ -201,7 +286,7 @@
                                     </div>
                                     
                                     <div class="row g-3">
-                                        <div class="col-md-6">
+                                        <div class="col-lg-6">
                                             <label class="form-label">Nama Pencipta <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('members.'.$index.'.name') is-invalid @enderror" 
                                                    name="members[{{ $index }}][name]" 
@@ -212,7 +297,7 @@
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-lg-6">
                                             <label class="form-label">No. WhatsApp <span class="text-danger">*</span></label>
                                             <input type="tel" class="form-control @error('members.'.$index.'.whatsapp') is-invalid @enderror" 
                                                    name="members[{{ $index }}][whatsapp]" 
@@ -222,7 +307,7 @@
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
                                         </div>
-                                        <div class="col-md-6">
+                                        <div class="col-lg-6">
                                             <label class="form-label">Email <span class="text-danger">*</span></label>
                                             <input type="email" class="form-control @error('members.'.$index.'.email') is-invalid @enderror" 
                                                    name="members[{{ $index }}][email]" 
@@ -233,14 +318,15 @@
                                             @enderror
                                         </div>
                                         
-                                        {{-- KTP Revision Section --}}
-                                        <div class="col-md-6">
+                                        <!-- KTP Section -->
+                                        <div class="col-lg-6">
                                             <label class="form-label">
                                                 <i class="bi bi-credit-card-2-front me-1"></i>
                                                 Update Scan KTP (Opsional)
                                             </label>
                                             
-                                            {{-- Current KTP Status --}}
+
+                                            <!-- Current KTP Status -->
                                             @if($member->ktp)
                                                 <div class="current-ktp-info mb-2">
                                                     <div class="d-flex align-items-center justify-content-between bg-light p-2 rounded">
@@ -261,9 +347,6 @@
                                                             </button>
                                                         </div>
                                                     </div>
-                                                    <small class="text-muted">
-                                                        Upload tanggal: {{ $member->updated_at->format('d M Y H:i') }} WIB
-                                                    </small>
                                                 </div>
                                             @else
                                                 <div class="current-ktp-info mb-2">
@@ -274,7 +357,7 @@
                                                 </div>
                                             @endif
                                             
-                                            {{-- KTP Upload Input --}}
+                                            <!-- KTP Upload Input -->
                                             <div class="ktp-upload-section" id="ktpUpload_{{ $index }}" 
                                                  style="display: {{ $member->ktp ? 'none' : 'block' }};">
                                                 <input type="file" 
@@ -282,6 +365,7 @@
                                                        name="members[{{ $index }}][ktp]" 
                                                        accept=".jpg,.jpeg" 
                                                        id="ktp_{{ $index }}"
+
                                                        onchange="validateKtpFile(this, {{ $index }})">
                                                 @error('members.'.$index.'.ktp')
                                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -298,7 +382,7 @@
                                                     @endif
                                                 </div>
                                                 
-                                                {{-- Preview untuk file baru --}}
+                                                <!-- Preview untuk file baru -->
                                                 <div class="ktp-preview mt-2" id="ktpPreview_{{ $index }}" style="display: none;">
                                                     <div class="border rounded p-2 bg-light">
                                                         <small class="text-info">
@@ -326,7 +410,7 @@
                                         </div>
                                     </div>
                                     
-                                    {{-- Member revision notes --}}
+                                    <!-- Member revision notes -->
                                     @if($submission->status === 'revision_needed' && $submission->review_notes)
                                         <div class="mt-3">
                                             <div class="alert alert-warning">
@@ -398,28 +482,6 @@
                                 </div>
 
                             @elseif($submission->creation_type === 'sinematografi')
-                                <!-- 
-                                <div class="mb-3">
-                                    <label for="metadata_file" class="form-label">
-                                        {{ $submission->documents->where('document_type', 'main_document')->count() > 0 ? 'Ganti File Metadata Video (PDF)' : 'Upload File Metadata Video (PDF)' }}
-                                        @if($submission->documents->where('document_type', 'main_document')->count() == 0)
-                                            <span class="text-danger">*</span>
-                                        @endif
-                                    </label>
-                                    <input type="file" class="form-control @error('metadata_file') is-invalid @enderror" 
-                                           id="metadata_file" name="metadata_file" accept=".pdf"
-                                           {{ $submission->documents->where('document_type', 'main_document')->count() == 0 ? 'required' : '' }}>
-                                    @error('metadata_file')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <div class="form-text">
-                                        Format: PDF. Metadata lengkap video. Maksimal 20MB.
-                                        @if($submission->documents->where('document_type', 'main_document')->count() > 0)
-                                            <br><small class="text-info"><i class="bi bi-info-circle"></i> File baru akan mengganti file yang sudah ada.</small>
-                                        @endif
-                                    </div>
-                                </div>Metadata File -->
-
                                 <!-- Video Link -->
                                 <div class="mb-3">
                                     <label for="video_link" class="form-label">Link Video <span class="text-danger">*</span></label>
@@ -456,35 +518,11 @@
                                     </div>
                                 </div>
 
-                                <!-- 
-                                <div class="mb-3">
-                                    <label for="isbn" class="form-label">ISBN (Opsional)</label>
-                                    <input type="text" class="form-control @error('isbn') is-invalid @enderror" 
-                                           id="isbn" name="isbn" 
-                                           value="{{ old('isbn', $submission->additional_data['isbn'] ?? '') }}" 
-                                           placeholder="978-3-16-148410-0">
-                                    @error('isbn')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <div class="form-text">Jika sudah memiliki ISBN</div>
-                                </div>ISBN -->
-
-                                {{-- <!-- Page Count -->
-                                <div class="mb-3">
-                                    <label for="page_count" class="form-label">Jumlah Halaman <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control @error('page_count') is-invalid @enderror" 
-                                           id="page_count" name="page_count" min="1"
-                                           value="{{ old('page_count', $submission->additional_data['page_count'] ?? '') }}" required>
-                                    @error('page_count')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div> --}}
-
-                            @elseif($submission->creation_type === 'poster')
+                            @elseif(in_array($submission->creation_type, ['poster', 'fotografi', 'seni_gambar', 'karakter_animasi']))
                                 <!-- Image Files -->
                                 <div class="mb-3">
                                     <label for="image_files" class="form-label">
-                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Ganti File Gambar Poster (JPG/PNG)' : 'File Gambar (JPG/PNG)' }}
+                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Ganti File Gambar (JPG/PNG)' : 'Upload File Gambar (JPG/PNG)' }}
                                         @if($submission->documents->where('document_type', 'supporting_document')->count() == 0)
                                             <span class="text-danger">*</span>
                                         @endif
@@ -495,41 +533,7 @@
                                     @error('image_files.*')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                    <div class="form-text">Upload 1 file yang didukung: image. Maks 1 MB. </div>
-                                </div>
-                                
-                                @elseif($submission->creation_type === 'fotografi')
-                                <div class="mb-3">
-                                    <label for="image_files" class="form-label">
-                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Upload Foto (JPG/PNG)' : 'Upload Foto (JPG/PNG)' }}
-                                        @if($submission->documents->where('document_type', 'supporting_document')->count() == 0)
-                                            <span class="text-danger">*</span>
-                                        @endif
-                                    </label>
-                                    <input type="file" class="form-control @error('image_files.*') is-invalid @enderror" 
-                                           id="image_files" name="image_files[]" accept=".jpg,.jpeg,.png" multiple
-                                           {{ $submission->documents->where('document_type', 'supporting_document')->count() == 0 ? 'required' : '' }}>
-                                    @error('image_files.*')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <div class="form-text">Upload 1 file yang didukung: image. Maks 1 MB.</div>
-                                </div>
-
-                                 @elseif($submission->creation_type === 'seni_gambar')
-                                <div class="mb-3">
-                                    <label for="image_files" class="form-label">
-                                        {{ $submission->documents->where('document_type', 'supporting_document')->count() > 0 ? 'Upload File Gambar (JPG/PNG)' : 'Upload File Gambar(JPG/PNG)' }}
-                                        @if($submission->documents->where('document_type', 'supporting_document')->count() == 0)
-                                            <span class="text-danger">*</span>
-                                        @endif
-                                    </label>
-                                    <input type="file" class="form-control @error('image_files.*') is-invalid @enderror" 
-                                           id="image_files" name="image_files[]" accept=".jpg,.jpeg,.png" multiple
-                                           {{ $submission->documents->where('document_type', 'supporting_document')->count() == 0 ? 'required' : '' }}>
-                                    @error('image_files.*')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                    <div class="form-text">Upload 1 file yang didukung: image. Maks 1 MB.</div>
+                                    <div class="form-text">Upload 1 file yang didukung: image. Maksimal 1 MB per file.</div>
                                 </div>
 
                             @elseif($submission->creation_type === 'alat_peraga')
@@ -550,34 +554,6 @@
                                     <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 1MB per file.</div>
                                 </div>
 
-                                <!-- 
-                                <div class="mb-3">
-                                    <label for="subject" class="form-label">Mata Pelajaran <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('subject') is-invalid @enderror" 
-                                           id="subject" name="subject" 
-                                           value="{{ old('subject', $submission->additional_data['subject'] ?? '') }}" 
-                                           placeholder="Matematika, Fisika, etc." required>
-                                    @error('subject')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>
-
-                                <!-- Education Level
-                                <div class="mb-3">
-                                    <label for="education_level" class="form-label">Tingkat Pendidikan <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('education_level') is-invalid @enderror" 
-                                            id="education_level" name="education_level" required>
-                                        <option value="">Pilih Tingkat</option>
-                                        <option value="sd" {{ old('education_level', $submission->additional_data['education_level'] ?? '') == 'sd' ? 'selected' : '' }}>SD</option>
-                                        <option value="smp" {{ old('education_level', $submission->additional_data['education_level'] ?? '') == 'smp' ? 'selected' : '' }}>SMP</option>
-                                        <option value="sma" {{ old('education_level', $submission->additional_data['education_level'] ?? '') == 'sma' ? 'selected' : '' }}>SMA</option>
-                                        <option value="kuliah" {{ old('education_level', $submission->additional_data['education_level'] ?? '') == 'kuliah' ? 'selected' : '' }}>Kuliah</option>
-                                    </select>
-                                    @error('education_level')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div> -->
-
                             @elseif($submission->creation_type === 'basis_data')
                                 <!-- Documentation File -->
                                 <div class="mb-3">
@@ -595,29 +571,6 @@
                                     @enderror
                                     <div class="form-text">Format: PDF. Dokumentasi lengkap basis data. Maksimal 20MB.</div>
                                 </div>
-
-                                <!-- 
-                                <div class="mb-3">
-                                    <label for="database_type" class="form-label">Jenis Database <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('database_type') is-invalid @enderror" 
-                                           id="database_type" name="database_type" 
-                                           value="{{ old('database_type', $submission->additional_data['database_type'] ?? '') }}" 
-                                           placeholder="MySQL, PostgreSQL, MongoDB, etc." required>
-                                    @error('database_type')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div> Database Type -->
-
-                                <!-- 
-                                <div class="mb-3">
-                                    <label for="record_count" class="form-label">Jumlah Record <span class="text-danger">*</span></label>
-                                    <input type="number" class="form-control @error('record_count') is-invalid @enderror" 
-                                           id="record_count" name="record_count" min="1"
-                                           value="{{ old('record_count', $submission->additional_data['record_count'] ?? '') }}" required>
-                                    @error('record_count')
-                                        <div class="invalid-feedback">{{ $message }}</div>
-                                    @enderror
-                                </div>Record Count -->
 
                             @else
                                 <!-- Generic main document upload untuk creation_type lainnya -->
@@ -642,17 +595,18 @@
                         <!-- Submit Buttons -->
                         <div class="row">
                             <div class="col-12">
-                                <div class="d-flex justify-content-between">
-                                    <a href="{{ route('user.submissions.show', $submission) }}" class="btn btn-secondary">
+                                <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
+                                    <a href="{{ route('user.submissions.show', $submission) }}" 
+                                       class="btn btn-secondary" onclick="return confirmLeave()">
                                         <i class="bi bi-arrow-left"></i> Kembali
                                     </a>
-                                    <div>
+                                    <div class="d-flex flex-column flex-md-row gap-2">
                                         @if($submission->status === 'draft')
-                                            <button type="submit" name="save_as_draft" class="btn btn-outline-primary me-2">
+                                            <button type="submit" name="save_as_draft" class="btn btn-outline-primary" onclick="clearUnsavedChanges()">
                                                 <i class="bi bi-save"></i> Simpan Draft
                                             </button>
                                         @endif
-                                        <button type="submit" class="btn btn-success">
+                                        <button type="submit" class="btn btn-success" onclick="clearUnsavedChanges()">
                                             <i class="bi bi-send"></i> 
                                             {{ $submission->status === 'revision_needed' ? 'Submit Revisi' : 'Update & Submit' }}
                                         </button>
@@ -667,14 +621,31 @@
 
         <!-- Sidebar -->
         <div class="col-lg-4">
-<<<<<<< Updated upstream
+            <!-- Reviewer Notes Reminder Card jika ada -->
+            @if($submission->review_notes && $submission->status === 'revision_needed')
+            <div class="card shadow mb-4 border-warning reviewer-reminder-card">
+                <div class="card-header py-3 bg-warning-subtle">
+                    <h6 class="m-0 font-weight-bold text-warning-emphasis">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Reminder Revisi
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <i class="bi bi-clipboard-check fs-1 text-warning mb-3"></i>
+                        <h6 class="text-warning-emphasis">Catatan Reviewer Tersedia</h6>
+                        <p class="small text-muted mb-3">
+                            Pastikan Anda membaca catatan reviewer di bagian atas halaman sebelum melakukan edit.
+                        </p>
+                        <button type="button" class="btn btn-warning btn-sm" onclick="scrollToReviewerNotes()">
+                            <i class="bi bi-arrow-up me-1"></i>Lihat Catatan
+                        </button>
+                    </div>
+                </div>
+            </div>
+            @endif
+
             <!-- Current Status -->
-            <div class="card shadow mb-4"></div>
             <div class="card shadow mb-4">
-=======
-            <!-- 
-            <div class="card shadow mb-4"></div>
->>>>>>> Stashed changes
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Status Submission</h6>
                 </div>
@@ -685,162 +656,445 @@
                                 <i class="bi bi-file-earmark-text fs-1 text-secondary"></i>
                                 <h5 class="mt-2">Draft</h5>
                                 <p class="text-muted">Submission dalam bentuk draft</p>
-                                <small class="text-muted">
-                                    Upload tanggal: {{ $member->updated_at->format('d M Y H:i') }} WIB
-                                </small>
-                            </div>
-                        @else
-                            <div class="current-ktp-info mb-2">
-                                <div class="alert alert-warning py-2">
-                                    <i class="bi bi-exclamation-triangle me-2"></i>
-                                    <small><strong>KTP belum diupload</strong></small>
-                                </div>
+                            @elseif($submission->status === 'submitted')
+                                <i class="bi bi-file-earmark-check fs-1 text-primary"></i>
+                                <h5 class="mt-2">Submitted</h5>
+                                <p class="text-muted">Menunggu ditinjau</p>
+                            @elseif($submission->status === 'under_review')
+                                <i class="bi bi-eye fs-1 text-info"></i>
+                                <h5 class="mt-2">Under Review</h5>
+                                <p class="text-muted">Sedang ditinjau reviewer</p>
+                            @elseif($submission->status === 'revision_needed')
+                                <i class="bi bi-arrow-clockwise fs-1 text-warning"></i>
+                                <h5 class="mt-2">Revision Needed</h5>
+                                <p class="text-muted">Perlu perbaikan</p>
+                            @elseif($submission->status === 'approved')
+                                <i class="bi bi-check-circle fs-1 text-success"></i>
+                                <h5 class="mt-2">Approved</h5>
+                                <p class="text-muted">Submission disetujui</p>
+                            @elseif($submission->status === 'rejected')
+                                <i class="bi bi-x-circle fs-1 text-danger"></i>
+                                <h5 class="mt-2">Rejected</h5>
+                                <p class="text-muted">Submission ditolak</p>
+                            @endif
+                        </div>
+                        
+                        @if($submission->submission_date)
+                            <div class="small text-muted mt-2">
+                                <strong>Tanggal Submit:</strong><br>
+                                {{ $submission->submission_date->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
                             </div>
                         @endif
-<<<<<<< Updated upstream
                         
                         @if($submission->reviewed_at)
                             <div class="small text-muted mt-2">
                                 <strong>Tanggal Review:</strong><br>
                                 {{ $submission->reviewed_at->setTimezone('Asia/Jakarta')->format('d M Y H:i') }} WIB
-=======
-                        Current Status -->
-                        {{-- KTP Upload Input --}}
-                        <div class="ktp-upload-section" id="ktpUpload_{{ $index }}" 
-                             style="display: {{ $member->ktp ? 'none' : 'block' }};">
-                            <input type="file" 
-                                   class="form-control @error('members.'.$index.'.ktp') is-invalid @enderror" 
-                                   name="members[{{ $index }}][ktp]" 
-                                   accept=".jpg,.jpeg" 
-                                   id="ktp_{{ $index }}"
-                                   onchange="validateKtpFile(this, {{ $index }})">
-                            @error('members.'.$index.'.ktp')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            
-                            <div class="form-text">
-                                <i class="bi bi-info-circle text-primary me-1"></i>
-                                Upload file KTP baru (JPG/JPEG, maksimal 2MB)
-                                @if($member->ktp)
-                                    <br><small class="text-warning">
-                                        <i class="bi bi-exclamation-triangle me-1"></i>
-                                        File baru akan mengganti KTP yang sudah ada
-                                    </small>
-                                @endif
                             </div>
-                            
-                            {{-- Preview untuk file baru --}}
-                            <div class="ktp-preview mt-2" id="ktpPreview_{{ $index }}" style="display: none;">
-                                <div class="border rounded p-2 bg-light">
-                                    <small class="text-info">
-                                        <i class="bi bi-image me-1"></i>
-                                        <span id="ktpFileName_{{ $index }}"></span>
-                                    </small>
-                                    <button type="button" class="btn btn-sm btn-outline-danger ms-2" 
-                                            onclick="clearKtpFile({{ $index }})" title="Hapus file">
-                                        <i class="bi bi-x"></i>
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        
-                        @if($member->ktp)
-                            <div class="mt-2">
-                                <button type="button" class="btn btn-sm btn-outline-secondary" 
-                                        onclick="cancelKtpUpdate({{ $index }})" 
-                                        id="cancelKtpBtn_{{ $index }}" 
-                                        style="display: none;">
-                                    <i class="bi bi-x-circle me-1"></i>Batal Ganti KTP
-                                </button>
->>>>>>> Stashed changes
-                            </div>
-                        @endif
-                    </div>
-                </div>
-<<<<<<< Updated upstream
-            </div>
-
-            <!-- Creation Type Info -->
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Informasi Pengajuan</h6>
-                </div>
-                <div class="card-body">
-                    <div class="small">
-                        <p class="mb-2">
-                            <strong>Jenis Pengajuan:</strong><br>
-                            <span class="badge bg-secondary">{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</span>
-                        </p>
-                        <p class="mb-2">
-                            <strong>Jenis HKI:</strong><br>
-                            <span class="badge bg-info">{{ ucfirst($submission->type) }}</span>
-                        </p>
-                        @if($submission->member_count)
-                            <p class="mb-0">
-                                <strong>Jumlah Anggota:</strong><br>
-                                {{ $submission->member_count }} orang
-                            </p>
                         @endif
                     </div>
                 </div>
             </div>
 
-            <!-- Guidelines for Revision -->
+            <!-- Guidelines for Revision - Enhanced jika ada reviewer notes -->
             @if($submission->status === 'revision_needed')
-            <div class="card shadow mb-4">
-                <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Panduan Revisi</h6>
+            <div class="card shadow mb-4 border-warning">
+                <div class="card-header py-3 bg-warning-subtle">
+                    <h6 class="m-0 font-weight-bold text-warning-emphasis">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Panduan Revisi
+                    </h6>
                 </div>
                 <div class="card-body">
                     <div class="small">
-                        <h6>Langkah-langkah Revisi:</h6>
+                        <h6 class="text-warning-emphasis">Langkah-langkah Revisi:</h6>
                         <ol class="mb-3">
-                            <li>Baca catatan reviewer dengan teliti</li>
+                            <li><strong>Baca catatan reviewer dengan teliti</strong></li>
                             <li>Lakukan perubahan sesuai saran</li>
                             <li>Update dokumen jika diperlukan</li>
                             <li>Submit ulang untuk review</li>
                         </ol>
                         
-=======
-                
-                <!--
-                @if($submission->status === 'revision_needed' && $submission->review_notes)
-                    <div class="mt-3">
->>>>>>> Stashed changes
                         <div class="alert alert-warning">
                             <small>
                                 <i class="bi bi-exclamation-triangle me-1"></i>
-                                <strong>Catatan Reviewer:</strong> Pastikan data anggota dan KTP sudah sesuai dengan catatan revisi.
+                                <strong>Catatan:</strong> Pastikan data anggota dan KTP sudah sesuai dengan catatan revisi.
                             </small>
                         </div>
+
+                        @if($submission->review_notes)
+                        <div class="alert alert-info">
+                            <small>
+                                <i class="bi bi-lightbulb me-1"></i>
+                                <strong>Tips:</strong> Catatan reviewer di atas berisi panduan spesifik untuk submission Anda. 
+                                Ikuti setiap poin dengan cermat sebelum submit ulang.
+                            </small>
+                        </div>
+                        @endif
                     </div>
-                @endif
+                </div>
             </div>
-        
-        
-        <div class="alert alert-info mt-3">
-            <h6 class="alert-heading">
-                <i class="bi bi-lightbulb me-2"></i>Tips Revisi KTP:
-            </h6>
-            <ul class="mb-0 small">
-                <li>Upload ulang KTP jika foto tidak jelas atau terpotong</li>
-                <li>Pastikan semua informasi di KTP dapat dibaca dengan baik</li>
-                <li>Format file harus JPG/JPEG dengan ukuran maksimal 2MB</li>
-                <li>KTP harus asli dan masih berlaku</li>
-            </ul>
+            @endif
+
+            <!-- Help Card -->
+            <div class="card shadow">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-headset me-2"></i>Butuh Bantuan?
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="small">
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-envelope text-primary me-2"></i>
+                            <span>hki@amikom.ac.id</span>
+                        </div>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-telephone text-primary me-2"></i>
+                            <span>(0271) 7851507</span>
+                        </div>
+                        <div class="d-flex align-items-center">
+                            <i class="bi bi-clock text-primary me-2"></i>
+                            <span>Senin-Jumat: 08:00-16:00 WIB</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-<<<<<<< Updated upstream
+    </div>
+
+    <!-- Unsaved Changes Warning Modal -->
+    <div class="modal fade" id="unsavedChangesModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Peringatan
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Anda memiliki perubahan yang belum disimpan. Apakah Anda yakin ingin meninggalkan halaman ini?</p>
+                    <div class="alert alert-warning">
+                        <small><i class="bi bi-info-circle me-1"></i> Semua perubahan yang belum disimpan akan hilang.</small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-arrow-left"></i> Tetap di Halaman
+                    </button>
+                    <button type="button" class="btn btn-warning" id="confirmLeaveBtn">
+                        <i class="bi bi-box-arrow-right"></i> Tinggalkan Halaman
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviewer Notes Close Confirmation Modal -->
+    <div class="modal fade" id="reviewerNotesCloseModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title text-warning">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p>Apakah Anda yakin ingin menutup catatan reviewer?</p>
+                    <div class="alert alert-warning">
+                        <small>
+                            <i class="bi bi-info-circle me-1"></i> 
+                            Pastikan Anda sudah membaca dan memahami semua catatan reviewer sebelum menutup pesan ini.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-arrow-left"></i> Batal
+                    </button>
+                    <button type="button" class="btn btn-warning" id="confirmCloseReviewerNotesBtn">
+                        <i class="bi bi-check"></i> Ya, Sudah Dibaca
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 </div>
-=======
-    </div> -->
-
->>>>>>> Stashed changes
+@endsection
 
 @push('scripts')
 <script>
+// Variables for tracking form changes
+let hasUnsavedChanges = false;
+let originalFormData = {};
+let leaveCallback = null;
+let reviewerNotesVisible = true;
+
 document.addEventListener('DOMContentLoaded', function() {
-    // Character counter for description
+    // Store original form data
+    storeOriginalFormData();
+    
+    // Persistent alerts management
+    managePersistentAlerts();
+    
+    // Track form changes
+    trackAllFormInputs();
+    
+    // Warn before leaving page
+    setupPageLeaveWarning();
+    
+    // Character counters
+    setupCharacterCounters();
+    
+    // Form validation
+    setupFormValidation();
+
+    // Initialize reviewer notes banner
+    initializeReviewerNotesBanner();
+});
+
+// Initialize reviewer notes banner
+function initializeReviewerNotesBanner() {
+    const banner = document.getElementById('reviewerNotesBanner');
+    if (banner) {
+        // Add scroll event to show/hide toggle button
+        window.addEventListener('scroll', function() {
+            const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+            const toggleBtn = document.getElementById('toggleReviewerNotesBtn');
+            
+            if (scrollTop > 200) {
+                toggleBtn.style.opacity = '1';
+            } else {
+                toggleBtn.style.opacity = '0.7';
+            }
+        });
+        
+        // Make banner persistent but collapsible
+        console.log('Reviewer notes banner initialized - always visible until manually hidden');
+    }
+}
+
+// Toggle reviewer notes visibility
+function toggleReviewerNotes() {
+    const banner = document.getElementById('reviewerNotesBanner');
+    const content = banner.querySelector('.reviewer-notes-content');
+    const toggleBtn = document.getElementById('toggleReviewerNotesBtn');
+    const toggleIcon = document.getElementById('toggleIcon');
+    
+    if (reviewerNotesVisible) {
+        // Hide content but keep minimal banner
+        content.style.display = 'none';
+        banner.style.height = '60px';
+        banner.style.background = 'linear-gradient(135deg, #ff8c00 0%, #ffc107 100%)';
+        toggleIcon.className = 'bi bi-eye';
+        toggleBtn.innerHTML = '<i class="bi bi-eye"></i> Tampilkan';
+        reviewerNotesVisible = false;
+        
+        // Add reminder text
+        const col = banner.querySelector('.col-md-10');
+        col.innerHTML = `
+            <div class="d-flex align-items-center">
+                <i class="bi bi-exclamation-triangle text-white me-2"></i>
+                <span class="text-white fw-bold">Catatan Reviewer Disembunyikan - Klik untuk melihat kembali</span>
+            </div>
+        `;
+    } else {
+        // Show full content
+        location.reload(); // Simple way to restore full content
+    }
+}
+
+// Scroll to reviewer notes
+function scrollToReviewerNotes() {
+    const banner = document.getElementById('reviewerNotesBanner');
+    if (banner) {
+        banner.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        
+        // Flash effect
+        banner.style.animation = 'none';
+        setTimeout(() => {
+            banner.style.animation = 'pulseWarning 2s ease-in-out 3';
+        }, 100);
+    }
+}
+
+// Store original form data for comparison
+function storeOriginalFormData() {
+    const form = document.getElementById('submissionEditForm');
+    const formData = new FormData(form);
+    originalFormData = {};
+    
+    for (let [key, value] of formData.entries()) {
+        originalFormData[key] = value;
+    }
+    
+    // Store textarea values separately
+    form.querySelectorAll('textarea').forEach(textarea => {
+        originalFormData[textarea.name] = textarea.value;
+    });
+    
+    console.log('Original form data stored:', originalFormData);
+}
+
+// Track form changes
+function trackFormChanges() {
+    hasUnsavedChanges = true;
+    updateUnsavedChangesIndicator();
+}
+
+// Track all form inputs
+function trackAllFormInputs() {
+    const form = document.getElementById('submissionEditForm');
+    
+    // Track text inputs, textareas, selects
+    form.querySelectorAll('input, textarea, select').forEach(element => {
+        if (element.type !== 'file' && element.type !== 'submit' && element.type !== 'hidden') {
+            element.addEventListener('input', trackFormChanges);
+            element.addEventListener('change', trackFormChanges);
+        }
+    });
+    
+    // Track file inputs separately
+    form.querySelectorAll('input[type="file"]').forEach(element => {
+        element.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                trackFormChanges();
+            }
+        });
+    });
+}
+
+// Update unsaved changes indicator
+function updateUnsavedChangesIndicator() {
+    const editWarning = document.getElementById('editWarningAlert');
+    if (editWarning && hasUnsavedChanges) {
+        editWarning.innerHTML = `
+            <i class="bi bi-exclamation-triangle me-1 text-warning"></i>
+            <small><strong>Perhatian:</strong> Anda memiliki perubahan yang belum disimpan! 
+            <span class="text-danger">Pastikan untuk menyimpan sebelum meninggalkan halaman.</span></small>
+        `;
+        editWarning.classList.remove('alert-warning');
+        editWarning.classList.add('alert-danger');
+    }
+}
+
+// FIXED: Manage persistent alerts - exclude reviewer notes from auto-hide
+function managePersistentAlerts() {
+    // Auto-hide success alerts after 10 seconds but keep error alerts
+    const successAlert = document.getElementById('successAlert');
+    if (successAlert) {
+        setTimeout(() => {
+            successAlert.style.transition = 'opacity 0.5s';
+            successAlert.style.opacity = '0.7';
+        }, 10000);
+    }
+    
+    // Keep error and validation alerts persistent
+    const errorAlert = document.getElementById('errorAlert');
+    const validationAlert = document.getElementById('validationAlert');
+    
+    // FIXED: Do NOT auto-hide reviewer notes alert
+    const reviewerNotesAlert = document.getElementById('reviewerNotesAlert');
+    
+    // Make alerts stick to top when scrolling (exclude reviewer notes)
+    [errorAlert, validationAlert].forEach(alert => {
+        if (alert) {
+            alert.style.position = 'sticky';
+            alert.style.top = '10px';
+            alert.style.zIndex = '1050';
+        }
+    });
+
+    // FIXED: Make reviewer notes alert sticky but never auto-hide
+    if (reviewerNotesAlert) {
+        reviewerNotesAlert.style.position = 'sticky';
+        reviewerNotesAlert.style.top = '10px';
+        reviewerNotesAlert.style.zIndex = '1060'; // Higher z-index for importance
+        // Do NOT set any timeout or opacity change for reviewer notes
+        console.log('Reviewer notes alert is persistent and will not auto-hide');
+    }
+}
+
+// Setup reviewer notes close confirmation
+function setupReviewerNotesCloseConfirmation() {
+    const confirmBtn = document.getElementById('confirmCloseReviewerNotesBtn');
+    if (confirmBtn) {
+        confirmBtn.addEventListener('click', function() {
+            if (pendingCloseAlert) {
+                // Actually close the alert
+                const alert = bootstrap.Alert.getOrCreateInstance(pendingCloseAlert);
+                alert.close();
+                pendingCloseAlert = null;
+            }
+            
+            // Close the modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('reviewerNotesCloseModal'));
+            modal.hide();
+        });
+    }
+}
+
+// Confirm close reviewer notes
+function confirmCloseReviewerNotes(event) {
+    event.preventDefault();
+    event.stopPropagation();
+    
+    const alertElement = document.getElementById('reviewerNotesAlert');
+    if (alertElement) {
+        pendingCloseAlert = alertElement;
+        
+        // Show confirmation modal
+        const modal = new bootstrap.Modal(document.getElementById('reviewerNotesCloseModal'));
+        modal.show();
+    }
+}
+
+// Setup page leave warning
+function setupPageLeaveWarning() {
+    // Warn when leaving page
+    window.addEventListener('beforeunload', function(e) {
+        if (hasUnsavedChanges) {
+            e.preventDefault();
+            e.returnValue = 'Anda memiliki perubahan yang belum disimpan. Yakin ingin meninggalkan halaman?';
+            return e.returnValue;
+        }
+    });
+    
+    // Handle modal confirmation
+    document.getElementById('confirmLeaveBtn').addEventListener('click', function() {
+        hasUnsavedChanges = false; // Clear flag
+        const modal = bootstrap.Modal.getInstance(document.getElementById('unsavedChangesModal'));
+        modal.hide();
+        
+        if (leaveCallback) {
+            leaveCallback();
+        }
+    });
+}
+
+// Confirm leave function
+function confirmLeave(callback) {
+    if (hasUnsavedChanges) {
+        leaveCallback = callback || function() {
+            window.location.href = document.querySelector('a[onclick="return confirmLeave()"]').href;
+        };
+        
+        const modal = new bootstrap.Modal(document.getElementById('unsavedChangesModal'));
+        modal.show();
+        return false;
+    }
+    return true;
+}
+
+// Clear unsaved changes flag when saving
+function clearUnsavedChanges() {
+    hasUnsavedChanges = false;
+}
+
+// Setup character counters
+function setupCharacterCounters() {
+    // Description counter
     const description = document.getElementById('description');
     if (description) {
         const counter = document.createElement('div');
@@ -857,7 +1111,7 @@ document.addEventListener('DOMContentLoaded', function() {
         updateCounter();
     }
 
-    // Alamat and Kode Pos validation
+    // Alamat counter
     const alamatTextarea = document.getElementById('alamat');
     if (alamatTextarea) {
         const alamatCounter = document.createElement('div');
@@ -880,7 +1134,10 @@ document.addEventListener('DOMContentLoaded', function() {
         alamatTextarea.addEventListener('input', updateAlamatCounter);
         updateAlamatCounter();
     }
+}
 
+// Setup form validation
+function setupFormValidation() {
     const kodePosInput = document.getElementById('kode_pos');
     if (kodePosInput) {
         kodePosInput.addEventListener('input', function() {
@@ -896,6 +1153,9 @@ document.addEventListener('DOMContentLoaded', function() {
     document.getElementById('submissionEditForm').addEventListener('submit', function(e) {
         const submitButton = e.submitter;
         if (submitButton) {
+            // Clear unsaved changes flag
+            clearUnsavedChanges();
+            
             submitButton.disabled = true;
             const originalText = submitButton.innerHTML;
             submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
@@ -906,7 +1166,7 @@ document.addEventListener('DOMContentLoaded', function() {
             }, 5000);
         }
     });
-});
+}
 
 // KTP Management Functions
 function toggleKtpUpload(index) {
@@ -997,5 +1257,202 @@ function viewKtp(url) {
 }
 </script>
 @endpush
-@endsection
+
+@push('styles')
+<style>
+/* Fixed Reviewer Notes Banner */
+/* Fixed Reviewer Notes Banner - Compact Version */
+.reviewer-notes-banner {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 1070;
+    background: linear-gradient(135deg, #ff8c00 0%, #ffc107 50%, #ff8c00 100%);
+    border-bottom: 2px solid #e5962e;
+    box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+    padding: 8px 0; /* Reduced padding */
+    animation: slideDownBanner 0.3s ease-out;
+    min-height: 60px; /* Set minimum height */
+}
+
+.reviewer-notes-content h6 {
+    margin-bottom: 8px; /* Reduced margin */
+    font-weight: bold;
+    font-size: 0.9rem; /* Smaller font */
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.3);
+}
+
+.reviewer-note-text {
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid #fff; /* Thinner border */
+    border-radius: 6px; /* Smaller radius */
+    box-shadow: 0 1px 4px rgba(0,0,0,0.1); /* Smaller shadow */
+}
+
+.reviewer-note-text p {
+    font-size: 0.85rem; /* Smaller text */
+    line-height: 1.3; /* Tighter line height */
+}
+
+.reviewer-note-text small {
+    font-size: 0.75rem; /* Even smaller for meta info */
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+    .reviewer-notes-banner {
+        padding: 6px 0;
+        min-height: 50px;
+    }
+    
+    .reviewer-notes-content h6 {
+        font-size: 0.8rem;
+        margin-bottom: 6px;
+    }
+    
+    .reviewer-note-text p {
+        font-size: 0.8rem;
+    }
+    
+    .reviewer-note-text small {
+        font-size: 0.7rem;
+    }
+}
+
+/* Sticky Alert Styles - adjust position */
+.sticky-alert {
+    position: fixed;
+    top: 80px; /* Adjusted for smaller banner */
+    left: 15px;
+    right: 15px;
+    z-index: 1065;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+@media (max-width: 768px) {
+    .sticky-alert {
+        top: 70px; /* Even smaller for mobile */
+    }
+}
+
+/* Pulse animation - reduced intensity */
+@keyframes pulseWarning {
+    0%, 100% {
+        box-shadow: 0 2px 8px rgba(255, 140, 0, 0.3);
+    }
+    50% {
+        box-shadow: 0 4px 12px rgba(255, 140, 0, 0.5);
+        transform: translateY(-1px);
+    }
+}
+
+@keyframes slideDownBanner {
+    from {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+/* Reviewer reminder card */
+.reviewer-reminder-card {
+    border-left: 6px solid #ffc107;
+    box-shadow: 0 4px 8px rgba(255, 193, 7, 0.2);
+}
+
+.reviewer-reminder-card .card-header {
+    background: linear-gradient(135deg, #fff3cd 0%, #ffeaa7 100%);
+}
+
+/* Sticky Alert Styles - adjust z-index */
+.sticky-alert {
+    position: fixed;
+    top: 120px; /* Below reviewer banner */
+    left: 15px;
+    right: 15px;
+    z-index: 1065;
+    margin-bottom: 1rem;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+/* Enhanced alert styles */
+.alert-sm {
+    padding: 0.5rem 0.75rem;
+    font-size: 0.875rem;
+}
+
+/* Form enhancements */
+.form-control:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Enhanced card styling */
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.card-header {
+    background-color: rgba(13, 110, 253, 0.1);
+    border-bottom: 1px solid rgba(13, 110, 253, 0.2);
+    border-radius: 10px 10px 0 0 !important;
+}
+
+/* Warning emphasis colors */
+.text-warning-emphasis {
+    color: #cc6600 !important;
+}
+
+.bg-warning-subtle {
+    background-color: #fff3cd !important;
+}
+
+.border-warning {
+    border-color: #ffc107 !important;
+}
+
+/* Button enhancements */
+.btn {
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+}
+
+/* Loading states */
+.btn-loading {
+    position: relative;
+    color: transparent;
+}
+
+.btn-loading::after {
+    content: "";
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+</style>
+@endpush
+
 
