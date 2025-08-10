@@ -14,6 +14,8 @@ class SubmissionMember extends Model
         'name',
         'email',
         'whatsapp',
+        'alamat', // ✅ NEW: alamat column
+        'kode_pos', // ✅ NEW: kode_pos column
         'ktp',
         'position',
         'is_leader',
@@ -96,5 +98,22 @@ class SubmissionMember extends Model
     public function scopeMembers($query)
     {
         return $query->where('is_leader', false);
+    }
+
+    /**
+     * ✅ NEW: Get formatted address
+     */
+    public function getFormattedAddressAttribute()
+    {
+        if (!$this->alamat && !$this->kode_pos) {
+            return '-';
+        }
+        
+        $address = $this->alamat ?: '';
+        if ($this->kode_pos) {
+            $address .= ($address ? ' ' : '') . $this->kode_pos;
+        }
+        
+        return $address;
     }
 }

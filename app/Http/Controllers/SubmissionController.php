@@ -583,14 +583,14 @@ class SubmissionController extends Controller
                     ]);
                 }
                 
-                // ✅ UPDATED: Create member record dengan alamat dan kode_pos
+                // ✅ FIXED: Create member record dengan alamat dan kode_pos
                 SubmissionMember::create([
                     'submission_id' => $submission->id,
                     'name' => $memberData['name'],
                     'email' => $memberData['email'],
                     'whatsapp' => $memberData['whatsapp'],
-                    'alamat' => $memberData['alamat'], // ✅ NEW
-                    'kode_pos' => $memberData['kode_pos'], // ✅ NEW
+                    'alamat' => $memberData['alamat'] ?? '', // ✅ FIXED: Include alamat with fallback
+                    'kode_pos' => $memberData['kode_pos'] ?? '', // ✅ FIXED: Include kode_pos with fallback
                     'position' => $index + 1,
                     'is_leader' => $index === 0, // ✅ UPDATED: First member (index 0) is leader
                     'ktp' => $ktpPath,
@@ -601,8 +601,8 @@ class SubmissionController extends Controller
                     'member_index' => $index,
                     'name' => $memberData['name'],
                     'is_leader' => $index === 0,
-                    'has_alamat' => !empty($memberData['alamat']),
-                    'has_kode_pos' => !empty($memberData['kode_pos'])
+                    'has_alamat' => !empty($memberData['alamat'] ?? ''),
+                    'has_kode_pos' => !empty($memberData['kode_pos'] ?? '')
                 ]);
             }
         }

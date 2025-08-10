@@ -107,8 +107,15 @@
                                 <tr>
                                     <td width="40%"><strong>Alamat Lengkap:</strong></td>
                                     <td>
-                                        @if($submission->alamat && $submission->kode_pos)
-                                            {{ $submission->formatted_address }}
+                                        @php
+                                            // ✅ FIXED: Get address from first member (leader)
+                                            $leader = $submission->members->where('is_leader', true)->first() ?? $submission->members->sortBy('position')->first();
+                                        @endphp
+                                        @if($leader && $leader->alamat)
+                                            {{ $leader->alamat }}
+                                            @if($leader->kode_pos)
+                                                {{ $leader->kode_pos }}
+                                            @endif
                                         @else
                                             <span class="text-muted">-</span>
                                         @endif
@@ -116,7 +123,13 @@
                                 </tr>
                                 <tr>
                                     <td><strong>Kode Pos:</strong></td>
-                                    <td>{{ $submission->kode_pos ?: '-' }}</td>
+                                    <td>
+                                        @if($leader && $leader->kode_pos)
+                                            {{ $leader->kode_pos }}
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
                                 </tr>
                                 <tr>
                                     <td><strong>Tanggal Submit:</strong></td>
@@ -234,10 +247,11 @@
                                     <tr>
                                         <th width="5%">No</th>
                                         <th width="25%">Nama</th>
-                                        <th width="15%">Role</th>
+                                        <th width="10%">Role</th>
                                         <th width="20%">Email</th>
                                         <th width="15%">WhatsApp</th>
-                                        <th width="15%">Status KTP</th>
+                                        <th width="20%">Alamat</th>
+                                        <th width="10%">Status KTP</th>
                                         <th width="5%">Aksi</th>
                                     </tr>
                                 </thead>
@@ -262,6 +276,19 @@
                                                     <i class="bi bi-whatsapp me-1"></i>
                                                     {{ $member->whatsapp }}
                                                 </a>
+                                            </td>
+                                            <td>
+                                                {{-- ✅ NEW: Display member address --}}
+                                                @if($member->alamat)
+                                                    <small class="text-muted">
+                                                        {{ Str::limit($member->alamat, 30) }}
+                                                        @if($member->kode_pos)
+                                                            <br><strong>{{ $member->kode_pos }}</strong>
+                                                        @endif
+                                                    </small>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
                                             </td>
                                             <td>
                                                 @if($member->ktp)
