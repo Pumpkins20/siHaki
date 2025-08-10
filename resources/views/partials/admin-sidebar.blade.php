@@ -48,6 +48,14 @@
                 <span class="sidebar-text">Riwayat Peninjauan</span>
             </a>
         </li>
+
+        <li class="nav-item">
+            <a href="{{ route('admin.panduan.index') }}" 
+               class="nav-link text-white {{ request()->routeIs('admin.panduan.*') ? 'active' : '' }}">
+                <i class="bi bi-book me-2"></i>
+                <span class="sidebar-text">Panduan</span>
+            </a>
+        </li>
         
         <li class="nav-item mt-3">
             <small class="text-white-50 text-uppercase px-3 sidebar-text">Account</small>

@@ -11,6 +11,188 @@ use Illuminate\Support\Facades\Log;
 class PublicSearchController extends Controller
 {
     /**
+     * ✅ FIXED: Beranda method to prevent infinite loops
+     */
+    public function beranda()
+    {
+        try {
+            // ✅ FIXED: Get statistics with proper error handling
+            $statistics = $this->getOverallStatistics();
+            
+            // ✅ FIXED: Ensure we return the view only once
+            return view('beranda', compact('statistics'));
+            
+        } catch (\Exception $e) {
+            Log::error('Error in beranda method', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            // ✅ FIXED: Return view with empty statistics on error
+            $statistics = $this->getEmptyStatistics();
+            return view('beranda', compact('statistics'));
+        }
+    }
+
+    /**
+     * ✅ FIXED: Get overall statistics - prevent infinite loops
+     */
+    private function getOverallStatistics()
+    {
+        try {
+            // ✅ FIXED: Basic counts with proper queries
+            $totalSubmissions = HkiSubmission::count();
+            $approvedSubmissions = HkiSubmission::where('status', 'approved')->count();
+            
+            // ✅ FIXED: Count unique users with approved submissions
+            $totalUsers = User::where('role', 'user')
+                ->whereExists(function($query) {
+                    $query->select(DB::raw(1))
+                          ->from('hki_submissions')
+                          ->whereColumn('hki_submissions.user_id', 'users.id')
+                          ->where('hki_submissions.status', 'approved');
+                })
+                ->count();
+
+            // ✅ FIXED: Submissions by creation type (limit to prevent memory issues)
+            $submissionsByType = HkiSubmission::where('status', 'approved')
+                ->select('creation_type', DB::raw('COUNT(*) as count'))
+                ->groupBy('creation_type')
+                ->orderBy('count', 'desc')
+                ->limit(10) // ✅ LIMIT to prevent infinite loops
+                ->get()
+                ->map(function($item) {
+                    return [
+                        'type' => $item->creation_type,
+                        'name' => $this->getCreationTypeDisplayName($item->creation_type),
+                        'count' => $item->count,
+                        'color' => $this->getTypeColor($item->creation_type)
+                    ];
+                });
+
+            // ✅ FIXED: Submissions by year (limit to last 5 years only)
+            $submissionsByYear = HkiSubmission::where('status', 'approved')
+                ->select(DB::raw('YEAR(created_at) as year'), DB::raw('COUNT(*) as count'))
+                ->groupBy('year')
+                ->orderBy('year', 'desc')
+                ->limit(5) // ✅ LIMIT to prevent infinite data
+                ->get();
+
+            // ✅ FIXED: Recent approved submissions (limit to 6)
+            $recentSubmissions = HkiSubmission::with(['user:id,nama'])
+                ->where('status', 'approved')
+                ->orderBy('reviewed_at', 'desc')
+                ->limit(6) // ✅ STRICT LIMIT
+                ->get()
+                ->map(function($submission) {
+                    return [
+                        'id' => $submission->id,
+                        'title' => $submission->title,
+                        'user_name' => $submission->user->nama ?? 'Unknown',
+                        'creation_type' => $this->getCreationTypeDisplayName($submission->creation_type),
+                        'creation_type_color' => $this->getTypeColor($submission->creation_type),
+                        'year' => $submission->created_at->format('Y'),
+                        'reviewed_at' => $submission->reviewed_at
+                    ];
+                });
+
+            // ✅ FIXED: Top contributors (limit to 5)
+            $topContributors = User::select([
+                'users.id',
+                'users.nama',
+                'users.foto',
+                'users.program_studi',
+                DB::raw('COUNT(hki_submissions.id) as total_submissions')
+            ])
+            ->join('hki_submissions', 'users.id', '=', 'hki_submissions.user_id')
+            ->where('users.role', 'user')
+            ->where('hki_submissions.status', 'approved')
+            ->groupBy(['users.id', 'users.nama', 'users.foto', 'users.program_studi'])
+            ->orderBy('total_submissions', 'desc')
+            ->limit(5) // ✅ STRICT LIMIT
+            ->get();
+
+            // ✅ FIXED: Return structured array
+            return [
+                'total_submissions' => $totalSubmissions,
+                'approved_submissions' => $approvedSubmissions,
+                'total_users' => $totalUsers,
+                'approval_rate' => $totalSubmissions > 0 ? round(($approvedSubmissions / $totalSubmissions) * 100, 1) : 0,
+                'by_type' => $submissionsByType,
+                'by_year' => $submissionsByYear,
+                'recent_submissions' => $recentSubmissions,
+                'top_contributors' => $topContributors
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Error getting overall statistics', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile()
+            ]);
+
+            return $this->getEmptyStatistics();
+        }
+    }
+
+    /**
+     * ✅ NEW: Get empty statistics structure
+     */
+    private function getEmptyStatistics()
+    {
+        return [
+            'total_submissions' => 0,
+            'approved_submissions' => 0,
+            'total_users' => 0,
+            'approval_rate' => 0,
+            'by_type' => collect(),
+            'by_year' => collect(),
+            'recent_submissions' => collect(),
+            'top_contributors' => collect()
+        ];
+    }
+
+    /**
+     * ✅ FIXED: Get creation type display name
+     */
+    private function getCreationTypeDisplayName($type)
+    {
+        $types = [
+            'program_komputer' => 'Program Komputer',
+            'sinematografi' => 'Sinematografi',
+            'buku' => 'Buku',
+            'poster' => 'Poster',
+            'fotografi' => 'Fotografi',
+            'seni_gambar' => 'Seni Gambar',
+            'karakter_animasi' => 'Karakter Animasi',
+            'alat_peraga' => 'Alat Peraga',
+            'basis_data' => 'Basis Data'
+        ];
+
+        return $types[$type] ?? ucfirst(str_replace('_', ' ', $type));
+    }
+
+    /**
+     * ✅ FIXED: Get type color for charts
+     */
+    private function getTypeColor($type)
+    {
+        $colors = [
+            'program_komputer' => '#667eea',
+            'sinematografi' => '#764ba2',
+            'buku' => '#f093fb',
+            'poster' => '#f5576c',
+            'fotografi' => '#4facfe',
+            'seni_gambar' => '#43e97b',
+            'karakter_animasi' => '#fa709a',
+            'alat_peraga' => '#feca57',
+            'basis_data' => '#ff9ff3'
+        ];
+
+        return $colors[$type] ?? '#6c757d';
+    }
+
+    /**
      * Handle search from beranda
      */
     public function search(Request $request)
@@ -63,12 +245,12 @@ class PublicSearchController extends Controller
         $filter = $request->get('filter');
         
         if (empty($query)) {
-            return view('beranda');
+            return redirect()->route('beranda');
         }
 
         // Get approved submissions for public display
         $submissions = HkiSubmission::where('status', 'approved')
-            ->with(['user', 'members'])
+            ->with(['user:id,nama,jurusan,institusi', 'members:id,submission_id,name,is_leader'])
             ->where(function($q) use ($query, $filter) {
                 if ($filter === 'nama') {
                     // Search by creator name
@@ -99,22 +281,28 @@ class PublicSearchController extends Controller
                       });
                 }
             })
-            ->paginate(10);
+            ->limit(50) // ✅ LIMIT search results
+            ->get();
 
         // Transform data for display
         $ciptaans = $submissions->map(function($submission) {
+            $leader = $submission->members->where('is_leader', true)->first();
+            
             return (object) [
                 'id' => $submission->id,
                 'judul' => $submission->title,
-                'pencipta' => $submission->members->where('is_leader', true)->first()->name ?? 'N/A',
+                'pencipta' => $leader->name ?? $submission->user->nama ?? 'N/A',
                 'pencipta_id' => $submission->user_id,
                 'jurusan' => $submission->user->jurusan ?? 'N/A',
-                'tipe' => ucfirst(str_replace('_', ' ', $submission->creation_type)),
+                'tipe' => $this->getCreationTypeDisplayName($submission->creation_type),
                 'tahun' => $submission->created_at->format('Y')
             ];
         });
 
-        return view('beranda', compact('ciptaans'));
+        // Get statistics but don't create infinite loop
+        $statistics = $this->getOverallStatistics();
+
+        return view('beranda', compact('ciptaans', 'statistics'));
     }
 
     /**
@@ -428,26 +616,6 @@ class PublicSearchController extends Controller
             'latest_submission' => $latestSubmission,
             'oldest_submission' => $oldestSubmission
         ];
-    }
-
-    /**
-     * ✅ NEW: Get creation type display name untuk semua 9 jenis
-     */
-    private function getCreationTypeDisplayName($type)
-    {
-        $displayNames = [
-            'program_komputer' => 'Program Komputer',
-            'sinematografi' => 'Sinematografi',
-            'buku' => 'Buku',
-            'poster' => 'Poster',
-            'fotografi' => 'Fotografi',
-            'seni_gambar' => 'Seni Gambar',
-            'karakter_animasi' => 'Karakter Animasi',
-            'alat_peraga' => 'Alat Peraga',
-            'basis_data' => 'Basis Data'
-        ];
-
-        return $displayNames[$type] ?? ucfirst(str_replace('_', ' ', $type));
     }
 
     /**

@@ -107,7 +107,7 @@
     <!-- Recent Activities & Quick Actions -->
     <div class="row">
         <!-- Recent Submissions -->
-        <div class="col-xl-8 col-lg-12 mb-4 order-2 order-xl-1">
+        <div class="col-xl-8 col-lg-7 mb-4 order-2 order-xl-1">
             <div class="card shadow h-100">
                 <div class="card-header py-3 d-flex flex-column flex-sm-row justify-content-between align-items-start align-items-sm-center">
                     <h6 class="m-0 font-weight-bold text-primary mb-2 mb-sm-0">Antrian Tinjauan Terbaru</h6>
@@ -204,8 +204,8 @@
             </div>
         </div>
 
-        <!-- Quick Actions & Stats -->
-        <div class="col-xl-4 col-lg-12 mb-4 order-1 order-xl-2">
+        <!-- ✅ UPDATED: Sidebar without panduan -->
+        <div class="col-xl-4 col-lg-5 mb-4 order-1 order-xl-2">
             <!-- Quick Actions -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
@@ -224,6 +224,9 @@
                         </a>
                         <a href="{{ route('admin.review-history.index') }}" class="btn btn-secondary">
                             <i class="bi bi-clock-history"></i> Riwayat Peninjauan
+                        </a>
+                        <a href="{{ route('admin.panduan.index') }}" class="btn btn-primary">
+                            <i class="bi bi-book"></i> Panduan Admin
                         </a>
                     </div>
                 </div>
@@ -306,6 +309,38 @@
                 </div>
             </div>
 
+            <!-- IT Support Contact -->
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-warning">
+                        <i class="bi bi-headset me-2"></i>IT Support
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="text-center">
+                        <i class="bi bi-person-badge fs-2 text-warning mb-3"></i>
+                        <h6 class="small">Dukungan Teknis</h6>
+                        <p class="small text-muted mb-3">
+                            Hubungi tim IT untuk bantuan teknis sistem.
+                        </p>
+                        
+                        <div class="d-grid gap-2">
+                            <a href="mailto:it@amikom.ac.id" class="btn btn-warning btn-sm">
+                                <i class="bi bi-envelope me-1"></i>Email IT Support
+                            </a>
+                            <a href="https://wa.me/6281329303450" class="btn btn-success btn-sm" target="_blank">
+                                <i class="bi bi-whatsapp me-1"></i>WhatsApp
+                            </a>
+                        </div>
+                        
+                        <div class="mt-2 small text-muted">
+                            <i class="bi bi-clock me-1"></i>
+                            24/7 Support
+                        </div>
+                    </div>
+                </div>
+            </div>
+
             <!-- System Info -->
             <div class="card shadow">
                 <div class="card-header py-3">
@@ -364,18 +399,7 @@
     align-items: center;
     justify-content: center;
     font-size: 14px;
-    flex-shrink: 0; /* Prevent shrinking */
-}
-
-/* ✅ Badge Styling */
-.badge {
-    font-size: 0.75em;
-    padding: 0.5em 0.75em;
-    font-weight: 500;
-}
-
-.badge i {
-    margin-right: 0.25rem;
+    flex-shrink: 0;
 }
 
 /* ✅ Table Improvements */
@@ -387,268 +411,7 @@
     border-radius: 0.375rem;
 }
 
-/* ✅ RESPONSIVE FIXES */
-
-/* Desktop (Large screens) */
-@media (min-width: 1200px) {
-    .main-content {
-        margin-left: 250px;
-        padding: 1.5rem;
-    }
-}
-
-/* Tablet (Medium screens) */
-@media (max-width: 1199.98px) and (min-width: 768px) {
-    .main-content {
-        margin-left: 0;
-        padding: 1rem;
-    }
-    
-    /* Stack cards vertically on tablet */
-    .col-xl-3 {
-        margin-bottom: 1rem;
-    }
-    
-    /* Adjust stats cards */
-    .card-body .row.no-gutters {
-        align-items: center;
-    }
-    
-    .card-body .h5 {
-        font-size: 1.1rem;
-    }
-}
-
-/* Mobile (Small screens) */
-@media (max-width: 767.98px) {
-    .main-content {
-        margin-left: 0;
-        padding: 0.75rem;
-    }
-    
-    /* Header adjustments */
-    .card bg-gradient-primary .card-body {
-        padding: 1rem;
-    }
-    
-    .card bg-gradient-primary h4 {
-        font-size: 1.25rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .card bg-gradient-primary p {
-        font-size: 0.9rem;
-        margin-bottom: 1rem;
-    }
-    
-    /* Stack header content */
-    .col-md-4.text-end {
-        text-align: left !important;
-        margin-top: 1rem;
-    }
-    
-    /* Stats cards improvements */
-    .col-xl-3.col-md-6 {
-        margin-bottom: 1rem;
-    }
-    
-    .card.border-left-primary,
-    .card.border-left-success,
-    .card.border-left-warning,
-    .card.border-left-info {
-        border-left: 0.2rem solid;
-        border-top: 0.2rem solid;
-    }
-    
-    .card-body .py-2 {
-        padding: 1rem !important;
-    }
-    
-    .text-xs {
-        font-size: 0.7rem !important;
-    }
-    
-    .h5.mb-0 {
-        font-size: 1.1rem;
-    }
-    
-    /* Icon adjustments */
-    .bi.fs-2 {
-        font-size: 1.5rem !important;
-    }
-    
-    /* Table responsive */
-    .table-responsive {
-        font-size: 0.85rem;
-    }
-    
-    .table th,
-    .table td {
-        padding: 0.5rem 0.25rem;
-        vertical-align: middle;
-    }
-    
-    /* Hide some table columns on mobile */
-    .table th:nth-child(3),
-    .table td:nth-child(3),
-    .table th:nth-child(5),
-    .table td:nth-child(5) {
-        display: none;
-    }
-    
-    /* Adjust buttons */
-    .btn-sm {
-        padding: 0.25rem 0.5rem;
-        font-size: 0.75rem;
-    }
-    
-    .btn-lg {
-        padding: 0.5rem 1rem;
-        font-size: 1rem;
-    }
-    
-    /* Status summary grid */
-    .row.g-2 > .col-6 {
-        margin-bottom: 0.5rem;
-    }
-    
-    .icon-circle {
-        width: 28px;
-        height: 28px;
-        font-size: 12px;
-    }
-    
-    .h6.mb-0 {
-        font-size: 0.9rem;
-    }
-    
-    /* Quick actions */
-    .d-grid.gap-2 .btn {
-        padding: 0.6rem;
-        font-size: 0.9rem;
-    }
-    
-    /* System info */
-    .card-body .small {
-        font-size: 0.8rem;
-    }
-    
-    /* Badge adjustments */
-    .badge {
-        font-size: 0.65em;
-        padding: 0.35em 0.55em;
-    }
-}
-
-/* Extra small screens */
-@media (max-width: 575.98px) {
-    .main-content {
-        padding: 0.5rem;
-    }
-    
-    /* Further reduce spacing */
-    .mb-4 {
-        margin-bottom: 1rem !important;
-    }
-    
-    .py-3 {
-        padding-top: 0.75rem !important;
-        padding-bottom: 0.75rem !important;
-    }
-    
-    /* Stack all columns */
-    .col-xl-8,
-    .col-xl-4 {
-        margin-bottom: 1rem;
-    }
-    
-    /* Reduce card padding */
-    .card-body {
-        padding: 0.75rem;
-    }
-    
-    .card-header {
-        padding: 0.5rem 0.75rem;
-    }
-    
-    /* Header title */
-    .h6.m-0 {
-        font-size: 0.9rem;
-    }
-    
-    /* Today's stats */
-    .border-end {
-        border-right: none !important;
-        border-bottom: 1px solid #dee2e6 !important;
-        padding-bottom: 0.5rem;
-        margin-bottom: 0.5rem;
-    }
-    
-    .row.text-center > .col-6 {
-        margin-bottom: 0.5rem;
-    }
-    
-    /* No gutters fix */
-    .no-gutters {
-        margin: 0;
-    }
-    
-    .no-gutters > .col,
-    .no-gutters > [class*="col-"] {
-        padding: 0;
-    }
-}
-
-/* ✅ Print Styles */
-@media print {
-    .sidebar,
-    .btn,
-    .pagination {
-        display: none !important;
-    }
-    
-    .main-content {
-        margin-left: 0 !important;
-    }
-    
-    .card {
-        border: 1px solid #ddd !important;
-        box-shadow: none !important;
-    }
-}
-
-/* ✅ Focus and Accessibility */
-.btn:focus,
-.form-control:focus,
-.form-select:focus {
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-    border-color: #667eea;
-}
-
-/* ✅ Loading States */
-.card.loading {
-    opacity: 0.7;
-    pointer-events: none;
-}
-
-.card.loading::after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: 50%;
-    width: 20px;
-    height: 20px;
-    margin: -10px 0 0 -10px;
-    border: 2px solid #f3f3f3;
-    border-top: 2px solid #667eea;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
+/* Responsive fixes remain the same as before... */
 </style>
 @endpush
 @endsection

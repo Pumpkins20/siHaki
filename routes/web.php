@@ -8,6 +8,7 @@ use App\Http\Controllers\SubmissionController;
 use App\Http\Controllers\AdminSubmissionController;
 use App\Http\Controllers\UserHistoryController;
 use App\Http\Controllers\UserPanduanController;
+use App\Http\Controllers\AdminPanduanController;
 use App\Http\Controllers\PublicSearchController;
 use Illuminate\Support\Facades\Route;
 
@@ -23,7 +24,8 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Public routes
-Route::get('/', [PublicSearchController::class, 'searchOnBeranda'])->name('beranda');
+Route::get('/', [PublicSearchController::class, 'beranda'])->name('beranda');
+Route::get('/beranda', [PublicSearchController::class, 'beranda'])->name('beranda');
 
 Route::get('/pencipta', [PublicSearchController::class, 'searchPencipta'])->name('pencipta');
 Route::get('/pencipta', [PublicSearchController::class, 'pencipta'])->name('pencipta');
@@ -187,6 +189,11 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/', [AdminController::class, 'reviewHistoryIndex'])->name('index');
             Route::get('/export', [AdminController::class, 'exportReviewHistory'])->name('export');
         });
+
+        // Admin Panduan Routes
+        Route::get('/panduan', [AdminPanduanController::class, 'index'])->name('panduan.index');
+        Route::get('/panduan/download/{filename}', [AdminPanduanController::class, 'downloadGuide'])->name('panduan.download');
+        Route::get('/panduan/export-faq', [AdminPanduanController::class, 'exportFaq'])->name('panduan.export-faq');
     });
 });
 

@@ -54,8 +54,96 @@ class AdminController extends Controller
             ->limit(10)
             ->get();
 
+        // ✅ NEW: Add panduan data for admin sidebar
+        $panduanData = $this->getPanduanData();
+
         return view('admin.dashboard', compact('stats', 'recent_submissions'));
     }
+
+    /**
+     * ✅ NEW: Get panduan data for admin dashboard
+     */
+    private function getPanduanData()
+    {
+        // FAQ Data - same as UserPanduanController
+        $faqs = [
+            [
+                'id' => 1,
+                'category' => 'umum',
+                'question' => 'Apa itu HKI (Hak Kekayaan Intelektual)?',
+                'answer' => 'HKI adalah hak eksklusif yang diberikan atas karya intelektual dalam bidang teknologi, seni, dan sastra. Meliputi hak cipta, paten, merek, desain industri, dll.',
+                'is_popular' => true
+            ],
+            [
+                'id' => 2,
+                'category' => 'umum', 
+                'question' => 'Mengapa perlu mendaftarkan HKI?',
+                'answer' => 'Mendaftarkan HKI memberikan perlindungan hukum, hak eksklusif untuk menggunakan karya, dan dapat menjadi aset komersial yang bernilai.',
+                'is_popular' => true
+            ],
+            [
+                'id' => 3,
+                'category' => 'pengajuan',
+                'question' => 'Bagaimana cara mengajukan HKI melalui SiHaki?',
+                'answer' => 'Login ke sistem, pilih "Pengajuan HKI", isi formulir lengkap dengan data pencipta (minimal 2 orang), upload dokumen yang diperlukan, lalu submit untuk review.',
+                'is_popular' => true
+            ],
+            [
+                'id' => 4,
+                'category' => 'pengajuan',
+                'question' => 'Berapa lama proses review pengajuan HKI?',
+                'answer' => 'Proses review biasanya memakan waktu 7-14 hari kerja. Anda akan mendapat notifikasi melalui email dan sistem jika ada update status pengajuan.',
+                'is_popular' => false
+            ],
+            [
+                'id' => 5,
+                'category' => 'dokumen',
+                'question' => 'Dokumen apa saja yang diperlukan untuk pengajuan HKI?',
+                'answer' => 'Dokumen yang diperlukan berbeda tergantung jenis ciptaan: Program Komputer (cover, screenshot, manual, link), Sinematografi (file video), Buku (file PDF), dll. Lihat panduan detail di setiap jenis ciptaan.',
+                'is_popular' => true
+            ],
+            [
+                'id' => 6,
+                'category' => 'anggota',
+                'question' => 'Berapa minimal anggota pencipta yang diperlukan?',
+                'answer' => 'Minimal 2 orang pencipta, maksimal 5 orang. Jika lebih dari 5 orang, silakan hubungi LPPM di hki@amikom.ac.id untuk penanganan khusus.',
+                'is_popular' => true
+            ]
+        ];
+
+        // Filter popular FAQs
+        $popularFaqs = collect($faqs)->where('is_popular', true)->take(6);
+
+        // Categories
+        $categories = [
+            'umum' => 'Umum',
+            'pengajuan' => 'Pengajuan', 
+            'dokumen' => 'Dokumen',
+            'anggota' => 'Anggota Pencipta',
+            'status' => 'Status & Review',
+            'sertifikat' => 'Sertifikat'
+        ];
+
+        // Panduan download
+        $guides = [
+            [
+                'title' => 'Panduan Lengkap Pengajuan HKI',
+                'description' => 'Panduan step-by-step untuk mengajukan HKI melalui SiHaki',
+                'file' => 'Panduan Layanan HKI.pdf',
+                'size' => '175 KB',
+                'pages' => 4,
+                'updated' => '6-08-2025'
+            ]
+        ];
+
+        return [
+            'faqs' => collect($faqs),
+            'popular_faqs' => $popularFaqs,
+            'categories' => $categories,
+            'guides' => $guides
+        ];
+    }
+
 
 
     // ================== USER MANAGEMENT ======================
