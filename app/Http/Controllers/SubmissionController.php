@@ -869,60 +869,6 @@ class SubmissionController extends Controller
     }
 
     /**
-     * ✅ NEW: Add dynamic validation rules for update (without required on existing docs)
-     */
-    private function addDynamicValidationForUpdate(&$rules, $creationType)
-    {
-        switch ($creationType) {
-            case 'program_komputer':
-                $rules['program_link'] = 'required|url';
-                $rules['manual_document'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
-                break;
-                
-            case 'sinematografi':
-                $rules['video_link'] = 'required|url';
-                $rules['video_metadata_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
-                break;
-                
-            case 'buku':
-                $rules['isbn'] = 'nullable|string|max:20';
-                $rules['page_count'] = 'nullable|integer|min:1|max:10000';
-                $rules['ebook_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
-                break;
-                
-            // ✅ UNIFIED: Validation untuk semua jenis visual
-            case 'poster':
-            case 'fotografi':
-            case 'seni_gambar':
-            case 'karakter_animasi':
-                $rules['image_files'] = 'nullable|array';
-                $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
-                $rules['width'] = 'nullable|numeric|min:1';
-                $rules['height'] = 'nullable|numeric|min:1';
-                $rules['image_description'] = 'nullable|string|max:500';
-                break;
-                
-            case 'alat_peraga':
-                $rules['photo_files'] = 'nullable|array';
-                $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024'; // Optional untuk update
-                $rules['subject'] = 'nullable|string|max:255';
-                $rules['education_level'] = 'nullable|string|max:255';
-                break;
-                
-            case 'basis_data':
-                $rules['documentation_file'] = 'nullable|file|mimes:pdf|max:20480'; // Optional untuk update
-                $rules['database_type'] = 'nullable|string|max:255';
-                $rules['record_count'] = 'nullable|integer|min:1';
-                break;
-
-            default:
-                // ✅ ADDED: Generic validation untuk creation_type lainnya
-                $rules['main_document'] = 'nullable|file|mimes:pdf,doc,docx|max:10240';
-                break;
-        }
-    }
-
-    /**
      * ✅ ENHANCED: Get additional data for update
      */
     private function getAdditionalDataForUpdate(Request $request, $creationType)
