@@ -165,7 +165,8 @@
                                 <button type="button" id="resetBtn" class="btn btn-outline-warning me-2" onclick="resetForm()">
                                     <i class="bi bi-arrow-clockwise"></i> Reset Form
                                 </button>
-                                <button type="submit" class="btn btn-success">
+                                {{-- ✅ UPDATED: Changed to button instead of submit --}}
+                                <button type="button" class="btn btn-success" onclick="showConfirmationModal()">
                                     <i class="bi bi-send"></i> Submit
                                 </button>
                             </div>
@@ -260,6 +261,96 @@
     </div>
 </div>
 
+{{-- ✅ NEW: Confirmation Modal --}}
+<div class="modal fade" id="submissionConfirmModal" tabindex="-1" aria-labelledby="submissionConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning-subtle">
+                <h5 class="modal-title text-warning-emphasis" id="submissionConfirmModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi Pengajuan HKI
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Pastikan semua data sudah benar sebelum submit!</strong>
+                </div>
+                
+                <h6 class="fw-bold mb-3">Ringkasan Pengajuan:</h6>
+                
+                <!-- Summary will be populated by JavaScript -->
+                <div id="submission-summary">
+                    <!-- Content will be populated dynamically -->
+                </div>
+                
+                <hr>
+                
+                <h6 class="fw-bold text-danger mb-3">⚠️ Penting untuk Dipahami:</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card border-warning h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-warning">
+                                    <i class="bi bi-file-earmark-check me-2"></i>Dokumen
+                                </h6>
+                                <ul class="small mb-0">
+                                    <li>Semua file sudah sesuai format</li>
+                                    <li>Ukuran file tidak melebihi batas</li>
+                                    <li>Dokumen jelas dan dapat dibaca</li>
+                                    <li>File KTP semua anggota sudah diupload</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-info h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-info">
+                                    <i class="bi bi-people me-2"></i>Data Anggota
+                                </h6>
+                                <ul class="small mb-0">
+                                    <li>Nama sesuai identitas resmi</li>
+                                    <li>Alamat lengkap dan benar</li>
+                                    <li>No. WhatsApp dan email aktif</li>
+                                    <li>Data semua anggota sudah lengkap</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning mt-3">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-clock me-2"></i>Setelah Submit:
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li><strong>Data tidak dapat diubah</strong> kecuali jika reviewer meminta revisi</li>
+                        <li>Proses review memakan waktu <strong>7-14 hari kerja</strong></li>
+                        <li>Anda akan mendapat notifikasi via email untuk setiap update status</li>
+                        <li>Pastikan email dan WhatsApp Anda aktif untuk komunikasi</li>
+                    </ul>
+                </div>
+                
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="confirmSubmission" required>
+                    <label class="form-check-label fw-bold" for="confirmSubmission">
+                        Saya menyatakan bahwa semua data dan dokumen yang saya upload sudah benar dan sesuai
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-arrow-left"></i> Periksa Kembali
+                </button>
+                <button type="button" class="btn btn-success" id="finalSubmitBtn" disabled>
+                    <i class="bi bi-send"></i> Ya, Submit Pengajuan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -277,22 +368,6 @@ document.addEventListener('DOMContentLoaded', function() {
     
     description.addEventListener('input', updateCounter);
     updateCounter();
-
-    // Form submission handling
-    document.getElementById('submissionForm').addEventListener('submit', function(e) {
-        const submitButton = e.submitter;
-        if (submitButton && submitButton.type === 'submit') {
-            submitButton.disabled = true;
-            const originalText = submitButton.innerHTML;
-            submitButton.innerHTML = '<i class="bi bi-hourglass-split"></i> Processing...';
-            
-            // Re-enable after 10 seconds if still processing
-            setTimeout(() => {
-                submitButton.disabled = false;
-                submitButton.innerHTML = originalText;
-            }, 10000);
-        }
-    });
 
     // ✅ NEW: Initialize form with old values if available
     initializeFormWithOldValues();
@@ -315,7 +390,151 @@ document.addEventListener('DOMContentLoaded', function() {
             this.focus();
         }
     });
+
+    // ✅ NEW: Confirmation checkbox handler
+    const confirmCheckbox = document.getElementById('confirmSubmission');
+    const finalSubmitBtn = document.getElementById('finalSubmitBtn');
+    
+    confirmCheckbox.addEventListener('change', function() {
+        finalSubmitBtn.disabled = !this.checked;
+    });
+    
+    // ✅ NEW: Final submit handler
+    finalSubmitBtn.addEventListener('click', function() {
+        if (confirmCheckbox.checked) {
+            // Close modal
+            const modal = bootstrap.Modal.getInstance(document.getElementById('submissionConfirmModal'));
+            modal.hide();
+            
+            // Show loading state
+            this.disabled = true;
+            this.innerHTML = '<i class="bi bi-hourglass-split"></i> Memproses...';
+            
+            // Submit the form
+            document.getElementById('submissionForm').submit();
+        }
+    });
 });
+
+// ✅ NEW: Show confirmation modal function
+function showConfirmationModal() {
+    // Validate form first
+    const form = document.getElementById('submissionForm');
+    if (!form.checkValidity()) {
+        form.reportValidity();
+        return false;
+    }
+    
+    // Generate summary
+    generateSubmissionSummary();
+    
+    // Reset checkbox and button
+    document.getElementById('confirmSubmission').checked = false;
+    document.getElementById('finalSubmitBtn').disabled = true;
+    
+    // Show modal
+    const modal = new bootstrap.Modal(document.getElementById('submissionConfirmModal'));
+    modal.show();
+}
+
+// ✅ NEW: Generate submission summary
+function generateSubmissionSummary() {
+    const summaryDiv = document.getElementById('submission-summary');
+    
+    // Get form data
+    const title = document.getElementById('title').value;
+    const creationType = document.getElementById('creation_type');
+    const creationTypeText = creationType.options[creationType.selectedIndex].text;
+    const memberCount = document.getElementById('member_count').value;
+    const description = document.getElementById('description').value;
+    const firstPublicationDate = document.getElementById('first_publication_date').value;
+    
+    // Count uploaded files
+    let uploadedFiles = 0;
+    let uploadedKtpFiles = 0;
+    
+    // Count regular files
+    document.querySelectorAll('input[type="file"]:not([name*="ktp"])').forEach(input => {
+        if (input.files.length > 0) {
+            uploadedFiles += input.files.length;
+        }
+    });
+    
+    // Count KTP files
+    document.querySelectorAll('input[name*="ktp"]').forEach(input => {
+        if (input.files.length > 0) {
+            uploadedKtpFiles++;
+        }
+    });
+    
+    // Generate summary HTML
+    const summaryHTML = `
+        <div class="row g-3">
+            <div class="col-md-6">
+                <div class="card bg-light border-0">
+                    <div class="card-body">
+                        <h6 class="card-title text-primary">📋 Informasi Dasar</h6>
+                        <table class="table table-sm table-borderless mb-0">
+                            <tr>
+                                <td width="40%"><strong>Judul:</strong></td>
+                                <td>${title}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Jenis:</strong></td>
+                                <td>${creationTypeText}</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Tanggal Publikasi:</strong></td>
+                                <td>${new Date(firstPublicationDate).toLocaleDateString('id-ID')}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-6">
+                <div class="card bg-light border-0">
+                    <div class="card-body">
+                        <h6 class="card-title text-success">👥 Anggota & Dokumen</h6>
+                        <table class="table table-sm table-borderless mb-0">
+                            <tr>
+                                <td width="50%"><strong>Jumlah Anggota:</strong></td>
+                                <td>${memberCount} orang</td>
+                            </tr>
+                            <tr>
+                                <td><strong>File KTP:</strong></td>
+                                <td>${uploadedKtpFiles}/${memberCount} file</td>
+                            </tr>
+                            <tr>
+                                <td><strong>Dokumen:</strong></td>
+                                <td>${uploadedFiles} file</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="mt-3">
+            <h6 class="fw-bold">📝 Deskripsi:</h6>
+            <div class="p-3 bg-light rounded border">
+                <small>${description.substring(0, 200)}${description.length > 200 ? '...' : ''}</small>
+            </div>
+        </div>
+        
+        ${uploadedKtpFiles < memberCount ? 
+            `<div class="alert alert-danger mt-3">
+                <i class="bi bi-exclamation-triangle me-2"></i>
+                <strong>Peringatan:</strong> File KTP belum lengkap! Anda baru mengupload ${uploadedKtpFiles} dari ${memberCount} file KTP yang diperlukan.
+            </div>` : 
+            `<div class="alert alert-success mt-3">
+                <i class="bi bi-check-circle me-2"></i>
+                <strong>Bagus!</strong> Semua file KTP sudah terupload (${uploadedKtpFiles}/${memberCount}).
+            </div>`
+        }
+    `;
+    
+    summaryDiv.innerHTML = summaryHTML;
+}
 
 // ✅ NEW: Function to initialize form with old values
 function initializeFormWithOldValues() {
@@ -989,6 +1208,92 @@ function addFileValidation() {
     margin-bottom: 0;
     border-bottom: none;
     padding-bottom: 1rem;
+}
+
+/* ✅ NEW: Modal Styles */
+.modal-lg {
+    max-width: 900px;
+}
+
+.bg-warning-subtle {
+    background-color: rgba(255, 193, 7, 0.1) !important;
+}
+
+.text-warning-emphasis {
+    color: #664d03 !important;
+}
+
+.card.border-warning {
+    border-color: #ffc107 !important;
+}
+
+.card.border-info {
+    border-color: #0dcaf0 !important;
+}
+
+/* Smooth transitions for modal */
+.modal.fade .modal-dialog {
+    transition: transform 0.3s ease-out;
+}
+
+/* Better spacing in modal */
+.modal-body .row {
+    margin-bottom: 1rem;
+}
+
+.modal-body .alert:last-child {
+    margin-bottom: 0;
+}
+
+/* Form check styling */
+.form-check-input:checked {
+    background-color: #198754;
+    border-color: #198754;
+}
+
+.form-check-label {
+    cursor: pointer;
+}
+
+/* Animation for confirmation */
+@keyframes confirmPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.modal-content {
+    animation: confirmPulse 0.6s ease-in-out;
+}
+
+/* Better table styling in modal */
+.table-sm td {
+    padding: 0.25rem 0.5rem;
+    vertical-align: top;
+}
+
+.table-borderless td {
+    border: none;
+}
+
+/* Responsive adjustments for modal */
+@media (max-width: 767.98px) {
+    .modal-lg {
+        max-width: 95%;
+        margin: 0.5rem;
+    }
+    
+    .modal-body {
+        padding: 1rem;
+    }
+    
+    .card-body {
+        padding: 0.75rem;
+    }
+    
+    .table-sm {
+        font-size: 0.8rem;
+    }
 }
 </style>
 @endpush

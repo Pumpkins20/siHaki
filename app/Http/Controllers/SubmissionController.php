@@ -402,72 +402,37 @@ class SubmissionController extends Controller
                     'update_data' => $updateData
                 ]);
 
-                // ✅ UPDATED: Update members with alamat and kode_pos
+                // ✅ FIXED: Update members with alamat and kode_pos
                 if ($request->has('members')) {
                     foreach ($request->members as $index => $memberData) {
-                        try {
-                            $member = SubmissionMember::find($memberData['id']);
+                        $member = SubmissionMember::find($memberData['id']);
+                        if ($member && $member->submission_id === $submission->id) {
                             
-                            if ($member && $member->submission_id === $submission->id) {
-                                $member->update([
-                                    'name' => $memberData['name'],
-                                    'whatsapp' => $memberData['whatsapp'],
-                                    'email' => $memberData['email'],
-                                    'alamat' => $memberData['alamat'], // ✅ NEW
-                                    'kode_pos' => $memberData['kode_pos'], // ✅ NEW
-                                ]);
-
-                                // Handle KTP upload for this member
-                                if (isset($memberData['ktp']) && $request->hasFile("members.{$index}.ktp")) {
-                                    try {
-                                        $ktpFile = $request->file("members.{$index}.ktp");
-                                        
-                                        // Delete old KTP if exists
-                                        if ($member->ktp && Storage::disk('public')->exists($member->ktp)) {
-                                            Storage::disk('public')->delete($member->ktp);
-                                            Log::info('Old KTP deleted', [
-                                                'member_id' => $member->id,
-                                                'old_path' => $member->ktp
-                                            ]);
-                                        }
-
-                                        // Upload new KTP
-                                        $ktpPath = $this->uploadKtpFile($ktpFile, $submission->id, $member->id);
-                                        if ($ktpPath) {
-                                            $member->update(['ktp' => $ktpPath]);
-                                            Log::info('KTP updated for member', [
-                                                'member_id' => $member->id,
-                                                'ktp_path' => $ktpPath
-                                            ]);
-                                        } else {
-                                            Log::warning('Failed to upload KTP', [
-                                                'member_id' => $member->id,
-                                                'submission_id' => $submission->id
-                                            ]);
-                                        }
-                                    } catch (\Exception $e) {
-                                        Log::error('KTP upload error for member', [
-                                            'member_id' => $member->id,
-                                            'error' => $e->getMessage()
-                                        ]);
-                                        // Don't fail the whole update for KTP upload error
-                                    }
-                                }
-
-                                Log::info('Member updated with address', [
-                                    'member_id' => $member->id,
-                                    'submission_id' => $submission->id,
-                                    'has_alamat' => !empty($memberData['alamat']),
-                                    'has_kode_pos' => !empty($memberData['kode_pos'])
-                                ]);
-                            }
-                        } catch (\Exception $e) {
-                            Log::error('Failed to update member', [
-                                'index' => $index,
-                                'member_data' => $memberData,
-                                'error' => $e->getMessage()
+                            // Update member data including alamat and kode_pos
+                            $member->update([
+                                'name' => $memberData['name'],
+                                'email' => $memberData['email'],
+                                'whatsapp' => $memberData['whatsapp'],
+                                'alamat' => $memberData['alamat'] ?? '', // ✅ FIXED: Include alamat
+                                'kode_pos' => $memberData['kode_pos'] ?? '', // ✅ FIXED: Include kode_pos
                             ]);
-                            // Continue with other members
+
+                            // Handle KTP upload if provided
+                            if (isset($memberData['ktp']) && $memberData['ktp']->isValid()) {
+                                $ktpFile = $memberData['ktp'];
+                                $ktpPath = $this->uploadKtpFile($ktpFile, $submission->id, $member->id);
+                                
+                                if ($ktpPath) {
+                                    $member->update(['ktp' => $ktpPath]);
+                                }
+                            }
+
+                            Log::info('Member updated with address', [
+                                'member_id' => $member->id,
+                                'submission_id' => $submission->id,
+                                'has_alamat' => !empty($memberData['alamat']),
+                                'has_kode_pos' => !empty($memberData['kode_pos'])
+                            ]);
                         }
                     }
                 }

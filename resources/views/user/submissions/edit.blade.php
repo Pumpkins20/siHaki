@@ -189,32 +189,7 @@
                             <div class="form-text">Maksimal 1000 karakter</div>
                         </div>
 
-                        <!-- Alamat -->
-                        <div class="mb-3">
-                            <label for="alamat" class="form-label">Alamat Lengkap <span class="text-danger">*</span></label>
-                            <textarea class="form-control @error('alamat') is-invalid @enderror" 
-                                    id="alamat" name="alamat" rows="3" 
-                                    placeholder="Masukkan alamat lengkap" 
-                                    required oninput="trackFormChanges()">{{ old('alamat', $submission->alamat) }}</textarea>
-                            @error('alamat')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                            <div class="form-text">Alamat lengkap untuk surat pengalihan</div>
-                        </div>
-
-                        <!-- Kode Pos -->
-                        <div class="mb-3">
-                            <label for="kode_pos" class="form-label">Kode Pos <span class="text-danger">*</span></label>
-                            <input type="text" class="form-control @error('kode_pos') is-invalid @enderror" 
-                                   id="kode_pos" name="kode_pos" value="{{ old('kode_pos', $submission->kode_pos) }}" 
-                                   placeholder="Masukkan kode pos" maxlength="5" pattern="[0-9]{5}" 
-                                   required onchange="trackFormChanges()">
-                            @error('kode_pos')
-                                <div class="invalid-feedback">{{ $message }}</div>
-                            @enderror
-                        </div>
-
-                        <!-- Current Documents - sama seperti sebelumnya -->
+                        <!-- Current Documents -->
                         @if($submission->documents->count() > 0)
                         <div class="mb-4">
                             <h6><strong>Dokumen Saat Ini</strong></h6>
@@ -251,7 +226,7 @@
                                                               method="POST" class="d-inline"
                                                               onsubmit="return confirm('Yakin ingin menghapus dokumen ini?')">
                                                             @csrf
-                                                            
+                                                            @method('DELETE')
                                                             <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
                                                                 <i class="bi bi-trash"></i>
                                                             </button>
@@ -267,13 +242,12 @@
                         </div>
                         @endif
 
-                        <!-- Members Section -->
+                        <!-- ✅ FIXED: Members Section with Address & Postal Code like create form -->
                         @if($submission->members->count() > 0)
                         <div class="mb-4">
                             <h6 class="fw-bold text-secondary mb-3">
                                 <i class="bi bi-people me-2"></i>Update Data Anggota Pencipta
                             </h6>
-                            
 
                             @foreach($submission->members as $index => $member)
                                 <div class="member-section {{ !$loop->last ? 'border-bottom pb-4 mb-4' : '' }}">
@@ -285,46 +259,106 @@
                                         @endif
                                     </div>
                                     
-                                    <div class="row g-3">
-                                        <div class="col-lg-6">
+                                    <!-- Personal Data -->
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
                                             <label class="form-label">Nama Pencipta <span class="text-danger">*</span></label>
                                             <input type="text" class="form-control @error('members.'.$index.'.name') is-invalid @enderror" 
                                                    name="members[{{ $index }}][name]" 
                                                    value="{{ old('members.'.$index.'.name', $member->name) }}" 
-                                                   placeholder="Nama lengkap" required>
+                                                   placeholder="Nama lengkap sesuai KTP" required
+                                                   onchange="trackFormChanges()">
                                             <input type="hidden" name="members[{{ $index }}][id]" value="{{ $member->id }}">
                                             @error('members.'.$index.'.name')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
+                                            <div class="form-text">Nama sesuai identitas resmi</div>
                                         </div>
-                                        <div class="col-lg-6">
-                                            <label class="form-label">No. WhatsApp <span class="text-danger">*</span></label>
-                                            <input type="tel" class="form-control @error('members.'.$index.'.whatsapp') is-invalid @enderror" 
-                                                   name="members[{{ $index }}][whatsapp]" 
-                                                   value="{{ old('members.'.$index.'.whatsapp', $member->whatsapp) }}" 
-                                                   placeholder="08xxxxxxxxxx" required>
-                                            @error('members.'.$index.'.whatsapp')
-                                                <div class="invalid-feedback">{{ $message }}</div>
-                                            @enderror
-                                        </div>
-                                        <div class="col-lg-6">
+                                        <div class="col-md-6">
                                             <label class="form-label">Email <span class="text-danger">*</span></label>
                                             <input type="email" class="form-control @error('members.'.$index.'.email') is-invalid @enderror" 
                                                    name="members[{{ $index }}][email]" 
                                                    value="{{ old('members.'.$index.'.email', $member->email) }}" 
-                                                   placeholder="email@example.com" required>
+                                                   placeholder="email@example.com" required
+                                                   onchange="trackFormChanges()">
                                             @error('members.'.$index.'.email')
                                                 <div class="invalid-feedback">{{ $message }}</div>
                                             @enderror
+                                            <div class="form-text">Email yang valid dan aktif</div>
                                         </div>
-                                        
-                                        <!-- KTP Section -->
-                                        <div class="col-lg-6">
+                                    </div>
+
+                                    <!-- WhatsApp field -->
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-6">
+                                            <label class="form-label">No. WhatsApp <span class="text-danger">*</span></label>
+                                            <input type="tel" class="form-control @error('members.'.$index.'.whatsapp') is-invalid @enderror" 
+                                                   name="members[{{ $index }}][whatsapp]" 
+                                                   value="{{ old('members.'.$index.'.whatsapp', $member->whatsapp) }}" 
+                                                   placeholder="08xxxxxxxxxx" required pattern="[0-9]{10,13}"
+                                                   title="Nomor WhatsApp harus 10-13 digit"
+                                                   onchange="trackFormChanges()">
+                                            @error('members.'.$index.'.whatsapp')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <div class="form-text">Nomor WhatsApp aktif untuk komunikasi</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- ✅ NEW: Address Section with proper data display -->
+                                    <div class="row g-3 mb-3">
+                                        <div class="col-md-8">
+                                            <label class="form-label">Alamat Lengkap <span class="text-danger">*</span></label>
+                                            <textarea class="form-control @error('members.'.$index.'.alamat') is-invalid @enderror" 
+                                                      name="members[{{ $index }}][alamat]" rows="3" 
+                                                      placeholder="Masukkan alamat lengkap (Jalan, Kelurahan, Kecamatan, Kota/Kabupaten, Provinsi)" 
+                                                      required oninput="trackFormChanges()">{{ old('members.'.$index.'.alamat', $member->alamat) }}</textarea>
+                                            @error('members.'.$index.'.alamat')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <div class="form-text">Contoh: Jl. Ring Road Utara, Condong Catur, Depok, Sleman, Yogyakarta</div>
+                                        </div>
+                                        <div class="col-md-4">
+                                            <label class="form-label">Kode Pos <span class="text-danger">*</span></label>
+                                            <input type="text" class="form-control @error('members.'.$index.'.kode_pos') is-invalid @enderror" 
+                                                   name="members[{{ $index }}][kode_pos]" 
+                                                   value="{{ old('members.'.$index.'.kode_pos', $member->kode_pos) }}" 
+                                                   placeholder="12345" maxlength="5" pattern="[0-9]{5}" required
+                                                   onchange="trackFormChanges()">
+                                            @error('members.'.$index.'.kode_pos')
+                                                <div class="invalid-feedback">{{ $message }}</div>
+                                            @enderror
+                                            <div class="form-text">5 digit kode pos sesuai alamat</div>
+                                        </div>
+                                    </div>
+
+                                    <!-- Current Address Display for Reference -->
+                                    @if($member->alamat || $member->kode_pos)
+                                        <div class="alert alert-info alert-sm mb-3">
+                                            <div class="row">
+                                                <div class="col-md-8">
+                                                    <strong><i class="bi bi-info-circle text-info me-1"></i>Alamat Saat Ini:</strong>
+                                                    <br><small class="text-muted">{{ $member->alamat ?: 'Belum diisi' }}</small>
+                                                </div>
+                                                <div class="col-md-4">
+                                                    <strong>Kode Pos:</strong>
+                                                    <br><small class="text-muted">{{ $member->kode_pos ?: 'Belum diisi' }}</small>
+                                                </div>
+                                            </div>
+                                            <small class="text-info">
+                                                <i class="bi bi-pencil-square me-1"></i>
+                                                Edit alamat dan kode pos di form di atas jika perlu diubah.
+                                            </small>
+                                        </div>
+                                    @endif
+
+                                    <!-- KTP Section -->
+                                    <div class="row g-3">
+                                        <div class="col-lg-12">
                                             <label class="form-label">
                                                 <i class="bi bi-credit-card-2-front me-1"></i>
-                                                Update Scan KTP (Opsional)
+                                                Scan Foto KTP <span class="text-danger">*</span>
                                             </label>
-                                            
 
                                             <!-- Current KTP Status -->
                                             @if($member->ktp)
@@ -333,13 +367,13 @@
                                                         <div class="d-flex align-items-center">
                                                             <i class="bi bi-check-circle text-success me-2"></i>
                                                             <small class="text-success fw-bold">KTP sudah diupload</small>
+                                                            <small class="text-muted ms-2">{{ $member->updated_at->format('d M Y H:i') }} WIB</small>
                                                         </div>
                                                         <div class="btn-group" role="group">
-                                                            <button type="button" class="btn btn-sm btn-outline-info" 
-                                                                    onclick="viewKtp('{{ route('user.submissions.member-ktp-preview', [$submission, $member]) }}')"
-                                                                    title="Lihat KTP">
+                                                            <a href="{{ route('user.submissions.member-ktp-preview', [$submission, $member]) }}" 
+                                                               target="_blank" class="btn btn-sm btn-outline-info" title="Lihat KTP">
                                                                 <i class="bi bi-eye"></i>
-                                                            </button>
+                                                            </a>
                                                             <button type="button" class="btn btn-sm btn-outline-warning" 
                                                                     onclick="toggleKtpUpload({{ $index }})"
                                                                     title="Ganti KTP">
@@ -352,7 +386,7 @@
                                                 <div class="current-ktp-info mb-2">
                                                     <div class="alert alert-warning py-2">
                                                         <i class="bi bi-exclamation-triangle me-2"></i>
-                                                        <small><strong>KTP belum diupload</strong></small>
+                                                        <small><strong>KTP belum diupload - wajib upload untuk melengkapi data</strong></small>
                                                     </div>
                                                 </div>
                                             @endif
@@ -365,7 +399,7 @@
                                                        name="members[{{ $index }}][ktp]" 
                                                        accept=".jpg,.jpeg" 
                                                        id="ktp_{{ $index }}"
-
+                                                       {{ !$member->ktp ? 'required' : '' }}
                                                        onchange="validateKtpFile(this, {{ $index }})">
                                                 @error('members.'.$index.'.ktp')
                                                     <div class="invalid-feedback">{{ $message }}</div>
@@ -373,7 +407,7 @@
                                                 
                                                 <div class="form-text">
                                                     <i class="bi bi-info-circle text-primary me-1"></i>
-                                                    Upload file KTP baru (JPG/JPEG, maksimal 2MB)
+                                                    Upload file KTP (JPG/JPEG, maksimal 2MB)
                                                     @if($member->ktp)
                                                         <br><small class="text-warning">
                                                             <i class="bi bi-exclamation-triangle me-1"></i>
@@ -416,7 +450,7 @@
                                             <div class="alert alert-warning">
                                                 <small>
                                                     <i class="bi bi-exclamation-triangle me-1"></i>
-                                                    <strong>Catatan Reviewer:</strong> Pastikan data anggota dan KTP sudah sesuai dengan catatan revisi.
+                                                    <strong>Catatan Reviewer:</strong> Pastikan data anggota, alamat, dan KTP sudah sesuai dengan catatan revisi.
                                                 </small>
                                             </div>
                                         </div>
@@ -426,25 +460,25 @@
                             
                             <div class="alert alert-info mt-3">
                                 <h6 class="alert-heading">
-                                    <i class="bi bi-lightbulb me-2"></i>Tips Revisi KTP:
+                                    <i class="bi bi-lightbulb me-2"></i>Tips Revisi Data Anggota:
                                 </h6>
                                 <ul class="mb-0 small">
+                                    <li>Pastikan nama sesuai dengan identitas resmi</li>
+                                    <li>Nomor WhatsApp dan email yang aktif</li>
+                                    <li>Alamat lengkap dan kode pos yang benar</li>
                                     <li>Upload ulang KTP jika foto tidak jelas atau terpotong</li>
-                                    <li>Pastikan semua informasi di KTP dapat dibaca dengan baik</li>
-                                    <li>Format file harus JPG/JPEG dengan ukuran maksimal 2MB</li>
-                                    <li>KTP harus asli dan masih berlaku</li>
+                                    <li>Format file KTP harus JPG/JPEG dengan ukuran maksimal 2MB</li>
                                 </ul>
                             </div>
                         </div>
                         @endif
 
-                        <!-- Document Upload Section -->
+                        <!-- Dynamic Document Fields based on creation_type -->
                         <div class="mb-4">
                             <h6 class="fw-bold text-secondary mb-3">
                                 <i class="bi bi-file-earmark-arrow-up me-2"></i>Update Dokumen
                             </h6>
 
-                            <!-- Dynamic Document Fields berdasarkan creation_type -->
                             @if($submission->creation_type === 'program_komputer')
                                 <!-- Manual Document -->
                                 <div class="mb-3">
@@ -533,7 +567,7 @@
                                     @error('image_files.*')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                    <div class="form-text">Upload 1 file yang didukung: image. Maksimal 1 MB per file.</div>
+                                    <div class="form-text">Upload 1 atau lebih file gambar. Maksimal 2MB per file.</div>
                                 </div>
 
                             @elseif($submission->creation_type === 'alat_peraga')
@@ -551,7 +585,7 @@
                                     @error('photo_files.*')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
-                                    <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 1MB per file.</div>
+                                    <div class="form-text">Format: JPG, PNG. Minimal 1 file. Maksimal 2MB per file.</div>
                                 </div>
 
                             @elseif($submission->creation_type === 'basis_data')
@@ -592,7 +626,7 @@
                             @endif
                         </div>
 
-                        <!-- Submit Buttons -->
+                        <!-- Submit Buttons with Confirmation -->
                         <div class="row">
                             <div class="col-12">
                                 <div class="d-flex flex-column flex-md-row justify-content-between gap-2">
@@ -606,7 +640,8 @@
                                                 <i class="bi bi-save"></i> Simpan Draft
                                             </button>
                                         @endif
-                                        <button type="submit" class="btn btn-success" onclick="clearUnsavedChanges()">
+                                        <!-- ✅ NEW: Submit with confirmation -->
+                                        <button type="button" class="btn btn-success" onclick="showSubmitConfirmation()">
                                             <i class="bi bi-send"></i> 
                                             {{ $submission->status === 'revision_needed' ? 'Submit Revisi' : 'Update & Submit' }}
                                         </button>
@@ -711,13 +746,14 @@
                             <li><strong>Baca catatan reviewer dengan teliti</strong></li>
                             <li>Lakukan perubahan sesuai saran</li>
                             <li>Update dokumen jika diperlukan</li>
+                            <li>Periksa data anggota dan alamat</li>
                             <li>Submit ulang untuk review</li>
                         </ol>
                         
                         <div class="alert alert-warning">
                             <small>
                                 <i class="bi bi-exclamation-triangle me-1"></i>
-                                <strong>Catatan:</strong> Pastikan data anggota dan KTP sudah sesuai dengan catatan revisi.
+                                <strong>Catatan:</strong> Pastikan data anggota, alamat, dan KTP sudah sesuai dengan catatan revisi.
                             </small>
                         </div>
 
@@ -757,6 +793,75 @@
                             <span>Senin-Jumat: 08:00-16:00 WIB</span>
                         </div>
                     </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ NEW: Submit Confirmation Modal -->
+    <div class="modal fade" id="submitConfirmationModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header bg-warning text-white">
+                    <h5 class="modal-title">
+                        <i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi Submit
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="text-center mb-4">
+                        <i class="bi bi-question-circle fs-1 text-warning mb-3"></i>
+                        <h5 class="text-warning">Apakah Anda yakin berkas sudah benar?</h5>
+                        <p class="text-muted">
+                            Pastikan semua data dan dokumen sudah sesuai sebelum melakukan submit.
+                            Setelah disubmit, data hanya dapat diubah jika reviewer meminta revisi.
+                        </p>
+                    </div>
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="card border-warning h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-file-earmark-check text-warning fs-2 mb-2"></i>
+                                    <h6 class="text-warning">Dokumen</h6>
+                                    <ul class="small text-start mb-0">
+                                        <li>Format file sudah benar</li>
+                                        <li>Ukuran file sesuai ketentuan</li>
+                                        <li>Dokumen jelas dan lengkap</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card border-warning h-100">
+                                <div class="card-body text-center">
+                                    <i class="bi bi-people text-warning fs-2 mb-2"></i>
+                                    <h6 class="text-warning">Data Anggota</h6>
+                                    <ul class="small text-start mb-0">
+                                        <li>Nama sesuai identitas resmi</li>
+                                        <li>Alamat lengkap dan benar</li>
+                                        <li>No. WhatsApp dan email aktif</li>
+                                        <li>KTP sudah diupload semua</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="form-check mt-3">
+                        <input class="form-check-input" type="checkbox" id="confirmSubmission" required>
+                        <label class="form-check-label fw-bold" for="confirmSubmission">
+                            Saya menyatakan bahwa semua data dan dokumen yang saya upload sudah benar dan sesuai
+                        </label>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        <i class="bi bi-arrow-left"></i> Periksa Kembali
+                    </button>
+                    <button type="button" class="btn btn-success" id="finalSubmitBtn" disabled>
+                        <i class="bi bi-send"></i> Ya, Submit Sekarang
+                    </button>
                 </div>
             </div>
         </div>
@@ -852,7 +957,46 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initialize reviewer notes banner
     initializeReviewerNotesBanner();
+
+    // ✅ NEW: Setup submit confirmation
+    setupSubmitConfirmation();
 });
+
+// ✅ NEW: Setup submit confirmation modal
+function setupSubmitConfirmation() {
+    const confirmCheckbox = document.getElementById('confirmSubmission');
+    const finalSubmitBtn = document.getElementById('finalSubmitBtn');
+    
+    if (confirmCheckbox && finalSubmitBtn) {
+        confirmCheckbox.addEventListener('change', function() {
+            finalSubmitBtn.disabled = !this.checked;
+        });
+
+        finalSubmitBtn.addEventListener('click', function() {
+            clearUnsavedChanges();
+            const form = document.getElementById('submissionEditForm');
+            form.submit();
+            
+            this.disabled = true;
+            this.innerHTML = '<i class="bi bi-hourglass-split"></i> Memproses...';
+            
+            const modal = bootstrap.Modal.getInstance(document.getElementById('submitConfirmationModal'));
+            modal.hide();
+        });
+    }
+}
+
+// ✅ NEW: Show submit confirmation modal
+function showSubmitConfirmation() {
+    const modal = new bootstrap.Modal(document.getElementById('submitConfirmationModal'));
+    modal.show();
+    
+    const confirmCheckbox = document.getElementById('confirmSubmission');
+    const finalSubmitBtn = document.getElementById('finalSubmitBtn');
+    
+    if (confirmCheckbox) confirmCheckbox.checked = false;
+    if (finalSubmitBtn) finalSubmitBtn.disabled = true;
+}
 
 // Initialize reviewer notes banner
 function initializeReviewerNotesBanner() {
@@ -888,7 +1032,7 @@ function toggleReviewerNotes() {
         banner.style.height = '60px';
         banner.style.background = 'linear-gradient(135deg, #ff8c00 0%, #ffc107 100%)';
         toggleIcon.className = 'bi bi-eye';
-        toggleBtn.innerHTML = '<i class="bi bi-eye"></i> Tampilkan';
+        toggleBtn.innerHTML = '<i class="bi bi-eye"></i>';
         reviewerNotesVisible = false;
         
         // Add reminder text
@@ -979,7 +1123,7 @@ function updateUnsavedChangesIndicator() {
     }
 }
 
-// FIXED: Manage persistent alerts - exclude reviewer notes from auto-hide
+// Manage persistent alerts
 function managePersistentAlerts() {
     // Auto-hide success alerts after 10 seconds but keep error alerts
     const successAlert = document.getElementById('successAlert');
@@ -1013,40 +1157,6 @@ function managePersistentAlerts() {
         reviewerNotesAlert.style.zIndex = '1060'; // Higher z-index for importance
         // Do NOT set any timeout or opacity change for reviewer notes
         console.log('Reviewer notes alert is persistent and will not auto-hide');
-    }
-}
-
-// Setup reviewer notes close confirmation
-function setupReviewerNotesCloseConfirmation() {
-    const confirmBtn = document.getElementById('confirmCloseReviewerNotesBtn');
-    if (confirmBtn) {
-        confirmBtn.addEventListener('click', function() {
-            if (pendingCloseAlert) {
-                // Actually close the alert
-                const alert = bootstrap.Alert.getOrCreateInstance(pendingCloseAlert);
-                alert.close();
-                pendingCloseAlert = null;
-            }
-            
-            // Close the modal
-            const modal = bootstrap.Modal.getInstance(document.getElementById('reviewerNotesCloseModal'));
-            modal.hide();
-        });
-    }
-}
-
-// Confirm close reviewer notes
-function confirmCloseReviewerNotes(event) {
-    event.preventDefault();
-    event.stopPropagation();
-    
-    const alertElement = document.getElementById('reviewerNotesAlert');
-    if (alertElement) {
-        pendingCloseAlert = alertElement;
-        
-        // Show confirmation modal
-        const modal = new bootstrap.Modal(document.getElementById('reviewerNotesCloseModal'));
-        modal.show();
     }
 }
 
@@ -1111,43 +1221,53 @@ function setupCharacterCounters() {
         updateCounter();
     }
 
-    // Alamat counter
-    const alamatTextarea = document.getElementById('alamat');
-    if (alamatTextarea) {
-        const alamatCounter = document.createElement('div');
-        alamatCounter.className = 'form-text text-end';
-        alamatTextarea.parentNode.appendChild(alamatCounter);
+    // Alamat counter for each member
+    document.querySelectorAll('textarea[name*="[alamat]"]').forEach(textarea => {
+        const counter = document.createElement('div');
+        counter.className = 'form-text text-end text-muted';
+        textarea.parentNode.appendChild(counter);
         
         function updateAlamatCounter() {
-            const length = alamatTextarea.value.length;
-            alamatCounter.textContent = `${length}/500 karakter`;
+            const length = textarea.value.length;
+            counter.textContent = `${length}/500 karakter`;
             
             if (length > 450) {
-                alamatCounter.className = 'form-text text-end text-warning';
+                counter.className = 'form-text text-end text-warning';
             } else if (length > 500) {
-                alamatCounter.className = 'form-text text-end text-danger';
+                counter.className = 'form-text text-end text-danger';
             } else {
-                alamatCounter.className = 'form-text text-end text-muted';
+                counter.className = 'form-text text-end text-muted';
             }
         }
         
-        alamatTextarea.addEventListener('input', updateAlamatCounter);
+        textarea.addEventListener('input', updateAlamatCounter);
         updateAlamatCounter();
-    }
+    });
 }
 
 // Setup form validation
 function setupFormValidation() {
-    const kodePosInput = document.getElementById('kode_pos');
-    if (kodePosInput) {
-        kodePosInput.addEventListener('input', function() {
+    // Kode pos validation for each member
+    document.querySelectorAll('input[name*="[kode_pos]"]').forEach(input => {
+        input.addEventListener('input', function() {
             this.value = this.value.replace(/[^0-9]/g, '');
             
             if (this.value.length > 5) {
                 this.value = this.value.slice(0, 5);
             }
         });
-    }
+    });
+
+    // WhatsApp validation for each member
+    document.querySelectorAll('input[name*="[whatsapp]"]').forEach(input => {
+        input.addEventListener('input', function() {
+            this.value = this.value.replace(/[^0-9]/g, '');
+            
+            if (this.value.length > 13) {
+                this.value = this.value.slice(0, 13);
+            }
+        });
+    });
 
     // Form submission handling
     document.getElementById('submissionEditForm').addEventListener('submit', function(e) {
