@@ -360,8 +360,8 @@
                 <button type="button" class="btn btn-outline-success" onclick="bulkAssign()">
                     <i class="bi bi-person-check"></i> Assign ke Saya
                 </button>
-                <button type="button" class="btn btn-outline-info" onclick="bulkExport()">
-                    <i class="bi bi-download"></i> Export
+                <button type="button" class="btn btn-outline-primary" onclick="bulkViewDetails()">
+                    <i class="bi bi-eye"></i> Detail
                 </button>
                 <button type="button" class="btn btn-outline-secondary" onclick="clearSelection()">
                     <i class="bi bi-x"></i> Batal
@@ -581,15 +581,23 @@ function bulkAssign() {
     }
 }
 
-function bulkExport() {
+function bulkViewDetails() {
     if (selectedSubmissions.length === 0) return;
     
-    const url = new URL('{{ route("admin.submissions.export") }}');
-    selectedSubmissions.forEach(id => {
-        url.searchParams.append('ids[]', id);
-    });
-    
-    window.open(url.toString(), '_blank');
+    if (selectedSubmissions.length === 1) {
+        // If only one submission selected, go directly to detail page
+        window.open(`/admin/submissions/${selectedSubmissions[0]}`, '_blank');
+    } else if (selectedSubmissions.length <= 5) {
+        // If 2-5 submissions selected, open each in new tab with confirmation
+        if (confirm(`Buka detail untuk ${selectedSubmissions.length} submission di tab baru?`)) {
+            selectedSubmissions.forEach(id => {
+                window.open(`/admin/submissions/${id}`, '_blank');
+            });
+        }
+    } else {
+        // If more than 5 submissions, show warning
+        alert('Terlalu banyak submission dipilih. Pilih maksimal 5 submission untuk melihat detail.');
+    }
 }
 
 function clearSelection() {
