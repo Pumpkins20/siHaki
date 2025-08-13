@@ -265,55 +265,78 @@
                             <thead>
                                 <tr>
                                     <th width="5%">No</th>
-                                    <th width="25%">Nama</th>
-                                    <th width="20%">Email</th>
-                                    <th width="15%">WhatsApp</th>
-                                    <th width="10%">Posisi</th>
-                                    <th width="10%">KTP</th>
+                                    <th width="20%">Nama</th>
+                                    <th width="8%">Role</th>
+                                    <th width="18%">Email</th>
+                                    <th width="12%">WhatsApp</th>
+                                    <th width="22%">Alamat</th>
+                                    <th width="10%">Status KTP</th>
+                                    <th width="5%">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($submission->members->sortBy('position') as $index => $member)
+                                @foreach($submission->members->sortBy(function($member) { return $member->is_leader ? 0 : $member->position; }) as $member)
                                 <tr>
-                                    <td>{{ $member->position - 1}}</td>
+                                    <td>{{ $loop->iteration }}</td>
                                     <td>
                                         <strong>{{ $member->name }}</strong>
-                                       <!-- @if($member->is_leader)
-                                            <br><span class="badge bg-success">Ketua</span>
-                                        @endif -->
-                                    </td>
-                                    <td>
-                                        <a href="mailto:{{ $member->email }}" class="text-decoration-none">
-                                            {{ $member->email }}
-                                        </a>
-                                    </td>
-                                    <td>
-                                        <a href="https://wa.me/62{{ ltrim($member->whatsapp, '0') }}" 
-                                           target="_blank" class="text-decoration-none text-success">
-                                            <i class="bi bi-whatsapp"></i> {{ $member->whatsapp }}
-                                        </a>
+                                        @if($member->is_leader)
+                                            <br><span class="badge bg-success badge-sm">Ketua Tim</span>
+                                        @endif
                                     </td>
                                     <td>
                                         @if($member->is_leader)
                                             <span class="badge bg-success">Pencipta Utama</span>
                                         @else
-<<<<<<< Updated upstream
-                                            <span class="badge bg-secondary">Anggota {{ $member->id }}</span>
-=======
-                                            <span class="badge bg-secondary">Anggota <!--{{ $member->position }} --></span>
->>>>>>> Stashed changes
+                                            <span class="badge bg-secondary">Anggota {{ $loop->iteration - 1 }}</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        <a href="mailto:{{ $member->email }}" class="text-decoration-none">
+                                            <small>{{ $member->email }}</small>
+                                        </a>
+                                    </td>
+                                    <td>
+                                        <a href="https://wa.me/62{{ ltrim($member->whatsapp, '0') }}" 
+                                        target="_blank" class="text-decoration-none text-success">
+                                            <i class="bi bi-whatsapp"></i> {{ $member->whatsapp }}
+                                        </a>
+                                    </td>
+                                    <td>
+                                        {{-- ✅ NEW: Display member address like in user show --}}
+                                        @if($member->alamat)
+                                            <small class="text-muted">
+                                                {{ Str::limit($member->alamat, 40) }}
+                                                @if($member->kode_pos)
+                                                    <br><strong>{{ $member->kode_pos }}</strong>
+                                                @endif
+                                            </small>
+                                        @else
+                                            <span class="text-muted">-</span>
+                                        @endif
+                                    </td>
+                                    <td>
+                                        @if($member->ktp)
+                                            <span class="badge bg-success">
+                                                <i class="bi bi-check-circle me-1"></i>Sudah Upload
+                                            </span>
+                                            <br><small class="text-muted">{{ $member->updated_at->format('d M Y') }}</small>
+                                        @else
+                                            <span class="badge bg-danger">
+                                                <i class="bi bi-x-circle me-1"></i>Belum Upload
+                                            </span>
                                         @endif
                                     </td>
                                     <td>
                                         @if($member->ktp)
                                             <div class="btn-group" role="group">
                                                 <a href="{{ route('admin.submissions.member-ktp-preview', [$submission, $member]) }}" 
-                                                   class="btn btn-sm btn-outline-primary" target="_blank" title="Preview KTP">
+                                                class="btn btn-sm btn-outline-primary" target="_blank" title="Preview KTP">
                                                     <i class="bi bi-eye"></i>
                                                 </a>
                                             </div>
                                         @else
-                                            <span class="text-muted">No KTP</span>
+                                            <span class="text-muted">-</span>
                                         @endif
                                     </td>
                                 </tr>

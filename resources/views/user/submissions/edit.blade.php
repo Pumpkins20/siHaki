@@ -205,37 +205,36 @@
                                     </thead>
                                     <tbody>
                                         @foreach($submission->documents as $document)
-                                        <tr>
-                                            <td class="text-break">{{ $document->file_name }}</td>
-                                            <td>
-                                                @if($document->document_type === 'main_document')
-                                                    <span class="badge bg-primary">Dokumen Utama</span>
-                                                @else
-                                                    <span class="badge bg-secondary">Dokumen Pendukung</span>
-                                                @endif
-                                            </td>
-                                            <td>{{ number_format($document->file_size / 1024, 2) }} KB</td>
-                                            <td>
-                                                <div class="btn-group" role="group">
-                                                    <a href="{{ route('user.submissions.documents.download', $document) }}" 
-                                                       class="btn btn-sm btn-outline-success" title="Download">
-                                                        <i class="bi bi-download"></i>
-                                                    </a>
-                                                    @if($document->document_type !== 'main_document')
-                                                        <form action="{{ route('user.submissions.documents.delete', $document) }}" 
-                                                              method="POST" class="d-inline"
-                                                              onsubmit="return confirm('Yakin ingin menghapus dokumen ini?')">
-                                                            @csrf
-                                                            @method('DELETE')
-                                                            <button type="submit" class="btn btn-sm btn-outline-danger" title="Hapus">
+                                            <tr>
+                                                <td class="text-break">{{ $document->file_name }}</td>
+                                                <td>
+                                                    @if($document->document_type === 'main_document')
+                                                        <span class="badge bg-primary">Dokumen Utama</span>
+                                                    @else
+                                                        <span class="badge bg-secondary">Dokumen Pendukung</span>
+                                                    @endif
+                                                </td>
+                                                <td>{{ number_format($document->file_size / 1024, 2) }} KB</td>
+                                                <td>
+                                                    <div class="btn-group" role="group">
+                                                        <a href="{{ route('user.submissions.documents.download', $document) }}" 
+                                                        class="btn btn-sm btn-outline-success" title="Download">
+                                                            <i class="bi bi-download"></i>
+                                                        </a>
+                                                        @if($document->document_type !== 'main_document')
+                                                            {{-- ✅ REPLACE: Hapus form, gunakan button AJAX --}}
+                                                            <button type="button" 
+                                                                    class="btn btn-sm btn-outline-danger" 
+                                                                    title="Hapus"
+                                                                    onclick="deleteDocument({{ $document->id }}, '{{ $document->file_name }}')"
+                                                                    data-document-id="{{ $document->id }}">
                                                                 <i class="bi bi-trash"></i>
                                                             </button>
-                                                        </form>
-                                                    @endif
-                                                </div>
-                                            </td>
-                                        </tr>
-                                        @endforeach
+                                                        @endif
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                            @endforeach
                                     </tbody>
                                 </table>
                             </div>

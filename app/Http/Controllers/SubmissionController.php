@@ -290,6 +290,13 @@ class SubmissionController extends Controller
                 return back()->withErrors(['error' => 'Submission ini tidak dapat diedit karena statusnya sudah ' . $submission->status]);
             }
 
+            // Log untuk debugging
+            Log::info('Update attempt', [
+                'jenis_ciptaan' => $submission->jenis_ciptaan,
+                'current_user' => auth()->id()
+            ]);
+    
+
             Log::info('Starting submission update', [
                 'submission_id' => $submission->id,
                 'user_id' => Auth::id(),
@@ -1380,16 +1387,11 @@ class SubmissionController extends Controller
                 case 'karakter_animasi':
                     $rules['image_files'] = 'nullable|array';
                     $rules['image_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024';
-                    $rules['width'] = 'nullable|numeric|min:1';
-                    $rules['height'] = 'nullable|numeric|min:1';
-                    $rules['image_description'] = 'nullable|string|max:500';
                     break;
                     
                 case 'alat_peraga':
                     $rules['photo_files'] = 'nullable|array';
                     $rules['photo_files.*'] = 'file|mimes:jpg,jpeg,png|max:1024';
-                    $rules['subject'] = 'nullable|string|max:255';
-                    $rules['education_level'] = 'nullable|string|max:255';
                     break;
                     
                 case 'basis_data':
