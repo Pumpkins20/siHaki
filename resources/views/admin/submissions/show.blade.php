@@ -294,10 +294,6 @@
                                         </a>
                                     </td>
                                     <td>
-                                            <span class="badge bg-success">Pencipta Utama</span>
-                                        @else
-<<<<<<< Updated upstream
-                                    <td>
                                         @if($member->ktp)
                                             <div class="btn-group" role="group">
                                                 <a href="{{ route('admin.submissions.member-ktp-preview', [$submission, $member]) }}" 
