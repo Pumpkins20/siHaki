@@ -14,7 +14,166 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+<<<<<<< Updated upstream
        
+=======
+        /* ✅ FIXED: Statistics section styles - prevent overflow */
+        .statistics-section {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 60px 0;
+            color: white;
+            overflow: hidden; /* ✅ PREVENT OVERFLOW */
+        }
+
+        .stat-card {
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 15px;
+    padding: 25px;
+    text-align: center;
+    transition: all 0.3s ease;
+    height: 100%;
+    max-height: 200px; /* ✅ LIMIT HEIGHT */
+
+    /* ✅ Tambahan untuk rata tengah */
+    display: flex;
+    flex-direction: column;
+    justify-content: center; /* Rata tengah vertikal */
+    align-items: center; /* Rata tengah horizontal */
+}
+
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #fff;
+            margin-bottom: 5px;
+            line-height: 1.2; /* ✅ FIXED LINE HEIGHT */
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+            margin-bottom: 10px;
+            line-height: 1.3; /* ✅ FIXED LINE HEIGHT */
+        }
+
+        .stat-description {
+            font-size: 0.875rem;
+            opacity: 0.8;
+            line-height: 1.3; /* ✅ FIXED LINE HEIGHT */
+        }
+
+        .chart-container {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 30px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+            max-height: 400px; /* ✅ LIMIT CHART HEIGHT */
+            overflow: hidden; /* ✅ PREVENT OVERFLOW */
+        }
+
+        .recent-submissions-section {
+            padding: 60px 0;
+            background: #f8f9fa;
+            overflow: hidden; /* ✅ PREVENT OVERFLOW */
+        }
+
+        .submission-item {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 15px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            transition: all 0.3s ease;
+            max-height: 150px; /* ✅ LIMIT HEIGHT */
+            overflow: hidden; /* ✅ PREVENT OVERFLOW */
+        }
+
+        .submission-item:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+        }
+
+        .contributors-section {
+            padding: 60px 0;
+            overflow: hidden; /* ✅ PREVENT OVERFLOW */
+        }
+
+        .contributor-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            text-align: center;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            height: 100%;
+            max-height: 250px; /* ✅ LIMIT HEIGHT */
+            overflow: hidden; /* ✅ PREVENT OVERFLOW */
+        }
+
+        .contributor-card:hover {
+            transform: translateY(-5px);
+        }
+
+        .contributor-avatar {
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            font-size: 24px;
+            margin: 0 auto 15px auto;
+            overflow: hidden;
+            flex-shrink: 0; /* ✅ PREVENT SHRINKING */
+        }
+
+        .contributor-avatar img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 50%;
+        }
+
+        .type-badge {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: white;
+            margin: 2px;
+            white-space: nowrap; /* ✅ PREVENT WRAPPING */
+        }
+
+        /* ✅ NEW: Container limits to prevent infinite scrolling */
+        .container {
+            max-width: 1200px;
+            overflow: hidden;
+        }
+
+        .row {
+            margin-left: -15px;
+            margin-right: -15px;
+        }
+
+        .col-lg-3, .col-lg-4, .col-lg-6, .col-md-6 {
+            padding-left: 15px;
+            padding-right: 15px;
+            margin-bottom: 30px;
+        }
+>>>>>>> Stashed changes
     </style>
 </head>
 
@@ -25,8 +184,12 @@
             <div class="container">
                 <a class="navbar-brand" href="#">
                     <img src="{{ asset('landing-page/img/logo-amikom.png') }}" alt="Logo AMIKOM" style="height: 40px;">
+<<<<<<< Updated upstream
 </a>
                 
+=======
+                </a>            
+>>>>>>> Stashed changes
                 <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
                     <span class="navbar-toggler-icon"></span>
                 </button>
@@ -71,6 +234,159 @@
         </div>
     </section>
 
+<<<<<<< Updated upstream
+=======
+    <!-- ✅ FIXED: Statistics Section with proper limits -->
+    @if(isset($statistics) && !empty($statistics))
+    <section class="statistics-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 class="fw-bold">Statistik HKI AMIKOM Surakarta</h2>
+                <p class="lead opacity-90">Data keseluruhan pengajuan Hak Kekayaan Intelektual</p>
+            </div>
+
+            <!-- Main Statistics -->
+            <div class="row justify-content-center">
+                <!-- <div class="col-lg-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ number_format($statistics['total_submissions']) }}</div>
+                        <div class="stat-label">Total Pengajuan</div>
+                        <div class="stat-description">Keseluruhan pengajuan HKI</div>
+                    </div>
+                </div> -->
+                <div class="col-lg-4 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ number_format($statistics['approved_submissions']) }}</div>
+                        <div class="stat-label">Disetujui</div>
+                        <div class="stat-description">HKI yang telah terbit</div>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ number_format($statistics['total_users']) }}</div>
+                        <div class="stat-label">Pencipta Aktif</div>
+                        <div class="stat-description">Dosen STMIK AMIKOM Surakarta</div>
+                    </div>
+                </div>
+                <!--<div class="col-lg-3 col-md-6">
+                    <div class="stat-card">
+                        <div class="stat-number">{{ $statistics['approval_rate'] }}%</div>
+                        <div class="stat-label">Tingkat Persetujuan</div>
+                        <div class="stat-description">Persentase pengajuan disetujui</div>
+                    </div>
+                </div>-->
+            </div>
+
+            <!-- Charts -->
+            @if(isset($statistics['by_type']) && $statistics['by_type']->count() > 0)
+            <div class="row">
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <h5 class="mb-4 text-dark">
+                            <i class="bi bi-pie-chart me-2"></i>Distribusi Berdasarkan Jenis
+                        </h5>
+                        <canvas id="typeChart" height="300"></canvas>
+                    </div>
+                </div>
+                <div class="col-lg-6">
+                    <div class="chart-container">
+                        <h5 class="mb-4 text-dark">
+                            <i class="bi bi-bar-chart me-2"></i>Tren Pengajuan 5 Tahun Terakhir
+                        </h5>
+                        <canvas id="yearChart" height="300"></canvas>
+                    </div>
+                </div>
+            </div>
+            @endif
+        </div>
+    </section>
+    @endif
+
+    <!-- ✅ FIXED: Recent Submissions Section with limits -->
+    @if(isset($statistics['recent_submissions']) && $statistics['recent_submissions']->count() > 0)
+    <section class="recent-submissions-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h3 class="fw-bold">Pengajuan HKI Terbaru</h3>
+                <p class="text-muted">Daftar pengajuan yang baru saja disetujui</p>
+            </div>
+
+            <div class="row">
+                @foreach($statistics['recent_submissions']->take(6) as $submission)
+                <div class="col-lg-4 col-md-6">
+                    <div class="submission-item">
+                        <h6 class="fw-bold text-primary mb-2">{{ Str::limit($submission['title'], 50) }}</h6>
+                        <div class="d-flex align-items-center mb-2">
+                            <i class="bi bi-person text-muted me-2"></i>
+                            <span class="text-muted">{{ $submission['user_name'] }}</span>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="type-badge" style="background-color: {{ $submission['creation_type_color'] }};">
+                                {{ $submission['creation_type'] }}
+                            </span>
+                            <small class="text-muted">{{ $submission['year'] }}</small>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <div class="text-center">
+                <a href="{{ route('jenis_ciptaan') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-arrow-right me-2"></i>Lihat Semua Pengajuan
+                </a>
+            </div>
+        </div>
+    </section>
+    @endif
+
+    <!-- ✅ FIXED: Top Contributors Section with limits -->
+    @if(isset($statistics['top_contributors']) && $statistics['top_contributors']->count() > 0)
+    <section class="contributors-section">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h3 class="fw-bold">Pencipta Terdepan</h3>
+                <p class="text-muted">Dosen dengan kontribusi HKI terbanyak</p>
+            </div>
+
+            <div class="row">
+                @foreach($statistics['top_contributors']->take(5) as $contributor)
+                <div class="col-lg-4 col-md-6">
+                    <div class="contributor-card">
+                        <div class="contributor-avatar">
+                            @if($contributor->foto && $contributor->foto !== 'default.png')
+                                <img src="{{ asset('storage/profile_photos/' . $contributor->foto) }}" 
+                                     alt="{{ $contributor->nama }}"
+                                     onerror="this.style.display='none'; this.parentElement.innerHTML='{{ substr($contributor->nama, 0, 2) }}';">
+                            @else
+                                {{ substr($contributor->nama, 0, 2) }}
+                            @endif
+                        </div>
+                        <h6 class="fw-bold">{{ $contributor->nama }}</h6>
+                        <p class="text-muted small mb-2">{{ $contributor->program_studi }}</p>
+                        <div class="d-flex justify-content-center align-items-center">
+                            <span class="badge bg-primary">{{ $contributor->total_submissions }} HKI</span>
+                        </div>
+                        <div class="mt-3">
+                            <a href="{{ route('detail_pencipta', $contributor->id) }}" class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-eye me-1"></i>Lihat Detail
+                            </a>
+                        </div>
+                    </div>
+                </div>
+                @endforeach
+            </div>
+
+            <div class="text-center">
+                <a href="{{ route('pencipta') }}" class="btn btn-outline-primary">
+                    <i class="bi bi-people me-2"></i>Lihat Semua Pencipta
+                </a>
+            </div>
+        </div>
+    </section>
+    @endif
+
+>>>>>>> Stashed changes
     <!-- Search Section -->
     <section class="search-section" id="search">
         <div class="container">

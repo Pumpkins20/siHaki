@@ -294,16 +294,9 @@
                                         </a>
                                     </td>
                                     <td>
-                                        @if($member->is_leader)
                                             <span class="badge bg-success">Pencipta Utama</span>
                                         @else
 <<<<<<< Updated upstream
-                                            <span class="badge bg-secondary">Anggota {{ $member->id }}</span>
-=======
-                                            <span class="badge bg-secondary">Anggota <!--{{ $member->position }} --></span>
->>>>>>> Stashed changes
-                                        @endif
-                                    </td>
                                     <td>
                                         @if($member->ktp)
                                             <div class="btn-group" role="group">
