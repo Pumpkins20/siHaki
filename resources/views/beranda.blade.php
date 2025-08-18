@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>SiHaki | Sistem Informasi Hak Kekayaan Intelektual</title>
+    <title>Beranda | SiHaki STMIK AMIKOM Surakarta</title>
     <meta name="description" content="Sistem Informasi Hak Kekayaan Intelektual STMIK AMIKOM Surakarta">
     
     <!-- Bootstrap CSS -->
@@ -223,7 +223,7 @@
                     <div class="hero-content">
                         <h1>SiHaki</h1>
                         <h2>STMIK AMIKOM Surakarta</h2>
-                        <p class="lead">SiHAKI (Sistem Informasi Hak Kekayaan Intelektual), menghadirkan akses terhadap data dan pengelolaan HKI di lingkungan STMIK Amikom Surakarta</p>
+                        <p class="lead">SiHAKI (Sistem Informasi Hak Kekayaan Intelektual), menghadirkan akses terhadap data dan pengelolaan HKI di lingkungan STMIK AMIKOM Surakarta</p>
                         <a href="#search" class="btn-primary-custom">
                             <i class="bi bi-search me-2"></i>
                             Mulai Pencarian
@@ -555,9 +555,18 @@
                     <div class="footer-contact">
                         <p><strong>Alamat:</strong> Jl. Veteran, Notosuman, Singopuran, Kec. Kartasura,</p>
                         <p>Kabupaten Sukoharjo, Provinsi Jawa Tengah 57164</p>
-                        <p><strong>Telp/Fax:</strong> (0271) 7851507</p>
-                        <p><strong>Email:</strong> amikomsolo@amikomsolo.ac.id</p>
-                        <p><strong>WhatsApp:</strong> 081329303450</p>
+                        <p><strong>Instagram:</strong> 
+                        <a href="https://www.instagram.com/lppm_amikomsolo" target="_blank" style="color: inherit; text-decoration: none;">
+                            @lppm_amikomsolo
+                        </a></p>
+                        <p><strong>Email:</strong> 
+                        <a href="mailto:lppm@amikomsolo.ac.id" style="color: inherit; text-decoration: none;">
+                            lppm@amikomsolo.ac.id
+                        </a></p>
+                        <p><strong>WhatsApp:</strong> 
+                        <a href="https://wa.me/6289504696000" target="_blank" style="color: inherit; text-decoration: none;">
+                            089504696000
+                        </a></p>
                     </div>
                 </div>
                 
@@ -569,8 +578,13 @@
                     © Copyright <strong>STMIK AMIKOM Surakarta</strong>. All Rights Reserved
                 </div>
                 <div class="social-links">
-                    <a href="#"><i class="bi bi-facebook"></i></a>
-                    <a href="#"><i class="bi bi-instagram"></i></a>
+                    <a href="https://wa.me/6289504696000" target="_blank" style="color: inherit; text-decoration: none;">
+                    <i class="bi bi-whatsapp"></i>
+                    </a>
+                    <a href="https://www.instagram.com/lppm_amikomsolo" target="_blank" style="color: inherit; text-decoration: none;">
+                    <i class="bi bi-instagram"></i>
+                    </a>
+
                 </div>
             </div>
         </div>

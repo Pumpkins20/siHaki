@@ -12,13 +12,15 @@
                     <div class="row align-items-center">
                         <div class="col-md-8">
                             <h4 class="card-title">Selamat Datang, {{ Auth::user()->nama }}!</h4>
-                            <p class="card-text">Kelola submission HKI Anda dan pantau progresnya di sini.</p>
+                            <p class="card-text">Kelola Pengajuan HKI Anda dan pantau progresnya di sini.</p>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
     </div>
+    
+    <!--
 @if(session('warning'))
     <div class="row mb-4">
         <div class="col-12">
@@ -40,10 +42,10 @@
             </div>
         </div>
     </div>
-@endif
+@endif -->
 
     <div class="row">
-        <!-- Progress Bar Pengajuan -->
+        <!-- 
         <div class="col-xl-4 col-lg-6 mb-4">
             <div class="card shadow h-100">
                 <div class="card-header py-3">
@@ -54,14 +56,14 @@
                         <div class="row text-center">
                             <div class="col-6">
                                 <div class="text-success">
-                                    <strong>{{ $stats['approved_submissions'] }}</strong>
-                                    <br><small>Approved</small>
+                                    <h4><strong>{{ $stats['approved_submissions'] }}</strong>
+                                    <br><small>Approved</small></h4>
                                 </div>
                             </div>
                             <div class="col-6">
                                 <div class="text-warning">
-                                    <strong>{{ $stats['pending_submissions'] }}</strong>
-                                    <br><small>Pending</small>
+                                    <h4><strong>{{ $stats['pending_submissions'] }}</strong>
+                                    <br><small>Pending</small></h4>
                                 </div>
                             </div>
                         </div>
@@ -69,89 +71,87 @@
                 </div>
             </div>
         </div>
-
-        <!-- Statistics Cards -->
-        <div class="col-xl-8 col-lg-6">
-            <div class="row">
-                {{-- ✅ UNIFIED: Card 1 - Menunggu Persetujuan (info/biru muda) --}}
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow h-100" style="border-left: 4px solid #17a2b8;">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
-                                        Pending Review
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pending_submissions'] }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <div class="icon-square bg-info text-white rounded">
-                                        <i class="bi bi-clock fs-2"></i>
-                                    </div>
-                                </div>
+    -->
+<!-- Statistics Cards -->
+<div class="col-xl-12 col-lg-12">
+    <div class="row">
+        {{-- Card 1 - Pending Review --}}
+        <div class="col-md-3 mb-4">
+            <div class="card shadow h-100" style="border-left: 4px solid #17a2b8;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Pending Review
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['pending_submissions'] }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon-square bg-info text-white rounded">
+                                <i class="bi bi-clock fs-2"></i>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                {{-- ✅ UNIFIED: Card 2 - Approved (success/hijau) --}}
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow h-100" style="border-left: 4px solid #28a745;">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
-                                        Approved
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['approved_submissions'] }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <div class="icon-square bg-success text-white rounded">
-                                        <i class="bi bi-check-circle fs-2"></i>
-                                    </div>
-                                </div>
+        {{-- Card 2 - Approved --}}
+        <div class="col-md-3 mb-4">
+            <div class="card shadow h-100" style="border-left: 4px solid #28a745;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Approved
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['approved_submissions'] }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon-square bg-success text-white rounded">
+                                <i class="bi bi-check-circle fs-2"></i>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                {{-- ✅ UNIFIED: Card 3 - Revision Needed (warning/kuning) --}}
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow h-100" style="border-left: 4px solid #ffc107;">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
-                                        Revision Needed
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['revision_needed'] ?? 0 }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <div class="icon-square bg-warning text-white rounded">
-                                        <i class="bi bi-arrow-clockwise fs-2"></i>
-                                    </div>
-                                </div>
+        {{-- Card 3 - Revision Needed --}}
+        <div class="col-md-3 mb-4">
+            <div class="card shadow h-100" style="border-left: 4px solid #ffc107;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Revision Needed
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['revision_needed'] ?? 0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon-square bg-warning text-white rounded">
+                                <i class="bi bi-arrow-clockwise fs-2"></i>
                             </div>
                         </div>
                     </div>
                 </div>
+            </div>
+        </div>
 
-                {{-- ✅ UNIFIED: Card 4 - Rejected (danger/merah) --}}
-                <div class="col-md-6 mb-4">
-                    <div class="card shadow h-100" style="border-left: 4px solid #dc3545;">
-                        <div class="card-body">
-                            <div class="row align-items-center">
-                                <div class="col">
-                                    <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
-                                        Rejected
-                                    </div>
-                                    <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['rejected_submissions'] ?? 0 }}</div>
-                                </div>
-                                <div class="col-auto">
-                                    <div class="icon-square bg-danger text-white rounded">
-                                        <i class="bi bi-x-circle fs-2"></i>
-                                    </div>
-                                </div>
+        {{-- Card 4 - Rejected --}}
+        <div class="col-md-3 mb-4">
+            <div class="card shadow h-100" style="border-left: 4px solid #dc3545;">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                                Rejected
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ $stats['rejected_submissions'] ?? 0 }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <div class="icon-square bg-danger text-white rounded">
+                                <i class="bi bi-x-circle fs-2"></i>
                             </div>
                         </div>
                     </div>
@@ -159,6 +159,8 @@
             </div>
         </div>
     </div>
+</div>
+
 
     <div class="row">
         <!-- Riwayat Terbaru -->
@@ -298,31 +300,28 @@
             </div>
             <div class="modal-body">
                 <div class="text-center">
-                    <h6>Kontak Admin SiHaki</h6>
+                    <h6>Kontak LPPM STMIK AMIKOM Surakarta</h6>
                     <div class="mt-3">
                         <p class="mb-2">
                             <i class="bi bi-envelope text-primary"></i> 
-                            <strong>Email:</strong> hki@amikom.ac.id
+                            <strong>Email:</strong> lppm@amikomsolo.ac.id
                         </p>
                         <p class="mb-2">
-                            <i class="bi bi-telephone text-success"></i> 
-                            <strong>Telp:</strong> (0271) 7851507
+                            <i class="bi bi-instagram text-danger"></i> 
+                            <strong>Instagram:</strong> @lppm_amikomsolo
                         </p>
                         <p class="mb-2">
                             <i class="bi bi-whatsapp text-success"></i> 
-                            <strong>WhatsApp:</strong> 081329303450
+                            <strong>WhatsApp:</strong> 089504696000
                         </p>
-                        <p class="mb-0">
-                            <i class="bi bi-clock text-info"></i> 
-                            <strong>Jam Kerja:</strong> Senin-Jumat: 08:00-16:00
-                        </p>
+                       
                     </div>
                     
                     <div class="mt-4">
-                        <a href="mailto:hki@amikom.ac.id" class="btn btn-primary me-2">
+                        <!-- <a href="mailto:hki@amikom.ac.id" class="btn btn-primary me-2">
                             <i class="bi bi-envelope"></i> Email
-                        </a>
-                        <a href="https://wa.me/6281329303450" class="btn btn-success" target="_blank">
+                        </a> -->
+                        <a href="https://wa.me/6289504696000" class="btn btn-success" target="_blank">
                             <i class="bi bi-whatsapp"></i> WhatsApp
                         </a>
                     </div>

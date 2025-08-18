@@ -10,13 +10,13 @@
             <nav aria-label="breadcrumb">
                 <ol class="breadcrumb bg-transparent p-0 mb-2">
                     <li class="breadcrumb-item"><a href="{{ route('user.dashboard') }}" class="text-decoration-none">Dashboard</a></li>
-                    <li class="breadcrumb-item"><a href="{{ route('user.submissions.index') }}" class="text-decoration-none">Submissions</a></li>
+                    <li class="breadcrumb-item"><a href="{{ route('user.submissions.index') }}" class="text-decoration-none">Pengajuan HKI</a></li>
                     <li class="breadcrumb-item active">Buat Baru</li>
                 </ol>
             </nav>
             <div class="d-flex justify-content-between align-items-center">
                 <div>
-                    <h1 class="h3 mb-1 text-gray-800">Buat Submission HKI Baru</h1>
+                    <h1 class="h3 mb-1 text-gray-800">Buat Pengajuan HKI Baru</h1>
                     <p class="text-muted mb-0">Lengkapi formulir di bawah untuk mengajukan HKI</p>
                 </div>
                 <div>
@@ -34,7 +34,7 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-file-earmark-plus me-2"></i>Informasi Submission
+                        <i class="bi bi-file-earmark-plus me-2"></i>Informasi Pengajuan
                     </h6>
                 </div>
                 <div class="card-body">
@@ -181,7 +181,7 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-book me-2"></i>Panduan Submission
+                        <i class="bi bi-book me-2"></i>Panduan Pengajuan
                     </h6>
                 </div>
                 <div class="card-body">
@@ -728,15 +728,16 @@ function updateFormFields() {
                     @error('program_link')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Link GitHub, GitLab, atau repositori lainnya</div>
+                    <div class="form-text">Link GDrive, GitHub, GitLab, atau repositori lainnya</div>
                 </div>
             `;
             
             guidelinesContent.innerHTML = `
                 <h6 class="fw-bold">Persyaratan Program Komputer:</h6>
                 <ul class="mb-3">
-                    <li>File PDF berisi: Cover, Screenshot, Manual penggunaan</li>
-                    <li>Link akses program (GitHub/GitLab/dll)</li>
+                    <li>Program Komputer antara lain website, aplikasi desktop, atau mobile, atau game komputer dan lain-lain yang sejenis</li>
+                    <li>File PDF berisi: Cover, Screenshot dan penjelasan, Manual Penggunaan</li>
+                    <li>Link akses program (GDrive/GitHub/GitLab/dll)</li>
                 </ul>
             `;
             break;
@@ -759,9 +760,9 @@ function updateFormFields() {
             guidelinesContent.innerHTML = `
                 <h6 class="fw-bold">Persyaratan Sinematografi:</h6>
                 <ul class="mb-3">
-                    <li>Link video yang dapat diakses (Google Drive/YouTube)</li>
+                    <li>Link Google Drive, YouTube, atau platform video lainnya</li>
+                    <li>Pastikan file dapat diakses publik atau sudah dibagikan dengan admi</li>
                     <li>Video berkualitas baik dan tidak melanggar hak cipta</li>
-                    <li>Durasi video sesuai dengan ketentuan</li>
                 </ul>
                 <div class="alert alert-warning">
                     <small><i class="bi bi-exclamation-triangle"></i> <strong>Penting:</strong> Pastikan link video dapat diakses oleh admin untuk proses review.</small>
@@ -787,9 +788,6 @@ function updateFormFields() {
                 <h6 class="fw-bold">Persyaratan Buku:</h6>
                 <ul class="mb-3">
                     <li>File PDF lengkap buku</li>
-                    <li>ISBN (jika sudah ada)</li>
-                    <li>Jumlah halaman yang sesuai</li>
-                    <li>Konten tidak melanggar hak cipta</li>
                     <li>Kualitas file PDF yang baik dan dapat dibaca</li>
                 </ul>
                 <div class="alert alert-info">
@@ -826,13 +824,8 @@ function updateFormFields() {
                 <h6 class="fw-bold">Persyaratan ${visualTypeNames[creationType]}:</h6>
                 <ul class="mb-3">
                     <li>File gambar berkualitas tinggi (JPG/PNG)</li>
-                    <li>Resolusi minimum 300 DPI untuk cetak</li>
                     <li>Ukuran file maksimal 2MB per file</li>
-                    <li>Dapat upload multiple file untuk variasi</li>
                 </ul>
-                <div class="alert alert-info">
-                    <small><i class="bi bi-info-circle"></i> Dimensi dan deskripsi bersifat opsional namun direkomendasikan untuk dokumentasi yang lebih baik.</small>
-                </div>
             `;
             break;
 
@@ -846,7 +839,7 @@ function updateFormFields() {
                     @error('photo_files.*')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Format: JPG, PNG. Maksimal 1MB per file. Dapat upload multiple foto.</div>
+                    <div class="form-text"S>Format: JPG, PNG. Maksimal 1MB per file. Dapat upload multiple foto.</div>
                 </div>
             `;
 
