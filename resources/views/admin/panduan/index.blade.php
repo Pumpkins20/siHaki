@@ -31,7 +31,7 @@
 
     <!-- Quick Access Cards -->
     <div class="row mb-4">
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card border-start border-primary border-4 shadow-sm h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
@@ -47,7 +47,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card border-start border-success border-4 shadow-sm h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
@@ -63,13 +63,13 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <div class="col-md-4">
             <div class="card border-start border-warning border-4 shadow-sm h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Support</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">24/7 IT Support</div>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">Hubungi Kontak Kami</div>
                             <small class="text-muted">Tim IT siap membantu</small>
                         </div>
                         <div class="col-auto">
@@ -79,7 +79,7 @@
                 </div>
             </div>
         </div>
-        <div class="col-md-3">
+        <!-- <div class="col-md-3">
             <div class="card border-start border-info border-4 shadow-sm h-100">
                 <div class="card-body">
                     <div class="row align-items-center">
@@ -94,7 +94,7 @@
                     </div>
                 </div>
             </div>
-        </div>
+        </div> -->
     </div>
 
     <div class="row">
@@ -275,7 +275,7 @@
                 </div>
             </div>
 
-            <!-- Popular FAQ -->
+            <!-- 
             <div class="card shadow mb-4">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 fw-bold text-success">
@@ -307,7 +307,7 @@
                         </a>
                     </div>
                 </div>
-            </div>
+            </div>Popular FAQ -->
 
             <!-- IT Support Contact -->
             <div class="card shadow mb-4">
@@ -319,21 +319,26 @@
                 <div class="card-body">
                     <div class="text-center">
                         <i class="bi bi-person-badge fs-1 text-warning mb-3"></i>
-                        <h6>Tim IT AMIKOM</h6>
+                        <h6>Dukungan Teknis</h6>
                         <p class="small text-muted mb-3">
                             Dukungan teknis untuk sistem SiHaki
                         </p>
                         
                         <div class="d-grid gap-2">
-                            <a href="mailto:it@amikom.ac.id" class="btn btn-warning btn-sm">
-                                <i class="bi bi-envelope me-1"></i>Email IT Support
+                          <a href="https://instagram.com/riodsn_" 
+                            class="btn btn-danger btn-sm d-flex align-items-center justify-content-center" 
+                            target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-instagram me-2"></i>
+                                <span>Instagram</span>
                             </a>
-                            <a href="https://wa.me/6281329303450" class="btn btn-success btn-sm" target="_blank">
-                                <i class="bi bi-whatsapp me-1"></i>WhatsApp
+
+                            <a href="https://wa.me/6281329303450" 
+                            class="btn btn-success btn-sm d-flex align-items-center justify-content-center" 
+                            target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-whatsapp me-2"></i>
+                                <span>WhatsApp</span>
                             </a>
-                            <a href="tel:02717851507" class="btn btn-info btn-sm">
-                                <i class="bi bi-telephone me-1"></i>Telepon
-                            </a>
+
                         </div>
                         
                         <div class="mt-3 small text-muted">
@@ -344,7 +349,7 @@
                 </div>
             </div>
 
-            <!-- System Status -->
+            <!-- 
             <div class="card shadow">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 fw-bold text-info">
@@ -375,7 +380,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>System Status -->
         </div>
     </div>
 </div>

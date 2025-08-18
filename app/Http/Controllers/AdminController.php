@@ -1589,7 +1589,6 @@ class AdminController extends Controller
         $ketuaTable->addRow();
         $ketuaCell = $ketuaTable->addCell(12000, [
             'alignment' => 'center',
-            'bgColor' => 'f8f9fa',
             'borderSize' => null
         ]);
         
@@ -1602,7 +1601,6 @@ class AdminController extends Controller
             $ketuaCell->addText($pencipta1->name, 
                 ['bold' => true, 'size' => 12], 
                 ['alignment' => 'center']);
-            $ketuaCell->addTextBreak(1);
             
             // Insert KTP image atau placeholder
             $this->insertKtpImageOrPlaceholder($ketuaCell, $pencipta1, 200, 130);
@@ -1619,14 +1617,14 @@ class AdminController extends Controller
     }
 
     /**
-     * ✅ UPDATED: Add Pencipta 2-5 dalam grid 2x2
+     * ✅ UPDATED: Add Pencipta 2-6 dalam grid 3x2 (6 slot untuk pencipta lainnya)
      */
     private function addPenciptaGrid($section, $anggotaCollection)
     {
         $anggota = $anggotaCollection->values()->all(); // Reset keys
         
-        // Buat grid 2x2 untuk pencipta 2-5 (4 slot)
-        for ($row = 0; $row < 2; $row++) {
+        // ✅ FIXED: Buat grid 3x2 untuk pencipta 2-6 (5 slot) tanpa jarak tambahan
+        for ($row = 0; $row < 3; $row++) { // Changed from 2 to 3 rows
             $gridTable = $section->addTable([
                 'borderSize' => null,
                 'borderColor' => 'ffffff',
@@ -1643,11 +1641,15 @@ class AdminController extends Controller
                 'borderSize' => null,
             ]);
             
-            if (isset($anggota[$leftIndex])) {
+            // ✅ FIXED: Check if we still have anggota untuk slot ini
+            if (isset($anggota[$leftIndex]) && $leftIndex < 5) { // Max 5 pencipta lainnya (index 0-4)
                 // ✅ UPDATED: Pencipta nomor dimulai dari 2 (karena pencipta 1 sudah di atas)
                 $this->addPenciptaToCell($leftCell, $anggota[$leftIndex], $leftIndex + 2);
             } else {
-                $this->addEmptyPenciptaCell($leftCell, $leftIndex + 2);
+                // ✅ FIXED: Hanya tampilkan empty cell jika masih dalam range 6 pencipta total
+                if (($leftIndex + 2) <= 6) {
+                    $this->addEmptyPenciptaCell($leftCell, $leftIndex + 2);
+                }
             }
             
             // Kolom kanan
@@ -1657,14 +1659,16 @@ class AdminController extends Controller
                 'borderSize'=> null,
             ]);
             
-            if (isset($anggota[$rightIndex])) {
+            // ✅ FIXED: Check if we still have anggota untuk slot ini
+            if (isset($anggota[$rightIndex]) && $rightIndex < 5) { // Max 5 pencipta lainnya (index 0-4)
                 // ✅ UPDATED: Pencipta nomor dimulai dari 2 (karena pencipta 1 sudah di atas)
                 $this->addPenciptaToCell($rightCell, $anggota[$rightIndex], $rightIndex + 2);
             } else {
-                $this->addEmptyPenciptaCell($rightCell, $rightIndex + 2);
+                // ✅ FIXED: Hanya tampilkan empty cell jika masih dalam range 6 pencipta total
+                if (($rightIndex + 2) <= 6) {
+                    $this->addEmptyPenciptaCell($rightCell, $rightIndex + 2);
+                }
             }
-            
-            
         }
     }
 
@@ -1857,7 +1861,6 @@ class AdminController extends Controller
             return $ktpPath;
         }
     }
-
     /**
      * ✅ UPDATED: Generate Surat Pengalihan Template sesuai format yang diminta
      */
@@ -1868,11 +1871,11 @@ class AdminController extends Controller
         // Set page setup
         $section = $phpWord->addSection([
              'orientation' => 'portrait',
-    'marginLeft' => 567,   // 1 cm
-    'marginRight' => 567,
-    'marginTop' => 567,
-    'marginBottom' => 567,
-]);
+        'marginLeft' => 567,   // 1 cm
+        'marginRight' => 567,
+        'marginTop' => 567,
+        'marginBottom' => 567,
+    ]);
 
         // Define styles
         $titleStyle = ['bold' => true, 'size' => 14, 'name' => 'Times New Roman'];
@@ -2014,51 +2017,93 @@ private function generateSuratPernyataanTemplate(HkiSubmission $submission, $tem
     ]);
 
     // Styles
-    $titleStyle = ['bold' => true, 'size' => 14, 'name' => 'Times New Roman'];
-    $boldStyle = ['bold' => true, 'size' => 11, 'name' => 'Times New Roman'];
-    $textStyle = ['size' => 11, 'name' => 'Times New Roman'];
+    $titleStyle = ['bold' => true, 'size' => 10, 'name' => 'Arial', 'underline' => 'single'];
+    $boldStyle = ['bold' => true, 'size' => 10, 'name' => 'Arial'];
+    $textStyle = ['size' => 10, 'name' => 'Arial'];
     $centerAlign = ['alignment' => 'center'];
     $rightAlign = ['alignment' => 'right'];
-    $justify = ['alignment' => 'both', 'lineHeight' => 1.0];
-    $indentPoin = ['alignment' => 'both', 'indentation' => ['left' => 600], 'lineHeight' => 1.0];
-    $indentSubPoin = ['alignment' => 'both', 'indentation' => ['left' => 800], 'lineHeight' => 1.0];
-
+    $justify = ['alignment' => 'both', 'lineHeight' => 1.15];
+    $justifyNoSpacing = ['alignment' => 'both', 'lineHeight' => 1.0, 'spaceAfter' => 0];
+    // Style untuk poin tanpa jarak antar baris
+    $nospaceStyle = [
+        'alignment' => 'both', 
+        'lineHeight' => 0.87,
+        'spaceAfter' => 0,
+        'spaceBefore' => 0
+    ];
+    
+    // Style untuk cell transparan
+    $transparentCell = [
+        'borderSize' => 0,
+        'borderColor' => 'ffffff',
+        'borderTopSize' => 0,
+        'borderBottomSize' => 0,
+        'borderLeftSize' => 0,
+        'borderRightSize' => 0
+    ];
+    
     // Title
     $section->addText('SURAT PERNYATAAN', $titleStyle, $centerAlign);
 
     // Opening
     $section->addText('Yang bertanda tangan dibawah ini, pemegang hak cipta:', $textStyle, $justify);
 
-    // Table identitas
-    $table = $section->addTable([ 'width' => 100 * 50]);
-    $table->addRow();
-    $table->addCell(2000)->addText('N a m a', $textStyle);
-    $table->addCell(200)->addText(':', $textStyle);
-    $table->addCell(6000)->addText('Sekolah Tinggi Manajemen Informatika dan Komputer AMIKOM Surakarta', $textStyle);
+    // Table identitas dengan spacing yang rapi
+    $identitasTable = $section->addTable([
+        'width' => 100 * 50,
+        'borderSize' => 0,
+        'borderColor' => 'ffffff',
+        'cellMargin' => 80,
+        'cellMarginLeft' => 400
+    ]);
 
-    $table->addRow();
-    $table->addCell(2000)->addText('Alamat', $textStyle);
-    $table->addCell(200)->addText(':', $textStyle);
-    $table->addCell(6000)->addText('Jl. Veteran Notosuman Singopuran Kartasura Sukoharjo 57164', $textStyle);
+    $identitasTable->addRow();
+    $identitasTable->addCell(1500, $transparentCell)->addText('N a m a', $textStyle, $nospaceStyle);
+    $identitasTable->addCell(200, $transparentCell)->addText(':', $textStyle, $nospaceStyle);
+    $identitasTable->addCell(8200, array_merge($transparentCell, [
+        'cellMarginLeft' => 200
+    ]))->addText('Sekolah Tinggi Manajemen Informatika dan Komputer AMIKOM Surakarta', $textStyle, $nospaceStyle);
+
+    $identitasTable->addRow();
+    $identitasTable->addCell(1500, $transparentCell)->addText('Alamat', $textStyle, $nospaceStyle);
+    $identitasTable->addCell(200, $transparentCell)->addText(':', $textStyle, $nospaceStyle);
+    $identitasTable->addCell(6000, array_merge($transparentCell, [
+        'cellMarginLeft' => 200
+    ]))->addText('Jl. Veteran Notosuman Singopuran Kartasura Sukoharjo 57164', $textStyle, $nospaceStyle);
+
+    $section->addTextBreak(1);
 
     // Main statement
     $section->addText('Dengan ini menyatakan bahwa:', $textStyle, $justify);
 
     // Poin 1
-    $section->addText('1. Karya Cipta yang saya mohonkan:', $textStyle, $justify);
+    $section->addText('1.    Karya Cipta yang saya mohonkan:', $textStyle, $justify);
 
-    $table2 = $section->addTable([ 'width' => 100 * 50]);
-    $table2->addRow();
-    $table2->addCell(2000)->addText('Berupa', $textStyle);
-    $table2->addCell(200)->addText(':', $textStyle);
-    $table2->addCell(6000)->addText($templateData['creation_type'], $boldStyle);
+    // Table untuk karya cipta
+    $karyaTable = $section->addTable([
+        'width' => 100 * 50,
+        'borderSize' => 0,
+        'borderColor' => 'ffffff',
+        'cellMargin' => 80,
+        'cellMarginLeft' => 400
+    ]);
 
-    $table2->addRow();
-    $table2->addCell(2000)->addText('Berjudul', $textStyle);
-    $table2->addCell(200)->addText(':', $textStyle);
-    $table2->addCell(6000)->addText($templateData['title'], $boldStyle);
+    $karyaTable->addRow();
+    $karyaTable->addCell(1500, $transparentCell)->addText('Berupa', $textStyle, $nospaceStyle);
+    $karyaTable->addCell(200, $transparentCell)->addText(':', $textStyle, $nospaceStyle);
+    $karyaTable->addCell(6000, array_merge($transparentCell, [
+        'cellMarginLeft' => 200
+    ]))->addText($templateData['creation_type'], $textStyle, $nospaceStyle);
 
-    // Subpoin - menjorok ke dalam
+    $karyaTable->addRow();
+    $karyaTable->addCell(1500, $transparentCell)->addText('Berjudul', $textStyle, $nospaceStyle);
+    $karyaTable->addCell(200, $transparentCell)->addText(':', $textStyle, $nospaceStyle);
+    $karyaTable->addCell(6000, array_merge($transparentCell, [
+        'cellMarginLeft' => 200
+    ]))->addText($templateData['title'], $textStyle, $nospaceStyle);
+    
+    $section->addTextBreak(1);
+    
     $poinSub1 = [
         'Tidak meniru dan tidak sama secara esensial dengan Karya Cipta milik pihak lain atau obyek kekayaan intelektual lainnya sebagaimana dimaksud dalam Pasal 68 ayat (2);',
         'Bukan merupakan Ekspresi Budaya Tradisional sebagaimana dimaksud dalam Pasal 38;',
@@ -2068,18 +2113,36 @@ private function generateSuratPernyataanTemplate(HkiSubmission $submission, $tem
         'Bukan merupakan Ciptaan yang melanggar norma agama, norma susila, ketertiban umum, pertahanan dan keamanan negara atau melanggar peraturan perundang-undangan sebagaimana dimaksud dalam Pasal 74 ayat (1) huruf d Undang-Undang Nomor 28 Tahun 2014 tentang Hak Cipta.',
     ];
 
+    // Tabel untuk subpoin dengan cellMarginLeft yang konsisten dengan tabel identitas/karya
+    $subPoinTable = $section->addTable([
+        'width' => 100 * 50,
+        'borderSize' => 0,
+        'borderColor' => 'ffffff',
+        'cellMargin' => 80,
+        'cellMarginLeft' => 400
+    ]);
+    
     foreach ($poinSub1 as $poin) {
-        $section->addText('• ' . $poin, $textStyle, $indentPoin);
+        $subPoinTable->addRow();
+        // Kolom 1: Bullet point bulat
+        $subPoinTable->addCell(300, $transparentCell)->addText('•', $textStyle, $nospaceStyle);
+        
+        // Kolom 2: Teks poin dengan cellMarginLeft yang konsisten
+        $subPoinTable->addCell(10000, array_merge($transparentCell, [
+            'cellMarginLeft' => 200
+        ]))->addText($poin, $textStyle, $nospaceStyle);
     }
 
-    // Poin 2
-    $section->addText('2. Sebagai pemohon mempunyai kewajiban untuk menyimpan asli contoh ciptaan yang dimohonkan dan harus memberikan apabila dibutuhkan untuk kepentingan penyelesaian sengketa perdata maupun pidana sesuai dengan ketentuan perundang-undangan.', $textStyle, $justify);
+    $section->addTextBreak(1);
 
-    // Poin 3
-    $section->addText('3. Karya Cipta yang saya mohonkan pada Angka 1 tersebut di atas tidak pernah dan tidak sedang dalam sengketapidana dan/atau perdata di Pengadilan.', $textStyle, $justify);
+    // Poin 2
+    $section->addText('2.   Sebagai pemohon mempunyai kewajiban untuk menyimpan asli contoh ciptaan yang dimohonkan dan harus memberikan apabila dibutuhkan untuk kepentingan penyelesaian sengketa perdata maupun pidana sesuai dengan ketentuan perundang-undangan.', $textStyle, $justify);
+
+    // Poin 3  
+    $section->addText('3.    Karya Cipta yang saya mohonkan pada Angka 1 tersebut di atas tidak pernah dan tidak sedang dalam sengketa pidana dan/atau perdata di Pengadilan.', $textStyle, $justify);
 
     // Poin 4
-    $section->addText('4. Dalam hal ketentuan sebagaimana dimaksud dalam Angka 1 dan Angka 3 tersebut di atas saya / kami langgar, maka saya / kami bersedia secara sukarela bahwa:', $textStyle, $justify);
+    $section->addText('4.    Dalam hal ketentuan sebagaimana dimaksud dalam Angka 1 dan Angka 3 tersebut di atas saya / kami langgar, maka saya / kami bersedia secara sukarela bahwa:', $textStyle, $justify);
 
     $konsekuensi = [
         'permohonan karya cipta yang saya ajukan dianggap ditarik kembali; atau',
@@ -2087,36 +2150,56 @@ private function generateSuratPernyataanTemplate(HkiSubmission $submission, $tem
         'Dalam hal kepemilikan Hak Cipta yang dimohonkan secara elektronik sedang dalam berperkara dan/atau sedang dalam gugatan di Pengadilan maka status kepemilikan surat pencatatan elektronik tersebut ditangguhkan menunggu putusan Pengadilan yang berkekuatan hukum tetap.',
     ];
 
+    // Tabel untuk konsekuensi dengan cellMarginLeft yang konsisten
+    $konsekuensiTable = $section->addTable([
+        'width' => 100 * 50,
+        'borderSize' => 0,
+        'borderColor' => 'ffffff',
+        'cellMargin' => 80,
+        'cellMarginLeft' => 400
+    ]);
+
     foreach ($konsekuensi as $i => $text) {
         $huruf = chr(97 + $i); // a, b, c
-        $section->addText($huruf . '. ' . $text, $textStyle, $indentSubPoin);
+        $konsekuensiTable->addRow();
+        
+        // Kolom 1: Huruf
+        $konsekuensiTable->addCell(300, $transparentCell)->addText($huruf . '.', $textStyle, $nospaceStyle);
+        
+        // Kolom 2: Teks konsekuensi dengan cellMarginLeft yang konsisten
+        $konsekuensiTable->addCell(10000, array_merge($transparentCell, [
+            'cellMarginLeft' => 200
+        ]))->addText($text, $textStyle, $nospaceStyle);
     }
+
+    $section->addTextBreak(1);
 
     // Penutup
     $section->addText('Demikian Surat pernyataan ini saya/kami buat dengan sebenarnya dan untuk dipergunakan sebagaimana mestinya.', $textStyle, $justify);
 
-// Tabel tanda tangan (posisi kanan tapi teks center)
-$tandaTanganTable = $section->addTable([
-    'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::RIGHT
-]);
+    $section->addTextBreak(0.7);
 
-$tandaTanganTable->addRow();
-$cell = $tandaTanganTable->addCell(5000); // lebar cell kanan
+    // Tabel tanda tangan dengan posisi dan format yang tepat
+    $tandaTanganTable = $section->addTable([
+        'alignment' => \PhpOffice\PhpWord\SimpleType\Jc::RIGHT,
+        'borderSize' => 0,
+        'borderColor' => 'ffffff'
+    ]);
 
-$centerNoSpacing = [
-    'alignment' => 'center',
-    'spaceAfter' => 0,
-    'spaceBefore' => 0,
-    'spacing' => 0
-];
+    $tandaTanganTable->addRow();
+    $cell = $tandaTanganTable->addCell(5000, $transparentCell);
 
-$cell->addText('Sukoharjo, ' . $templateData['current_date'], $textStyle, $centerNoSpacing);
-$cell->addTextBreak(2); // ruang tanda tangan (biarkan untuk area tanda tangan manual)
-$cell->addText('(Moch. Hari Purwidiantoro, ST, MM, M.Kom.)', $textStyle, $centerNoSpacing);
-$cell->addText('Ketua STMIK AMIKOM Surakarta', $textStyle, $centerNoSpacing);
-$cell->addText('Pemegang Hak Cipta', $textStyle, $centerNoSpacing);
+    $centerStyle = [
+        'alignment' => 'center',
+        'spaceAfter' => 0,
+        'spaceBefore' => 0
+    ];
 
-
+    $cell->addText('Sukoharjo, ' . $templateData['current_date'], $textStyle, $centerStyle);
+    $cell->addTextBreak(2); // ruang untuk tanda tangan manual
+    $cell->addText('(Moch. Hari Purwidiantoro, ST, MM, M.Kom.)', $textStyle, $centerStyle);
+    $cell->addText('Ketua STMIK AMIKOM Surakarta', $textStyle, $centerStyle);
+    $cell->addText('Pemegang Hak Cipta', $textStyle, $centerStyle);
 
     // Save
     $fileName = 'Surat_Pernyataan_' . $templateData['submission_id'] . '_' . time() . '.docx';

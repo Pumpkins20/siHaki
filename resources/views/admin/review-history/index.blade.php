@@ -16,12 +16,12 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h1 class="h3 mb-1 text-gray-800">Riwayat Peninjauan</h1>
-                    <p class="text-muted mb-0">Lihat semua riwayat peninjauan submission yang telah selesai</p>
+                    <p class="text-muted mb-0">Lihat semua riwayat peninjauan pengajuan yang telah selesai</p>
                 </div>
                 <div>
-                    <a href="{{ route('admin.review-history.export', request()->query()) }}" class="btn btn-success">
+                   <!-- <a href="{{ route('admin.review-history.export', request()->query()) }}" class="btn btn-success">
                         <i class="bi bi-download"></i> Export Excel
-                    </a>
+                    </a> -->
                 </div>
             </div>
         </div>
@@ -163,12 +163,12 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th width="5%">#</th>
+                                        <th width="5%">No</th>
                                         <th width="25%">Judul HKI</th>
-                                        <th width="15%">User</th>
+                                        <th width="15%">Pengusul</th>
                                         <th width="10%">Jenis</th>
                                         <th width="10%">Status</th>
-                                        <th width="15%">Reviewer</th>
+                                       <!-- <th width="15%">Reviewer</th> -->
                                         <th width="12%">Tanggal Review</th>
                                         <th width="8%">Aksi</th>
                                     </tr>
@@ -200,14 +200,14 @@
                                                 <i class="bi bi-{{ $statusIcon }} me-1"></i>{{ $statusName }}
                                             </span>
                                         </td>
-                                        <td>
+                                        <!-- <td>
                                             <div>
                                                 <strong>{{ $submission->reviewer->nama }}</strong>
                                                 @if($submission->reviewer_id === Auth::id())
                                                     <br><span class="badge bg-primary">Anda</span>
                                                 @endif
                                             </div>
-                                        </td>
+                                        </td> -->
                                         <td>{{ $submission->reviewed_at->format('d M Y') }}</td>
                                         <td>
                                             <a href="{{ route('admin.submissions.show', $submission) }}" 

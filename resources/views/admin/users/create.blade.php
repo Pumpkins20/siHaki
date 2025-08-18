@@ -41,12 +41,12 @@
                     <form action="{{ route('admin.users.store') }}" method="POST" id="createUserForm">
                         @csrf
                         
-                        <!-- ✅ DEBUG: Add form debugging in development -->
+                        <!-- ✅ 
                         @if(config('app.debug'))
                             <div class="alert alert-info">
                                 <strong>DEBUG:</strong> Form akan submit ke: {{ route('admin.users.store') }}
                             </div>
-                        @endif
+                        @endif DEBUG: Add form debugging in development -->
                         
                         <!-- Basic Information -->
                         <div class="mb-4">
@@ -234,10 +234,11 @@
                             <li><strong>Role Admin:</strong> Dapat mengelola sistem</li>
                         </ul>
                         
-                        <div class="alert alert-info">
-                            <i class="bi bi-shield-lock me-2"></i>
-                            <strong>Keamanan:</strong> User wajib mengganti password default saat login pertama kali.
+                        <div class="p-3 border-start border-4 border-info bg-light rounded mb-3">
+                        <i class="bi bi-shield-lock text-info me-2"></i>
+                        <strong>Keamanan:</strong> User wajib mengganti password default saat login pertama kali.
                         </div>
+
                     </div>
                 </div>
             </div>

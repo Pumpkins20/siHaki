@@ -119,13 +119,14 @@ class AdminPanduanController extends Controller
         // Panduan download untuk admin
         $guides = [
             [
-                'title' => 'Panduan Admin SiHaki',
+                'title' => 'Panduan Admin HKI',
                 'description' => 'Panduan lengkap untuk admin dalam mengelola sistem HKI',
-                'file' => 'Panduan Admin SiHaki.pdf',
-                'size' => '2.1 MB',
-                'pages' => 12,
-                'updated' => '2024-01-15'
-            ],
+                'file' => 'Panduan Admin HKI.pdf',
+                'size' => '1 MB',
+                'pages' => 6,
+                'updated' => '2024-08-19'
+            ]
+            /*,
             [
                 'title' => 'Checklist Review Pengajuan',
                 'description' => 'Daftar poin-poin yang harus diperiksa saat review',
@@ -141,7 +142,7 @@ class AdminPanduanController extends Controller
                 'size' => '1.2 MB',
                 'pages' => 8,
                 'updated' => '2024-01-05'
-            ]
+            ]*/
         ];
 
         return view('admin.panduan.index', compact(
@@ -157,10 +158,7 @@ class AdminPanduanController extends Controller
     public function downloadGuide($filename)
     {
         $allowedFiles = [
-            'Panduan Admin SiHaki.pdf',
-            'Checklist Review HKI.pdf',
-            'Template Surat HKI.pdf'
-        ];
+            'Panduan Admin HKI.pdf',       ];
 
         if (!in_array($filename, $allowedFiles)) {
             abort(404, 'File tidak ditemukan');

@@ -126,13 +126,13 @@
                                 </small>
                             @endif
                             
-                            <!-- Persistent Edit Warning -->
+                            <!-- 
                             <div class="mt-2">
                                 <div class="alert alert-warning alert-sm mb-0" id="editWarningAlert">
                                     <i class="bi bi-exclamation-triangle me-1"></i>
                                     <small><strong>Perhatian:</strong> Anda sedang dalam mode edit. Pastikan untuk menyimpan perubahan sebelum meninggalkan halaman.</small>
                                 </div>
-                            </div>
+                            </div> Persistent Edit Warning -->
                         </div>
 
                         <!-- Title -->
@@ -150,13 +150,15 @@
 
                         <!-- Creation Type - Read Only -->
                         <div class="mb-3">
-                            <label class="form-label">Jenis Pengajuan</label>
-                            <div class="alert alert-light border">
-                                <i class="bi bi-info-circle text-primary me-2"></i>
-                                <strong>{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</strong>
-                                <br><small class="text-muted">Jenis pengajuan tidak dapat diubah setelah submission dibuat</small>
-                            </div>
+                        <label class="form-label">Jenis Pengajuan</label>
+                        <div class="p-3 border rounded bg-light">
+                            <i class="bi bi-info-circle text-primary me-2"></i>
+                            <strong>{{ ucfirst(str_replace('_', ' ', $submission->creation_type)) }}</strong>
+                            <br>
+                            <small class="text-muted">Jenis pengajuan tidak dapat diubah setelah submission dibuat</small>
                         </div>
+                    </div>
+
 
                         <!-- Tanggal Publikasi -->
                         <div class="mb-3">
@@ -331,7 +333,7 @@
                                         </div>
                                     </div>
 
-                                    <!-- Current Address Display for Reference -->
+                                    <!-- 
                                     @if($member->alamat || $member->kode_pos)
                                         <div class="alert alert-info alert-sm mb-3">
                                             <div class="row">
@@ -348,7 +350,7 @@
                                                 <i class="bi bi-pencil-square me-1"></i>
                                                 Edit alamat dan kode pos di form di atas jika perlu diubah.
                                             </small>
-                                        </div>
+                                        </div>Current Address Display for Reference -->
                                     @endif
 
                                     <!-- KTP Section -->
@@ -443,7 +445,7 @@
                                         </div>
                                     </div>
                                     
-                                    <!-- Member revision notes -->
+                                    <!-- 
                                     @if($submission->status === 'revision_needed' && $submission->review_notes)
                                         <div class="mt-3">
                                             <div class="alert alert-warning">
@@ -453,22 +455,11 @@
                                                 </small>
                                             </div>
                                         </div>
-                                    @endif
+                                    @endif -->
                                 </div>
                             @endforeach
                             
-                            <div class="alert alert-info mt-3">
-                                <h6 class="alert-heading">
-                                    <i class="bi bi-lightbulb me-2"></i>Tips Revisi Data Anggota:
-                                </h6>
-                                <ul class="mb-0 small">
-                                    <li>Pastikan nama sesuai dengan identitas resmi</li>
-                                    <li>Nomor WhatsApp dan email yang aktif</li>
-                                    <li>Alamat lengkap dan kode pos yang benar</li>
-                                    <li>Upload ulang KTP jika foto tidak jelas atau terpotong</li>
-                                    <li>Format file KTP harus JPG/JPEG dengan ukuran maksimal 2MB</li>
-                                </ul>
-                            </div>
+                            
                         </div>
                         @endif
 
@@ -670,9 +661,7 @@
                         <p class="small text-muted mb-3">
                             Pastikan Anda membaca catatan reviewer di bagian atas halaman sebelum melakukan edit.
                         </p>
-                        <button type="button" class="btn btn-warning btn-sm" onclick="scrollToReviewerNotes()">
-                            <i class="bi bi-arrow-up me-1"></i>Lihat Catatan
-                        </button>
+                        
                     </div>
                 </div>
             </div>
@@ -749,22 +738,23 @@
                             <li>Submit ulang untuk review</li>
                         </ol>
                         
-                        <div class="alert alert-warning">
-                            <small>
-                                <i class="bi bi-exclamation-triangle me-1"></i>
-                                <strong>Catatan:</strong> Pastikan data anggota, alamat, dan KTP sudah sesuai dengan catatan revisi.
-                            </small>
-                        </div>
+                        <div class="mb-3 p-3 border-start border-4 border-warning bg-light rounded">
+                        <small>
+                            <i class="bi bi-exclamation-triangle text-warning me-1"></i>
+                            <strong>Catatan:</strong> Pastikan data anggota, alamat, dan KTP sudah sesuai dengan catatan revisi.
+                        </small>
+                    </div>
 
-                        @if($submission->review_notes)
-                        <div class="alert alert-info">
-                            <small>
-                                <i class="bi bi-lightbulb me-1"></i>
-                                <strong>Tips:</strong> Catatan reviewer di atas berisi panduan spesifik untuk submission Anda. 
-                                Ikuti setiap poin dengan cermat sebelum submit ulang.
-                            </small>
-                        </div>
-                        @endif
+                    @if($submission->review_notes)
+                    <div class="mb-3 p-3 border-start border-4 border-info bg-light rounded">
+                        <small>
+                            <i class="bi bi-lightbulb text-info me-1"></i>
+                            <strong>Tips:</strong> Catatan reviewer di atas berisi panduan spesifik untuk submission Anda. 
+                            Ikuti setiap poin dengan cermat sebelum submit ulang.
+                        </small>
+                    </div>
+                    @endif
+
                     </div>
                 </div>
             </div>
@@ -780,17 +770,25 @@
                 <div class="card-body">
                     <div class="small">
                         <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-envelope text-primary me-2"></i>
-                            <span>hki@amikom.ac.id</span>
-                        </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-telephone text-primary me-2"></i>
-                            <span>(0271) 7851507</span>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-clock text-primary me-2"></i>
-                            <span>Senin-Jumat: 08:00-16:00 WIB</span>
-                        </div>
+                    <i class="bi bi-envelope text-primary me-2"></i>
+                    <a href="mailto:lppm@amikomsolo.ac.id" class="text-decoration-none text-dark">
+                        lppm@amikomsolo.ac.id
+                    </a>
+                </div>
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-instagram text-primary me-2"></i>
+                    <a href="https://www.instagram.com/lppm_amikomsolo" target="_blank" class="text-decoration-none text-dark">
+                        @lppm_amikomsolo
+                    </a>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-whatsapp text-primary me-2"></i>
+                    <a href="https://wa.me/6289504696000" target="_blank" class="text-decoration-none text-dark">
+                        089504696000
+                    </a>
+                </div>
                     </div>
                 </div>
             </div>

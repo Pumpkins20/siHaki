@@ -17,7 +17,7 @@
             <div class="d-flex justify-content-between align-items-center">
                 <div>
                     <h1 class="h3 mb-1 text-gray-800">Kelola Sertifikat HKI</h1>
-                    <p class="text-muted mb-0">Kirim sertifikat untuk submission yang sudah approved</p>
+                    <p class="text-muted mb-0">Kirim sertifikat untuk pengajuan yang sudah approved</p>
                 </div>
             </div>
         </div>
@@ -118,7 +118,7 @@
         <div class="col-12">
             <div class="card shadow">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Daftar Submission Approved ({{ $submissions->total() }} items)</h6>
+                    <h6 class="m-0 font-weight-bold text-primary">Daftar Pengajuan Diterima ({{ $submissions->total() }} items)</h6>
                 </div>
                 <div class="card-body">
                     @if($submissions->count() > 0)
@@ -126,9 +126,9 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th width="5%">#</th>
+                                        <th width="5%">No</th>
                                         <th width="25%">Judul HKI</th>
-                                        <th width="15%">User</th>
+                                        <th width="15%">Pengusul</th>
                                         <th width="10%">Jenis</th>
                                         <th width="12%">Tanggal Approved</th>
                                         <th width="10%">Status Sertifikat</th>

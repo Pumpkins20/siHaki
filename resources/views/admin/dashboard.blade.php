@@ -232,7 +232,7 @@
                 </div>
             </div>
 
-            <!-- Today's Stats -->
+            <!-- 
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Aktivitas Hari Ini</h6>
@@ -249,7 +249,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>Today's Stats -->
 
             <!-- Status Summary -->
             <div class="card shadow mb-4">
@@ -324,19 +324,20 @@
                             Hubungi tim IT untuk bantuan teknis sistem.
                         </p>
                         
-                        <div class="d-grid gap-2">
-                            <a href="mailto:it@amikom.ac.id" class="btn btn-warning btn-sm">
-                                <i class="bi bi-envelope me-1"></i>Email IT Support
-                            </a>
-                            <a href="https://wa.me/6281329303450" class="btn btn-success btn-sm" target="_blank">
-                                <i class="bi bi-whatsapp me-1"></i>WhatsApp
-                            </a>
-                        </div>
-                        
-                        <div class="mt-2 small text-muted">
-                            <i class="bi bi-clock me-1"></i>
-                            24/7 Support
-                        </div>
+                       <div class="d-grid gap-2">
+                        <a href="https://instagram.com/riodsn_" 
+                        class="btn btn-danger btn-sm d-flex align-items-center justify-content-center" 
+                        target="_blank" rel="noopener noreferrer">
+                            <i class="bi bi-instagram me-2"></i>
+                            <span>Instagram IT Support</span>
+                        </a>
+                        <a href="https://wa.me/6289670207636" 
+                        class="btn btn-success btn-sm d-flex align-items-center justify-content-center" 
+                        target="_blank" rel="noopener noreferrer">
+                            <i class="bi bi-whatsapp me-2"></i>
+                            <span>WhatsApp</span>
+                        </a>
+                    </div>
                     </div>
                 </div>
             </div>
