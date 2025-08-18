@@ -81,8 +81,9 @@
                             <table class="table table-hover">
                                 <thead>
                                     <tr>
-                                        <th width="5%">#</th>
-                                        <th width="25%">Judul & Deskripsi</th>
+                                        <th width="5%">No</th>
+                                        <th width="25%">Judul</th>
+                                        <th width="15%">Anggota Pencipta</th>
                                         <th width="15%">Jenis Ciptaan</th>
                                         <th width="15%">Status</th>
                                         <th width="15%">Tanggal Submit</th>
@@ -107,6 +108,19 @@
                                                     <br><span class="badge bg-info badge-sm">{{ $submission->member_count }} anggota</span>
                                                 @endif -->
                                             </div>
+                                        </td>
+                                        <td>
+                                            @if($submission->members->count() > 0)
+                                                <span class="badge bg-info">{{ $submission->members->count() }} orang</span>
+                                                <div class="small mt-1">
+                                                    <strong>{{ $submission->members->where('is_leader', true)->first()->name ?? 'N/A' }}</strong>
+                                                    @if($submission->members->count() > 1)
+                                                        <br><small class="text-muted">+{{ $submission->members->count() - 1 }} lainnya</small>
+                                                    @endif
+                                                </div>
+                                            @else
+                                                <span class="text-muted">-</span>
+                                            @endif
                                         </td>
                                         <td>
                                             <span class="badge bg-secondary">

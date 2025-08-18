@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8">
     <meta content="width=device-width, initial-scale=1.0" name="viewport">
-    <title>SiHaki | Sistem Informasi Hak Kekayaan Intelektual</title>
+    <title>Jenis Ciptaan | SiHaki STMIK AMIKOM Surakarta</title>
     <meta name="description" content="Sistem Informasi Hak Kekayaan Intelektual STMIK AMIKOM Surakarta">
     
     <!-- Bootstrap CSS -->

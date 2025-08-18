@@ -147,10 +147,10 @@ class UserPanduanController extends Controller
         $guides = [
             [
                 'title' => 'Panduan Lengkap Pengajuan HKI',
-                'description' => 'Panduan step-by-step untuk mengajukan HKI melalui SiHaki',
-                'file' => 'Panduan Layanan HKI.pdf',
+                'description' => 'Panduan Pengajuan HKI melalui SiHaki STMIK AMIKOM Surakarta',
+                'file' => 'Panduan HKI.pdf',
                 'size' => '175 KB',
-                'pages' => 4,
+                'pages' => 5,
                 'updated' => '6-08-2025'
             ],
            /* [
@@ -184,7 +184,7 @@ class UserPanduanController extends Controller
     public function downloadGuide($filename)
     {
         $allowedFiles = [
-            'Panduan Layanan HKI.pdf',
+            'Panduan HKI.pdf',
         ];
 
         if (!in_array($filename, $allowedFiles)) {

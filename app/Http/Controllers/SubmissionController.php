@@ -564,7 +564,7 @@ class SubmissionController extends Controller
                     'alamat' => $memberData['alamat'] ?? '', // ✅ FIXED: Include alamat with fallback
                     'kode_pos' => $memberData['kode_pos'] ?? '', // ✅ FIXED: Include kode_pos with fallback
                     'position' => $index + 1,
-                    'is_leader' => $index === 0, // ✅ UPDATED: First member (index 0) is leader
+                    'is_leader' => $index === 1, // ✅ UPDATED: First member (index 0) is leader
                     'ktp' => $ktpPath,
                 ]);
 

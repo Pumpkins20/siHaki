@@ -12,7 +12,7 @@
                     <h1 class="h3 mb-0 text-gray-800">Riwayat Pengajuan HKI</h1>
                     <p class="text-muted">Pengajuan yang sudah selesai diproses (Approved & Rejected)</p>
                 </div>
-                <a href="{{ route('user.submissions.create') }}" class="btn btn-primary">
+                <a href="{{ route('user.submissions.create') }}" class="btn btn-success">
                     <i class="bi bi-plus-circle me-2"></i>Pengajuan Baru
                 </a>
             </div>
@@ -130,7 +130,7 @@
                                         <th width="12%">Jenis Ciptaan</th>
                                         <th width="12%">Status</th>
                                         <th width="12%">Tanggal</th>
-                                        <th width="17%">Aksi</th>
+                                        <th width="10%">Aksi</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -212,13 +212,13 @@
                                                     @endif
                                                 @endif
                                                 
-                                                <!-- Print Summary Button -->
+                                                <!-- 
                                                 <button type="button" 
                                                         class="btn btn-sm btn-outline-info"
                                                         onclick="printSummary({{ $submission->id }})"
                                                         title="Print Ringkasan">
                                                     <i class="bi bi-printer me-1"></i>Print
-                                                </button>
+                                                </button>-->
                                             </div>
                                         </td>
                                     </tr>

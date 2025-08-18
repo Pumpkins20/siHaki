@@ -23,7 +23,7 @@
                        class="btn btn-success me-2">
                         <i class="bi bi-download"></i> Export FAQ
                     </a> -->
-                    <a href="{{ route('user.submissions.create') }}" class="btn btn-primary">
+                    <a href="{{ route('user.submissions.create') }}" class="btn btn-success">
                         <i class="bi bi-plus-circle"></i> Ajukan HKI
                     </a>
                 </div>
@@ -71,8 +71,8 @@
                     <div class="row align-items-center">
                         <div class="col">
                             <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">Support</div>
-                            <div class="h6 mb-0 font-weight-bold text-gray-800">24/7 Bantuan</div>
-                            <small class="text-muted">Tim support siap membantu</small>
+                            <div class="h6 mb-0 font-weight-bold text-gray-800">Hubungi Kontak Kami</div>
+                            <small class="text-muted">Kami siap membantu</small>
                         </div>
                         <div class="col-auto">
                             <i class="bi bi-headset fs-2 text-gray-300"></i>
@@ -251,10 +251,6 @@
                            class="list-group-item list-group-item-action border-0">
                             <i class="bi bi-file-earmark-text text-primary me-2"></i>Kelola Submission
                         </a>
-                        <a href="mailto:hki@amikom.ac.id" 
-                           class="list-group-item list-group-item-action border-0">
-                            <i class="bi bi-envelope text-warning me-2"></i>Hubungi Admin
-                        </a>
                     </div>
                 </div>
             </div>
@@ -263,7 +259,7 @@
             <div class="card shadow">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-headset me-2"></i>Butuh Bantuan Lebih?
+                        <i class="bi bi-headset me-2"></i>Butuh Bantuan?
                     </h6>
                 </div>
                 <div class="card-body">
@@ -271,21 +267,16 @@
                         <i class="bi bi-person-badge fs-1 text-primary mb-3"></i>
                         <h6>Tim Support SiHaki</h6>
                         <p class="small text-muted mb-3">
-                            Kami siap membantu Anda 24/7 untuk semua pertanyaan terkait pengajuan HKI.
+                            Kami siap membantu Anda untuk semua pertanyaan terkait pengajuan HKI.
                         </p>
                         
                         <div class="d-grid gap-2">
-                            <a href="mailto:hki@amikom.ac.id" class="btn btn-primary btn-sm">
-                                <i class="bi bi-envelope me-1"></i>Email Support
-                            </a>
-                            <a href="https://wa.me/6281329303450" class="btn btn-success btn-sm" target="_blank">
-                                <i class="bi bi-whatsapp me-1"></i>WhatsApp
-                            </a>
-                        </div>
-                        
-                        <div class="mt-3 small text-muted">
-                            <i class="bi bi-clock me-1"></i>
-                            Senin-Jumat: 08:00-16:00 WIB
+                             <a href="https://instagram.com/lppm_amikomsolo" class="btn btn-danger btn-sm" target="_blank">
+                            <i class="bi bi-instagram me-1"></i> Instagram
+                        </a>
+                        <a href="https://wa.me/6289504696000" class="btn btn-success btn-sm" target="_blank">
+                            <i class="bi bi-whatsapp me-1"></i> WhatsApp
+                        </a>
                         </div>
                     </div>
                 </div>
@@ -356,7 +347,7 @@ document.addEventListener('DOMContentLoaded', function() {
     display: inline-block;
     margin-right: 1rem;
     font-weight: 700; /* Bold text */
-    color: #000 !important; /* Black text color */
+    color: #ffffff !important; /* Black text color */
     text-transform: uppercase; /* Optional: uppercase for more emphasis */
     letter-spacing: 0.5px; /* Optional: improved legibility */
 }

@@ -34,7 +34,7 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-file-earmark-plus me-2"></i>Informasi Submission
+                        <i class="bi bi-file-earmark-plus me-2"></i>Informasi Pengajuan
                     </h6>
                 </div>
                 <div class="card-body">
@@ -182,7 +182,7 @@
             <div class="card shadow-sm mb-4">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-book me-2"></i>Panduan Submission
+                        <i class="bi bi-book me-2"></i>Panduan Pengajuan
                     </h6>
                 </div>
                 <div class="card-body">
@@ -237,23 +237,32 @@
             <div class="card shadow-sm">
                 <div class="card-header bg-white py-3">
                     <h6 class="m-0 fw-bold text-primary">
-                        <i class="bi bi-headset me-2"></i>Butuh Bantuan?
+                        <i class="bi bi-headset me-2"></i> Butuh Bantuan?
                     </h6>
                 </div>
                 <div class="card-body">
                     <div class="small">
                         <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-envelope text-primary me-2"></i>
-                            <span>hki@amikom.ac.id</span>
-                        </div>
-                        <div class="d-flex align-items-center mb-2">
-                            <i class="bi bi-telephone text-primary me-2"></i>
-                            <span>(0271) 7851507</span>
-                        </div>
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-clock text-primary me-2"></i>
-                            <span>Senin-Jumat: 08:00-16:00</span>
-                        </div>
+                        <i class="bi bi-envelope text-primary me-2"></i>
+                        <a href="mailto:lppm@amikomsolo.ac.id" class="text-decoration-none text-dark">
+                            lppm@amikomsolo.ac.id
+                        </a>
+                    </div>
+
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="bi bi-instagram text-primary me-2"></i>
+                        <a href="https://www.instagram.com/lppm_amikomsolo" target="_blank" class="text-decoration-none text-dark">
+                            @lppm_amikomsolo
+                        </a>
+                    </div>
+
+                    <div class="d-flex align-items-center">
+                        <i class="bi bi-whatsapp text-primary me-2"></i>
+                        <a href="https://wa.me/6289504696000" target="_blank" class="text-decoration-none text-dark">
+                            089504696000
+                        </a>
+                    </div>
+
                     </div>
                 </div>
             </div>
@@ -947,15 +956,16 @@ function updateFormFields() {
                     @error('program_link')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Link GitHub, GitLab, atau repositori lainnya</div>
+                    <div class="form-text">Link Google Drive, GitHub, GitLab, atau repositori lainnya</div>
                 </div>
             `;
             
             guidelinesContent.innerHTML = `
                 <h6 class="fw-bold">Persyaratan Program Komputer:</h6>
                 <ul class="mb-3">
-                    <li>File PDF berisi: Cover, Screenshot, Manual penggunaan</li>
-                    <li>Link akses program (GitHub/GitLab/dll)</li>
+                    <li>File PDF berisi: Cover, Screenshot Program dan Penjelasannya, Manual Penggunaan</li>
+                    <li>Ukuran File PDF Maks 20MB</li>
+                    <li>Link akses program (GDrive/GitHub/GitLab/dll)</li>
                 </ul>
             `;
             break;
@@ -979,8 +989,7 @@ function updateFormFields() {
                 <h6 class="fw-bold">Persyaratan Sinematografi:</h6>
                 <ul class="mb-3">
                     <li>Link video yang dapat diakses (Google Drive/YouTube)</li>
-                    <li>Video berkualitas baik dan tidak melanggar hak cipta</li>
-                    <li>Durasi video sesuai dengan ketentuan</li>
+                    <li> Pastikan file dapat diakses publik atau sudah dibagikan dengan admin.</li>
                 </ul>
                 <div class="alert alert-warning">
                     <small><i class="bi bi-exclamation-triangle"></i> <strong>Penting:</strong> Pastikan link video dapat diakses oleh admin untuk proses review.</small>
@@ -1006,9 +1015,7 @@ function updateFormFields() {
                 <h6 class="fw-bold">Persyaratan Buku:</h6>
                 <ul class="mb-3">
                     <li>File PDF lengkap buku</li>
-                    <li>ISBN (jika sudah ada)</li>
-                    <li>Jumlah halaman yang sesuai</li>
-                    <li>Konten tidak melanggar hak cipta</li>
+                    <li>File PDF Maks. 20 MB</li>
                     <li>Kualitas file PDF yang baik dan dapat dibaca</li>
                 </ul>
                 <div class="alert alert-info">
@@ -1045,13 +1052,9 @@ function updateFormFields() {
                 <h6 class="fw-bold">Persyaratan ${visualTypeNames[creationType]}:</h6>
                 <ul class="mb-3">
                     <li>File gambar berkualitas tinggi (JPG/PNG)</li>
-                    <li>Resolusi minimum 300 DPI untuk cetak</li>
                     <li>Ukuran file maksimal 2MB per file</li>
-                    <li>Dapat upload multiple file untuk variasi</li>
                 </ul>
-                <div class="alert alert-info">
-                    <small><i class="bi bi-info-circle"></i> Dimensi dan deskripsi bersifat opsional namun direkomendasikan untuk dokumentasi yang lebih baik.</small>
-                </div>
+       
             `;
             break;
 
@@ -1065,17 +1068,15 @@ function updateFormFields() {
                     @error('photo_files.*')
                         <div class="invalid-feedback">{{ $message }}</div>
                     @enderror
-                    <div class="form-text">Format: JPG, PNG. Maksimal 1MB per file. Dapat upload multiple foto.</div>
+                    <div class="form-text">Format: JPG, PNG. Maksimal 1MB per file.</div>
                 </div>
             `;
 
             guidelinesContent.innerHTML = `
                 <h6 class="fw-bold">Persyaratan Alat Peraga:</h6>
                 <ul class="mb-3">
-                    <li>Foto alat peraga dari berbagai sudut</li>
                     <li>Resolusi yang cukup untuk melihat detail</li>
-                    <li>Background yang bersih dan kontras</li>
-                    <li>Ukuran file maksimal 1MB per foto</li>
+                    <li>Ukuran file maksimal 2MB </li>
                 </ul>
             `;
             break;
@@ -1097,10 +1098,8 @@ function updateFormFields() {
             guidelinesContent.innerHTML = `
                 <h6 class="fw-bold">Persyaratan Basis Data:</h6>
                 <ul class="mb-3">
-                    <li>Dokumentasi lengkap basis data</li>
-                    <li>Struktur database dan relasi</li>
-                    <li>Sample data (jika memungkinkan)</li>
-                    <li>Penjelasan penggunaan dan tujuan</li>
+                    <li>Dokumentasi lengkap Meta Data dan Data Set</li>
+                    <li>File PDF/DOCX Maksimal 20MB</li>
                 </ul>
             `;
             break;

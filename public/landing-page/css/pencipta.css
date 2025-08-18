@@ -5,7 +5,6 @@
             --text-dark: #2C3E50;
             --text-light: #7F8C8D;
             --bg-light: #F8F9FA;
-            --gradient-purple: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         }
 
         * {

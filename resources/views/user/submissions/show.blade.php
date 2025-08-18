@@ -319,44 +319,7 @@
                         </div>
                         
                         {{-- KTP Edit Info Card --}}
-                        @if(in_array($submission->status, ['submitted', 'under_review', 'revision_needed', 'approved']))
-                            <div class="alert alert-info mt-3">
-                                <h6 class="alert-heading">
-                                    <i class="bi bi-info-circle me-2"></i>Edit KTP Setelah Submit
-                                </h6>
-                                <div class="row">
-                                    <div class="col-md-8">
-                                        <p class="mb-2">
-                                            Anda masih dapat mengedit foto KTP anggota bahkan setelah submission di-submit. 
-                                            Perubahan KTP tidak memerlukan persetujuan ulang dari reviewer.
-                                        </p>
-                                        <ul class="mb-0 small">
-                                            <li>KTP dapat diperbarui untuk memperbaiki kualitas foto</li>
-                                            <li>File KTP baru akan langsung mengganti yang lama</li>
-                                            <li>Tidak mempengaruhi status submission yang sudah approved</li>
-                                            <li>Admin akan otomatis mendapat notifikasi perubahan KTP</li>
-                                        </ul>
-                                    </div>
-                                    <div class="col-md-4 text-center">
-                                        <button type="button" class="btn btn-warning btn-sm" 
-                                                onclick="showKtpEditModal()" title="Edit KTP Anggota">
-                                            <i class="bi bi-pencil me-1"></i>Edit KTP
-                                        </button>
-                                    </div>
-                                </div>
-                            </div>
-                        @elseif(in_array($submission->status, ['draft']))
-                            <div class="alert alert-secondary mt-3">
-                                <h6 class="alert-heading">
-                                    <i class="bi bi-pencil me-2"></i>Edit KTP melalui Form Edit
-                                </h6>
-                                <p class="mb-0">
-                                    Untuk submission dengan status draft, gunakan 
-                                    <a href="{{ route('user.submissions.edit', $submission) }}" class="alert-link">form edit submission</a> 
-                                    untuk mengubah data anggota dan KTP.
-                                </p>
-                            </div>
-                        @endif
+                       
                     </div>
                 </div>
             @endif
@@ -556,21 +519,27 @@
                     <h6 class="m-0 font-weight-bold text-primary">Butuh Bantuan?</h6>
                 </div>
                 <div class="card-body">
-                    <div class="small">
-                        <p class="mb-2">
-                            <i class="bi bi-envelope"></i>
-                            Email: hki@amikom.ac.id
-                        </p>
-                        <p class="mb-2">
-                            <i class="bi bi-telephone"></i>
-                            Telp: (0271) 7851507
-                        </p>
-                        <p class="mb-0">
-                            <i class="bi bi-clock"></i>
-                            {{-- ✅ TIMEZONE: Jam WIB --}}
-                            Senin-Jumat: 08:00-16:00 WIB
-                        </p>
-                    </div>
+                    <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-envelope text-primary me-2"></i>
+                    <a href="mailto:lppm@amikomsolo.ac.id" class="text-decoration-none text-dark">
+                        lppm@amikomsolo.ac.id
+                    </a>
+                </div>
+
+                <div class="d-flex align-items-center mb-2">
+                    <i class="bi bi-instagram text-primary me-2"></i>
+                    <a href="https://www.instagram.com/lppm_amikomsolo" target="_blank" class="text-decoration-none text-dark">
+                        @lppm_amikomsolo
+                    </a>
+                </div>
+
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-whatsapp text-primary me-2"></i>
+                    <a href="https://wa.me/6289504696000" target="_blank" class="text-decoration-none text-dark">
+                        089504696000
+                    </a>
+                </div>
+
                 </div>
             </div>
         </div>
