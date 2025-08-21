@@ -1,54 +1,57 @@
- :root {
-            --primary-color: #AE4FA8;
-            --secondary-color: #F9A02F;
-            --accent-color: #96CEB4;
-            --text-dark: #2C3E50;
-            --text-light: #7F8C8D;
-            --bg-light: #F8F9FA;
-        }
+:root {
+    --primary-color: #AE4FA8;
+    --secondary-color: #F9A02F;
+    --accent-color: #96CEB4;
+    --text-dark: #2C3E50;
+    --text-light: #7F8C8D;
+    --bg-light: #F8F9FA;
+    --success-color: #27ae60;
+    --info-color: #3498db;
+}
 
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
 
-        body {
-            font-family: 'Inter', sans-serif;
-            line-height: 1.6;
-            color: var(--text-dark);
-            background: #fff;
-        }
+body {
+    font-family: 'Inter', sans-serif;
+    line-height: 1.6;
+    color: var(--text-dark);
+    background: #fff;
+    overflow-x: hidden; /* Prevent horizontal scroll */
+}
 
-        /* Header */
-        .header {
-            background: white;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            position: sticky;
-            top: 0;
-            z-index: 1000;
-        }
+/* Header */
+.header {
+    background: white;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+}
 
-        .navbar-brand img {
-            height: 45px;
-        }
+.navbar-brand img {
+    height: 45px;
+}
 
-        .navbar-nav .nav-link {
-            color: var(--text-dark) !important;
-            font-weight: 500;
-            margin: 0 15px;
-            transition: color 0.3s ease;
-        }
+.navbar-nav .nav-link {
+    color: var(--text-dark) !important;
+    font-weight: 500;
+    margin: 0 15px;
+    transition: color 0.3s ease;
+}
 
-        .navbar-nav .nav-link:hover {
-            color: var(--primary-color) !important;
-        }
-
-        .navbar-nav .nav-link.active {
+.navbar-nav .nav-link:hover {
     color: var(--primary-color) !important;
 }
 
-       /* Search Section */
+.navbar-nav .nav-link.active {
+    color: var(--primary-color) !important;
+}
+
+/* Search Section */
 .search-section {
     background: white;
     padding: 80px 0;
@@ -62,6 +65,8 @@
     margin-top: -50px;
     position: relative;
     z-index: 10;
+    width: 100%;
+    max-width: 100%;
 }
 
 .search-title {
@@ -90,6 +95,7 @@
     align-items: end;
     gap: 15px;
     flex-wrap: wrap;
+    width: 100%;
 }
 
 .form-group {
@@ -107,6 +113,7 @@
     margin-bottom: 8px;
     font-weight: 600;
     color: var(--text-dark);
+    font-size: 0.9rem;
 }
 
 .form-control, .form-select {
@@ -117,6 +124,7 @@
     transition: all 0.3s ease;
     background: white;
     width: 100%;
+    max-width: 100%;
 }
 
 .form-control:focus, .form-select:focus {
@@ -148,44 +156,7 @@
     margin-right: 5px;
 }
 
-/* Responsive untuk mobile */
-@media (max-width: 768px) {
-    .search-section form {
-        flex-direction: column;
-        align-items: stretch;
-    }
-    
-    .form-group, .form-group.search-input-group {
-        min-width: 100%;
-        flex: 1;
-    }
-    
-    .search-btn {
-        width: 100%;
-        margin-top: 10px;
-    }
-
-    .search-title h2 {
-        font-size: 2rem;
-    }
-}
-
-@media (max-width: 576px) {
-    .search-section {
-        padding: 40px 0;
-    }
-
-    .search-container {
-        padding: 30px 20px;
-        margin-top: -30px;
-    }
-
-    .search-title h2 {
-        font-size: 1.8rem;
-    }
-}
-
- /* Results Section */
+/* Results Section */
 .results-section {
     padding: 40px 0;
     background: #f8f9fa;
@@ -201,6 +172,7 @@
     transition: all 0.3s ease;
     border: 1px solid #e9ecef;
     overflow: hidden;
+    width: 100%;
 }
 
 .result-card:hover {
@@ -217,6 +189,7 @@
     display: flex;
     align-items: center;
     gap: 20px;
+    width: 100%;
 }
 
 .result-avatar {
@@ -235,6 +208,7 @@
 
 .result-info {
     flex: 1;
+    min-width: 0; /* Allow content to shrink */
 }
 
 .result-info h5 {
@@ -242,16 +216,19 @@
     font-weight: 600;
     color: var(--text-dark);
     font-size: 1.25rem;
+    word-wrap: break-word;
 }
 
 .result-info div {
     color: var(--text-light);
     margin-bottom: 4px;
     font-size: 0.95rem;
+    word-wrap: break-word;
 }
 
 .result-action {
     margin-left: auto;
+    flex-shrink: 0;
 }
 
 .result-action .btn {
@@ -263,6 +240,8 @@
     transition: all 0.3s ease;
     text-decoration: none;
     border-width: 2px;
+    background-color: transparent;
+    white-space: nowrap;
 }
 
 .result-action .btn:hover {
@@ -272,16 +251,207 @@
     box-shadow: 0 4px 12px rgba(174, 79, 168, 0.3);
 }
 
-/* Pagination */
+/* Enhanced styles for pencipta cards */
+.pencipta-card {
+    background: white;
+    border-radius: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+    transition: all 0.3s ease;
+    border: 1px solid #f0f0f0;
+    width: 100%;
+    overflow: hidden;
+}
+
+.pencipta-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+}
+
+.pencipta-avatar {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: bold;
+    font-size: 24px;
+    margin-right: 20px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.pencipta-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+}
+
+.pencipta-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.pencipta-info h5 {
+    color: var(--text-dark);
+    font-weight: 600;
+    margin-bottom: 5px;
+    word-wrap: break-word;
+}
+
+.pencipta-info .institusi {
+    color: var(--text-light);
+    font-size: 14px;
+    margin-bottom: 3px;
+    word-wrap: break-word;
+}
+
+.pencipta-info .jurusan {
+    color: var(--info-color);
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 10px;
+    word-wrap: break-word;
+}
+
+.total-hki-badge {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    padding: 8px 15px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    display: inline-block;
+}
+
+.search-match-badge {
+    background: var(--success-color);
+    color: white;
+    padding: 4px 10px;
+    border-radius: 15px;
+    font-size: 12px;
+    margin-left: 10px;
+}
+
+.recent-works {
+    margin-top: 15px;
+    padding-top: 15px;
+    border-top: 1px solid #ecf0f1;
+}
+
+.recent-works ul li {
+    color: var(--text-light);
+    font-size: 13px;
+    margin-bottom: 3px;
+    word-wrap: break-word;
+}
+
+.btn-detail {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.btn-detail:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.filter-section {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    padding: 30px 0;
+    margin-bottom: 40px;
+}
+
+.filter-card {
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    padding: 25px;
+    box-shadow: 0 8px 32px rgba(0,0,0,0.1);
+    width: 100%;
+    max-width: 100%;
+}
+
+.filter-title {
+    color: var(--text-dark);
+    font-weight: 600;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+.search-form-horizontal {
+    display: flex;
+    gap: 15px;
+    align-items: end;
+    flex-wrap: wrap;
+    width: 100%;
+}
+
+.form-group-flex {
+    flex: 1;
+    min-width: 200px;
+}
+
+.form-group-flex.search-input {
+    flex: 2;
+    min-width: 250px;
+}
+
+.btn-search {
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 500;
+    height: fit-content;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.btn-search:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+}
+
+.no-results {
+    text-align: center;
+    padding: 60px 20px;
+    color: var(--text-light);
+}
+
+.no-results i {
+    font-size: 4rem;
+    margin-bottom: 20px;
+    color: #bdc3c7;
+}
+
+/* Pagination Styling */
 .pagination-wrapper {
     display: flex;
     justify-content: center;
     margin-top: 40px;
     padding-top: 20px;
+    border-top: 1px solid #e9ecef;
 }
 
 .pagination {
     margin: 0;
+    display: flex;
+    list-style: none;
+    border-radius: 0.25rem;
 }
 
 .pagination .page-item {
@@ -297,6 +467,7 @@
     font-weight: 500;
     transition: all 0.3s ease;
     text-decoration: none;
+    display: block;
 }
 
 .pagination .page-link:hover {
@@ -335,7 +506,36 @@
     color: #6c757d;
 }
 
-/* Empty State (jika tidak ada hasil) */
+/* Results info styling */
+.alert-info {
+    border-left: 4px solid var(--primary-color);
+    background-color: rgba(174, 79, 168, 0.1);
+    border-color: rgba(174, 79, 168, 0.2);
+    padding: 15px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+/* Show all button styling */
+.btn-show-all {
+    background: linear-gradient(135deg, var(--success-color) 0%, #2ecc71 100%);
+    color: white;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 500;
+    text-decoration: none;
+    display: inline-block;
+    transition: all 0.3s ease;
+}
+
+.btn-show-all:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(46, 204, 113, 0.4);
+    color: white;
+}
+
+/* Empty State */
 .empty-state {
     text-align: center;
     padding: 60px 20px;
@@ -408,12 +608,132 @@
     border-radius: 25px;
 }
 
-/* Responsive Design */
+/* Container system */
+.container {
+    max-width: 1200px;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-left: auto;
+    margin-right: auto;
+    width: 100%;
+}
+
+.row {
+    display: flex;
+    flex-wrap: wrap;
+    margin-left: -15px;
+    margin-right: -15px;
+}
+
+.col-lg-3, .col-lg-4, .col-lg-6, .col-md-6 {
+    padding-left: 15px;
+    padding-right: 15px;
+    margin-bottom: 30px;
+    position: relative;
+    width: 100%;
+}
+
+/* Bootstrap-like responsive grid */
+.col-lg-3 {
+    flex: 0 0 25%;
+    max-width: 25%;
+}
+
+.col-lg-4 {
+    flex: 0 0 33.333333%;
+    max-width: 33.333333%;
+}
+
+.col-lg-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+}
+
+.col-md-6 {
+    flex: 0 0 50%;
+    max-width: 50%;
+}
+
+/* RESPONSIVE BREAKPOINTS */
+
+/* Large tablets (992px and down) */
+@media (max-width: 992px) {
+    .search-title h2 {
+        font-size: 2rem;
+    }
+    
+    .navbar-nav .nav-link {
+        margin: 0 10px;
+    }
+    
+    .col-lg-3 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+    
+    .col-lg-4 {
+        flex: 0 0 50%;
+        max-width: 50%;
+    }
+}
+
+/* Tablets (768px and down) */
 @media (max-width: 768px) {
+    .search-section {
+        padding: 60px 0;
+    }
+    
+    .search-container {
+        margin-top: -30px;
+        padding: 30px 20px;
+        border-radius: 15px;
+    }
+    
+    .search-section form {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
+    
+    .form-group, .form-group.search-input-group {
+        min-width: 100%;
+        flex: 1;
+    }
+    
+    .search-btn {
+        width: 100%;
+        margin-top: 10px;
+        max-width: none;
+    }
+
+    .search-title h2 {
+        font-size: 1.75rem;
+    }
+    
+    .search-title p {
+        font-size: 1rem;
+    }
+    
+    .search-form-horizontal {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .form-group-flex, .form-group-flex.search-input {
+        min-width: 100%;
+        flex: 1;
+    }
+    
+    .btn-search {
+        width: 100%;
+        margin-top: 10px;
+    }
+    
     .result-header {
         flex-direction: column;
         text-align: center;
         gap: 15px;
+        align-items: center;
     }
     
     .result-action {
@@ -423,6 +743,18 @@
     
     .result-action .btn {
         width: 100%;
+        text-align: center;
+    }
+    
+    .pencipta-card {
+        padding: 15px;
+    }
+    
+    .pencipta-avatar {
+        width: 60px;
+        height: 60px;
+        font-size: 18px;
+        margin-right: 15px;
     }
     
     .pagination .page-link {
@@ -433,28 +765,277 @@
     .pagination .page-item {
         margin: 0 2px;
     }
-}
-
-@media (max-width: 576px) {
-    .results-section {
-        padding: 20px 0;
+    
+    .alert-info {
+        font-size: 0.9rem;
+        padding: 12px;
     }
     
-    .result-card-body {
+    .filter-section {
+        padding: 20px 0;
+        margin-bottom: 30px;
+    }
+    
+    .filter-card {
         padding: 20px;
     }
     
-    .result-avatar {
-        width: 50px;
-        height: 50px;
-        font-size: 1rem;
+    /* Make all columns full width on tablets */
+    .col-lg-3, .col-lg-4, .col-lg-6, .col-md-6 {
+        flex: 0 0 100%;
+        max-width: 100%;
+    }
+}
+
+/* Mobile phones (576px and down) */
+@media (max-width: 576px) {
+    .container {
+        padding-left: 10px;
+        padding-right: 10px;
+    }
+    
+    .search-section {
+        padding: 40px 0;
+    }
+    
+    .search-container {
+        padding: 20px 15px;
+        margin-top: -20px;
+    }
+    
+    .search-title h2 {
+        font-size: 1.5rem;
+        margin-bottom: 10px;
+    }
+    
+    .search-title p {
+        font-size: 0.9rem;
+    }
+    
+    .search-section form {
+        padding: 15px;
+        gap: 15px;
+    }
+    
+    .form-control, .form-select {
+        padding: 10px 12px;
+        font-size: 0.9rem;
+    }
+    
+    .form-group label {
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+    }
+    
+    .search-btn, .btn-search {
+        padding: 10px 20px;
+        font-size: 0.9rem;
+    }
+    
+    .navbar-brand img {
+        height: 35px;
+    }
+    
+    .navbar-nav .nav-link {
+        font-size: 0.9rem;
+        margin: 0 5px;
+        padding: 8px 12px;
+    }
+    
+    .result-card-body {
+        padding: 20px 15px;
     }
     
     .result-info h5 {
         font-size: 1.1rem;
     }
     
-    .pagination-wrapper {
-        margin-top: 30px;
+    .result-info div {
+        font-size: 0.85rem;
     }
+    
+    .result-action .btn {
+        padding: 6px 15px;
+        font-size: 0.85rem;
+    }
+    
+    .pencipta-card .d-flex {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+    
+    .pencipta-avatar {
+        margin: 0 auto 15px auto;
+        width: 50px;
+        height: 50px;
+        font-size: 16px;
+    }
+    
+    .pencipta-info {
+        text-align: center;
+        margin-bottom: 15px;
+    }
+    
+    .btn-detail {
+        width: 100%;
+        padding: 8px 15px;
+        font-size: 0.85rem;
+    }
+    
+    .pagination .page-link {
+        padding: 6px 10px;
+        font-size: 0.8rem;
+    }
+    
+    .pagination .page-item {
+        margin: 0 1px;
+    }
+    
+    .pagination-wrapper {
+        margin-top: 20px;
+        padding-top: 15px;
+    }
+    
+    .alert-info {
+        font-size: 0.85rem;
+        padding: 10px;
+    }
+    
+    .filter-section {
+        padding: 15px 0;
+        margin-bottom: 20px;
+    }
+    
+    .filter-card {
+        padding: 15px;
+    }
+    
+    .filter-title {
+        font-size: 1.1rem;
+        margin-bottom: 15px;
+    }
+    
+    .total-hki-badge {
+        font-size: 12px;
+        padding: 6px 12px;
+    }
+    
+    .search-match-badge {
+        font-size: 10px;
+        padding: 3px 8px;
+        margin-left: 5px;
+    }
+    
+    .recent-works {
+        margin-top: 10px;
+        padding-top: 10px;
+    }
+    
+    .recent-works ul li {
+        font-size: 12px;
+    }
+}
+
+/* Extra small phones (480px and down) */
+@media (max-width: 480px) {
+    .search-title h2 {
+        font-size: 1.35rem;
+    }
+    
+    .search-title p {
+        font-size: 0.85rem;
+    }
+    
+    .form-control, .form-select {
+        font-size: 0.85rem;
+        padding: 8px 10px;
+    }
+    
+    .search-btn, .btn-search {
+        font-size: 0.85rem;
+        padding: 8px 15px;
+    }
+    
+    .result-info h5 {
+        font-size: 1rem;
+    }
+    
+    .result-info div {
+        font-size: 0.8rem;
+    }
+    
+    .pencipta-avatar {
+        width: 45px;
+        height: 45px;
+        font-size: 14px;
+    }
+    
+    .pagination .page-link {
+        padding: 5px 8px;
+        font-size: 0.75rem;
+    }
+    
+    .filter-title {
+        font-size: 1rem;
+    }
+}
+
+/* Utility classes for responsive design */
+.d-flex {
+    display: flex !important;
+}
+
+.align-items-center {
+    align-items: center !important;
+}
+
+.justify-content-between {
+    justify-content: space-between !important;
+}
+
+.text-center {
+    text-align: center !important;
+}
+
+.w-100 {
+    width: 100% !important;
+}
+
+.mb-3 {
+    margin-bottom: 1rem !important;
+}
+
+.mt-3 {
+    margin-top: 1rem !important;
+}
+
+/* Prevent any element from causing horizontal scroll */
+html, body {
+    max-width: 100%;
+    overflow-x: hidden;
+}
+
+* {
+    max-width: 100%;
+}
+
+img, video, iframe {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Ensure text doesn't break layout */
+.text-break {
+    word-wrap: break-word !important;
+    word-break: break-word !important;
+}
+
+/* Fix for very long text */
+.result-info h5,
+.pencipta-info h5,
+.result-info div,
+.pencipta-info div {
+    word-wrap: break-word;
+    hyphens: auto;
 }

@@ -14,60 +14,7 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
-        /* ✅ ADD: Enhanced styles for submission cards */
-        .submission-card {
-            transition: all 0.3s ease;
-            border: 1px solid #e9ecef;
-        }
-
-        .submission-card:hover {
-            border-color: var(--primary-color);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-        }
-
-        .submission-card .card-title a {
-            font-weight: 600;
-            color: #2c3e50;
-            transition: color 0.3s ease;
-        }
-
-        .submission-card .card-title a:hover {
-            color: var(--primary-color);
-        }
-
-        /* ✅ ENHANCED: Category card improvements */
-        .category-card {
-            border: 1px solid #e9ecef;
-            transition: all 0.3s ease;
-        }
-
-        .category-card:hover {
-            border-color: var(--primary-color);
-            box-shadow: 0 8px 25px rgba(0,0,0,0.1);
-        }
-
-        .category-icon i {
-            font-size: 2.5rem;
-            color: var(--primary-color);
-            margin-left: 3rem; 
-        }
-
-/* If you want even more separation, you could also add this */
-.category-card > div {
-    justify-content: space-between; /* Ensures maximum space between elements */
-    width: 100%; /* Ensures the flex container takes full width */
-}
-        /* ✅ NEW: Badge enhancements */
-        .badge-sm {
-            font-size: 0.7rem;
-            padding: 0.25rem 0.5rem;
-        }
-
-        /* ✅ NEW: Search suggestions */
-        .btn-outline-primary.btn-sm {
-            font-size: 0.8rem;
-            padding: 0.4rem 0.8rem;
-        }
+       
     </style>
 </head>
 
