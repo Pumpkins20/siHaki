@@ -260,6 +260,96 @@
     </div>
 </div>
 
+{{-- ✅ NEW: Confirmation Modal --}}
+<div class="modal fade" id="submissionConfirmModal" tabindex="-1" aria-labelledby="submissionConfirmModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header bg-warning-subtle">
+                <h5 class="modal-title text-warning-emphasis" id="submissionConfirmModalLabel">
+                    <i class="bi bi-exclamation-triangle me-2"></i>Konfirmasi Pengajuan HKI
+                </h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="alert alert-info">
+                    <i class="bi bi-info-circle me-2"></i>
+                    <strong>Pastikan semua data sudah benar sebelum submit!</strong>
+                </div>
+                
+                <h6 class="fw-bold mb-3">Ringkasan Pengajuan:</h6>
+                
+                <!-- Summary will be populated by JavaScript -->
+                <div id="submission-summary">
+                    <!-- Content will be populated dynamically -->
+                </div>
+                
+                <hr>
+                
+                <h6 class="fw-bold text-danger mb-3">⚠️ Penting untuk Dipahami:</h6>
+                <div class="row g-3">
+                    <div class="col-md-6">
+                        <div class="card border-warning h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-warning">
+                                    <i class="bi bi-file-earmark-check me-2"></i>Dokumen
+                                </h6>
+                                <ul class="small mb-0">
+                                    <li>Semua file sudah sesuai format</li>
+                                    <li>Ukuran file tidak melebihi batas</li>
+                                    <li>Dokumen jelas dan dapat dibaca</li>
+                                    <li>File KTP semua anggota sudah diupload</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card border-info h-100">
+                            <div class="card-body">
+                                <h6 class="card-title text-info">
+                                    <i class="bi bi-people me-2"></i>Data Anggota
+                                </h6>
+                                <ul class="small mb-0">
+                                    <li>Nama sesuai identitas resmi</li>
+                                    <li>Alamat lengkap dan benar</li>
+                                    <li>No. WhatsApp dan email aktif</li>
+                                    <li>Data semua anggota sudah lengkap</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="alert alert-warning mt-3">
+                    <h6 class="alert-heading">
+                        <i class="bi bi-clock me-2"></i>Setelah Submit:
+                    </h6>
+                    <ul class="mb-0 small">
+                        <li><strong>Data tidak dapat diubah</strong> kecuali jika reviewer meminta revisi</li>
+                        <li>Proses review memakan waktu <strong>7-14 hari kerja</strong></li>
+                        <li>Anda akan mendapat notifikasi via email untuk setiap update status</li>
+                        <li>Pastikan email dan WhatsApp Anda aktif untuk komunikasi</li>
+                    </ul>
+                </div>
+                
+                <div class="form-check mt-3">
+                    <input class="form-check-input" type="checkbox" id="confirmSubmission" required>
+                    <label class="form-check-label fw-bold" for="confirmSubmission" style="font-size: 16px">
+                        Saya menyatakan bahwa semua data dan dokumen yang saya upload sudah benar dan sesuai
+                    </label>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                    <i class="bi bi-arrow-left"></i> Periksa Kembali
+                </button>
+                <button type="button" class="btn btn-success" id="finalSubmitBtn" disabled>
+                    <i class="bi bi-send"></i> Ya, Submit Pengajuan
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function() {

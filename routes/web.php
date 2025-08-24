@@ -23,9 +23,11 @@ use Illuminate\Support\Facades\Route;
 */
 
 // Public routes
-Route::get('/', [PublicSearchController::class, 'searchOnBeranda'])->name('beranda');
+Route::get('/', [PublicSearchController::class, 'beranda'])->name('beranda');
+Route::get('/beranda', [PublicSearchController::class, 'beranda'])->name('beranda');
+Route::post('/search', [PublicSearchController::class, 'searchOnBeranda'])->name('public.search');
 
-Route::get('/pencipta', [PublicSearchController::class, 'searchPencipta'])->name('pencipta');
+// Route::get('/pencipta', [PublicSearchController::class, 'searchPencipta'])->name('pencipta');
 Route::get('/pencipta', [PublicSearchController::class, 'pencipta'])->name('pencipta');
 Route::get('/pencipta/all', [PublicSearchController::class, 'showAllPencipta'])->name('pencipta.all');
 
@@ -43,9 +45,6 @@ Route::get('/detail_jenis', function () {
     return view('detail_jenis');
 })->name('detail_jenis');
 
-
-// Search route
-Route::post('/search', [PublicSearchController::class, 'search'])->name('public.search');
 
 // Guest routes (not authenticated)
 Route::middleware(['guest'])->group(function () {

@@ -414,13 +414,43 @@
                                value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
                     </div>
 
+                    <!-- ✅ NEW: Filter Program Studi -->
+                    <div class="form-group-flex">
+                        <label for="programStudi" class="form-label">Program Studi</label>
+                        <select class="form-select" id="programStudi" name="program_studi">
+                            <option value="">Semua Program Studi</option>
+                            @if(isset($availableProdi))
+                                @foreach($availableProdi as $prodi)
+                                    <option value="{{ $prodi }}" {{ request('program_studi') == $prodi ? 'selected' : '' }}>
+                                        {{ $prodi }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+
+                    <!-- ✅ NEW: Filter Tahun -->
+                    <div class="form-group-flex">
+                        <label for="tahun" class="form-label">Tahun</label>
+                        <select class="form-select" id="tahun" name="tahun">
+                            <option value="">Semua Tahun</option>
+                            @if(isset($availableYears))
+                                @foreach($availableYears as $year)
+                                    <option value="{{ $year }}" {{ request('tahun') == $year ? 'selected' : '' }}>
+                                        {{ $year }}
+                                    </option>
+                                @endforeach
+                            @endif
+                        </select>
+                    </div>
+
                     <!-- Tombol Cari dan Show All -->
                     <div class="d-flex gap-2">
                         <button class="btn-search" type="submit">
                             <i class="bi bi-search me-2"></i>Cari
                         </button>
-                        <!-- ✅ NEW: Show All Button -->
-                        @if(request()->has('q') || request()->has('search_by'))
+                        <!-- ✅ ENHANCED: Show All Button -->
+                        @if(request()->hasAny(['q', 'search_by', 'program_studi', 'tahun']))
                             <a href="{{ route('pencipta') }}" class="btn-show-all">
                                 <i class="bi bi-list-ul me-2"></i>Lihat Semua
                             </a>
@@ -446,6 +476,12 @@
                         @endif
                         @if(isset($searchBy))
                             berdasarkan <strong>{{ $searchBy === 'nama_pencipta' ? 'Nama Pencipta' : 'Jurusan/Program Studi' }}</strong>
+                        @endif
+                        @if(isset($programStudi) && $programStudi)
+                            • Program Studi: <strong>{{ $programStudi }}</strong>
+                        @endif
+                        @if(isset($tahun) && $tahun)
+                            • Tahun: <strong>{{ $tahun }}</strong>
                         @endif
                     </div>
                 </div>
@@ -672,6 +708,16 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        // ✅ NEW: Clear search cache on page load
+        window.addEventListener('load', function() {
+            if (typeof(Storage) !== "undefined") {
+                localStorage.removeItem('last_search_query');
+                localStorage.removeItem('last_search_filter'); 
+                localStorage.removeItem('last_search_results');
+                sessionStorage.clear();
+            }
+        });
+
         // Dynamic placeholder based on search type
         document.getElementById('searchBy').addEventListener('change', function() {
             const searchInput = document.getElementById('searchInput');
@@ -685,8 +731,16 @@
             searchInput.placeholder = placeholders[searchType] || 'Masukkan kata kunci pencarian...';
         });
 
-        // Form enhancement
+        // Form enhancement with cache clearing
         document.querySelector('form').addEventListener('submit', function(e) {
+            // ✅ NEW: Clear search cache before submitting
+            if (typeof(Storage) !== "undefined") {
+                localStorage.removeItem('last_search_query');
+                localStorage.removeItem('last_search_filter');
+                localStorage.removeItem('last_search_results');
+                sessionStorage.clear();
+            }
+
             const searchInput = document.getElementById('searchInput');
             if (searchInput.value.trim() === '') {
                 // Allow empty search to show all results
@@ -707,6 +761,17 @@
                 });
             });
         });
+
+        // ✅ NEW: Auto-clear browser cache for search-related data
+        if ('caches' in window) {
+            caches.keys().then(function(names) {
+                for (let name of names) {
+                    if (name.includes('search') || name.includes('api')) {
+                        caches.delete(name);
+                    }
+                }
+            });
+        }
     </script>
 </body>
 </html>
