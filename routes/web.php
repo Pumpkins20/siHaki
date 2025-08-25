@@ -23,30 +23,25 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
-// Public routes
+// ✅ FIXED: Public routes - Remove duplicates and conflicts
 Route::get('/', [PublicSearchController::class, 'beranda'])->name('beranda');
-Route::get('/beranda', [PublicSearchController::class, 'beranda'])->name('beranda');
+Route::get('/beranda', [PublicSearchController::class, 'beranda'])->name('beranda.alt');
 
-Route::get('/pencipta', [PublicSearchController::class, 'searchPencipta'])->name('pencipta');
+// ✅ FIXED: Pencipta routes - Only use ONE method per route
 Route::get('/pencipta', [PublicSearchController::class, 'pencipta'])->name('pencipta');
-Route::get('/pencipta/all', [PublicSearchController::class, 'showAllPencipta'])->name('pencipta.all');
 
+// ✅ FIXED: Jenis ciptaan routes
 Route::get('/jenis_ciptaan', [PublicSearchController::class, 'searchJenisCiptaan'])->name('jenis_ciptaan');
 
-// ✅ UPDATED: Detail pages with proper controller methods
+// ✅ FIXED: Detail pages with proper controller methods
 Route::get('/detail_pencipta/{id}', [PublicSearchController::class, 'detailPencipta'])->name('detail_pencipta');
-
 Route::get('/detail_ciptaan/{id}', [PublicSearchController::class, 'detailCiptaan'])->name('detail_ciptaan');
+Route::get('/detail_jenis/{type?}', [PublicSearchController::class, 'detailJenis'])->name('detail_jenis');
 
-// ✅ ADD: Route untuk melihat sertifikat
+// ✅ FIXED: Certificate viewing route
 Route::get('/sertifikat/view/{id}', [PublicSearchController::class, 'viewCertificate'])->name('sertifikat.view');
 
-Route::get('/detail_jenis', function () {
-    return view('detail_jenis');
-})->name('detail_jenis');
-
-
-// Search route
+// ✅ FIXED: Search route
 Route::post('/search', [PublicSearchController::class, 'search'])->name('public.search');
 
 // Guest routes (not authenticated)
@@ -54,7 +49,6 @@ Route::middleware(['guest'])->group(function () {
     // Standardize login routes
     Route::get('/login', [SesiController::class, 'index'])->name('login');
     Route::post('/login', [SesiController::class, 'login'])->name('login.post');
-    
 });
 
 // Authenticated routes
@@ -65,7 +59,6 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['role:user'])->prefix('user')->name('user.')->group(function () {
         Route::get('/dashboard', [UserDashboardController::class, 'index'])->name('dashboard');
         
-
         // Profil Route
         Route::get('/profile', [UserDashboardController::class, 'profile'])->name('profile');
         Route::put('/profile', [UserDashboardController::class, 'updateProfile'])->name('profile.update');
@@ -86,12 +79,9 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/documents/{document}/download', [SubmissionController::class, 'downloadDocument'])->name('documents.download');
             Route::delete('/documents/{document}', [SubmissionController::class, 'deleteDocument'])->name('documents.delete');
             
-            // ✅ NEW: KTP management routes - ADD THESE MISSING ROUTES
-            Route::patch('/{submission}/update-ktp', [SubmissionController::class, 'updateKtp'])
-                ->name('update-ktp');
-            Route::get('/{submission}/members/{member}/ktp-preview', [SubmissionController::class, 'previewMemberKtp'])
-                ->name('member-ktp-preview');
-            // KTP download
+            // KTP management routes
+            Route::patch('/{submission}/update-ktp', [SubmissionController::class, 'updateKtp'])->name('update-ktp');
+            Route::get('/{submission}/members/{member}/ktp-preview', [SubmissionController::class, 'previewMemberKtp'])->name('member-ktp-preview');
             Route::get('/{submission}/ktp/{member}', [SubmissionController::class, 'downloadKtp'])->name('ktp.download');
         });
         
@@ -144,9 +134,8 @@ Route::middleware(['auth'])->group(function () {
             // Template generation routes
             Route::post('/{submission}/generate-template', [AdminController::class, 'generateTemplate'])->name('generate-template');
 
-            // Bulk actions - Add these new routes
+            // Bulk actions
             Route::post('/bulk-assign', [AdminController::class, 'bulkAssignToSelf'])->name('bulk-assign');
-
             
             Route::get('/{submission}/documents/{document}/download', [AdminController::class, 'downloadDocument'])->name('document-download');
             Route::get('/{submission}/documents/{document}/preview', [AdminController::class, 'previewDocument'])->name('document-preview');
@@ -154,7 +143,6 @@ Route::middleware(['auth'])->group(function () {
             Route::get('/{submission}/members/{member}/ktp', [AdminController::class, 'viewMemberKtp'])->name('member-ktp');
             Route::get('/{submission}/members/{member}/ktp/preview', [AdminController::class, 'previewMemberKtp'])->name('member-ktp-preview');
 
-            
             // Export
             Route::get('/export/excel', [AdminController::class, 'exportSubmissions'])->name('export');
         });
@@ -196,6 +184,3 @@ Route::middleware(['auth'])->group(function () {
         Route::get('/panduan/export-faq', [AdminPanduanController::class, 'exportFaq'])->name('panduan.export-faq');
     });
 });
-
-// ✅ ADD: Route untuk detail jenis yang menerima parameter type
-Route::get('/detail_jenis/{type?}', [PublicSearchController::class, 'detailJenis'])->name('detail_jenis');

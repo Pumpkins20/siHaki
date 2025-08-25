@@ -11,40 +11,406 @@ use Illuminate\Support\Facades\Log;
 class PublicSearchController extends Controller
 {
     /**
-     * ✅ FIXED: Beranda method to prevent infinite loops
+     * ✅ ENHANCED: Beranda method with filters
      */
     public function beranda()
     {
         try {
-            // ✅ FIXED: Get statistics with proper error handling
             $statistics = $this->getOverallStatistics();
+            $programStudiList = $this->getProgramStudiList();
+            $availableYears = $this->getAvailableYears();
             
-            // ✅ FIXED: Ensure we return the view only once
-            return view('beranda', compact('statistics'));
-            
+            return view('beranda', compact('statistics', 'programStudiList', 'availableYears'));
         } catch (\Exception $e) {
             Log::error('Error in beranda method', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
             
-            // ✅ FIXED: Return view with empty statistics on error
             $statistics = $this->getEmptyStatistics();
-            return view('beranda', compact('statistics'));
+            $programStudiList = collect();
+            $availableYears = collect();
+            
+            return view('beranda', compact('statistics', 'programStudiList', 'availableYears'));
         }
     }
 
     /**
-     * ✅ FIXED: Get overall statistics - prevent infinite loops
+     * ✅ ENHANCED: Search with additional filters
      */
+    public function search(Request $request)
+    {
+        $filter = $request->get('filter');
+        $query = $request->get('q');
+        $programStudi = $request->get('program_studi');
+        $tahunPublikasi = $request->get('tahun_publikasi');
+        
+        if (empty($query) && empty($programStudi) && empty($tahunPublikasi)) {
+            return back()->with('error', 'Silakan masukkan minimal satu kriteria pencarian');
+        }
+
+        // Enhanced search with all filters
+        return $this->searchOnBeranda($request);
+    }
+
+    /**
+     * ✅ ENHANCED: Search directly on beranda page with all filters
+     */
+    public function searchOnBeranda(Request $request)
+    {
+        $query = $request->get('q');
+        $filter = $request->get('filter');
+        $programStudi = $request->get('program_studi');
+        $tahunPublikasi = $request->get('tahun_publikasi');
+        
+        if (empty($query) && empty($programStudi) && empty($tahunPublikasi)) {
+            return redirect()->route('beranda');
+        }
+
+        $submissionsQuery = HkiSubmission::where('status', 'approved')
+            ->with(['user:id,nama,program_studi', 'members:id,submission_id,name,is_leader']);
+
+        // Apply text-based search filter
+        if (!empty($query)) {
+            $submissionsQuery->where(function($q) use ($query, $filter) {
+                if ($filter === 'nama') {
+                    $q->whereHas('user', function($userQuery) use ($query) {
+                        $userQuery->where('nama', 'like', '%' . $query . '%');
+                    })
+                    ->orWhereHas('members', function($memberQuery) use ($query) {
+                        $memberQuery->where('name', 'like', '%' . $query . '%');
+                    });
+                } elseif ($filter === 'institusi') {
+                    $q->whereHas('user', function($userQuery) use ($query) {
+                        $userQuery->where('program_studi', 'like', '%' . $query . '%');
+                    });
+                } elseif ($filter === 'judul') {
+                    $q->where('title', 'like', '%' . $query . '%');
+                } elseif ($filter === 'tipe') {
+                    $q->where('creation_type', 'like', '%' . $query . '%');
+                } else {
+                    // Search all fields if no specific filter
+                    $q->where('title', 'like', '%' . $query . '%')
+                      ->orWhere('creation_type', 'like', '%' . $query . '%')
+                      ->orWhereHas('user', function($userQuery) use ($query) {
+                          $userQuery->where('nama', 'like', '%' . $query . '%');
+                      })
+                      ->orWhereHas('members', function($memberQuery) use ($query) {
+                          $memberQuery->where('name', 'like', '%' . $query . '%');
+                      });
+                }
+            });
+        }
+
+        // Apply program studi filter
+        if (!empty($programStudi)) {
+            $submissionsQuery->whereHas('user', function($userQuery) use ($programStudi) {
+                $userQuery->where('program_studi', $programStudi);
+            });
+        }
+
+        // Apply year filter
+        if (!empty($tahunPublikasi)) {
+            $submissionsQuery->where(function($q) use ($tahunPublikasi) {
+                $q->whereYear('first_publication_date', $tahunPublikasi)
+                  ->orWhere(function($subQ) use ($tahunPublikasi) {
+                      $subQ->whereNull('first_publication_date')
+                           ->whereYear('created_at', $tahunPublikasi);
+                  });
+            });
+        }
+
+        $submissions = $submissionsQuery->orderBy('created_at', 'desc')->limit(50)->get();
+
+        $ciptaans = $submissions->map(function($submission) {
+            $leader = $submission->members->where('is_leader', true)->first();
+            
+            return (object) [
+                'id' => $submission->id,
+                'judul' => $submission->title,
+                'pencipta' => $leader->name ?? $submission->user->nama ?? 'N/A',
+                'pencipta_id' => $submission->user_id,
+                'jurusan' => $submission->user->program_studi ?? 'N/A',
+                'tipe' => $this->getCreationTypeDisplayName($submission->creation_type),
+                'tahun' => $submission->first_publication_date 
+                    ? $submission->first_publication_date->format('Y')
+                    : $submission->created_at->format('Y'),
+                'tanggal_publikasi' => $submission->first_publication_date 
+                    ? $submission->first_publication_date->format('d M Y')
+                    : $submission->created_at->format('d M Y')
+            ];
+        });
+
+        $statistics = $this->getOverallStatistics();
+        $programStudiList = $this->getProgramStudiList();
+        $availableYears = $this->getAvailableYears();
+        
+        // Add search summary
+        $searchSummary = $this->generateSearchSummary($request, $ciptaans->count());
+
+        return view('beranda', compact('ciptaans', 'statistics', 'programStudiList', 'availableYears', 'searchSummary'));
+    }
+
+    /**
+     * ✅ NEW: Get list of all program studi from database
+     */
+    private function getProgramStudiList()
+    {
+        try {
+            return User::select('program_studi')
+                ->where('role', 'user')
+                ->whereNotNull('program_studi')
+                ->where('program_studi', '!=', '')
+                ->distinct()
+                ->orderBy('program_studi')
+                ->pluck('program_studi');
+        } catch (\Exception $e) {
+            Log::error('Error getting program studi list', ['error' => $e->getMessage()]);
+            return collect();
+        }
+    }
+
+    /**
+     * ✅ NEW: Get available publication years
+     */
+    private function getAvailableYears()
+    {
+        try {
+            $years = collect();
+            
+            // Get years from first_publication_date
+            $publicationYears = HkiSubmission::where('status', 'approved')
+                ->whereNotNull('first_publication_date')
+                ->select(DB::raw('YEAR(first_publication_date) as year'))
+                ->distinct()
+                ->orderBy('year', 'desc')
+                ->pluck('year');
+            
+            // Get years from created_at for submissions without publication date
+            $createdYears = HkiSubmission::where('status', 'approved')
+                ->whereNull('first_publication_date')
+                ->select(DB::raw('YEAR(created_at) as year'))
+                ->distinct()
+                ->orderBy('year', 'desc')
+                ->pluck('year');
+            
+            // Merge and sort years
+            $allYears = $publicationYears->merge($createdYears)->unique()->sort()->reverse()->values();
+            
+            return $allYears;
+        } catch (\Exception $e) {
+            Log::error('Error getting available years', ['error' => $e->getMessage()]);
+            return collect();
+        }
+    }
+
+    /**
+     * ✅ NEW: Generate search summary
+     */
+    private function generateSearchSummary(Request $request, $resultCount)
+    {
+        $summary = [
+            'count' => $resultCount,
+            'filters' => []
+        ];
+
+        if ($request->filled('q')) {
+            $summary['filters'][] = [
+                'type' => 'keyword',
+                'label' => 'Kata kunci',
+                'value' => $request->get('q'),
+                'filter_type' => $request->get('filter', 'semua')
+            ];
+        }
+
+        if ($request->filled('program_studi')) {
+            $summary['filters'][] = [
+                'type' => 'program_studi',
+                'label' => 'Program Studi',
+                'value' => $request->get('program_studi')
+            ];
+        }
+
+        if ($request->filled('tahun_publikasi')) {
+            $summary['filters'][] = [
+                'type' => 'tahun',
+                'label' => 'Tahun Publikasi',
+                'value' => $request->get('tahun_publikasi')
+            ];
+        }
+
+        return $summary;
+    }
+
+    /**
+     * ✅ ENHANCED: Pencipta method with program studi filter
+     */
+    public function pencipta(Request $request)
+    {
+        try {
+            $perPage = 6;
+            $query = $request->get('q');
+            $searchBy = $request->get('search_by', 'nama_pencipta');
+            $programStudi = $request->get('program_studi');
+
+            Log::info('Pencipta search request', [
+                'query' => $query,
+                'search_by' => $searchBy,
+                'program_studi' => $programStudi
+            ]);
+
+            $usersQuery = User::select([
+                'users.id',
+                'users.nama',
+                'users.email',
+                'users.program_studi',
+                'users.foto',
+                DB::raw('COUNT(DISTINCT hki_submissions.id) as total_hki')
+            ])
+            ->join('hki_submissions', 'users.id', '=', 'hki_submissions.user_id')
+            ->where('users.role', 'user')
+            ->where('hki_submissions.status', 'approved')
+            ->groupBy([
+                'users.id',
+                'users.nama', 
+                'users.email',
+                'users.program_studi',
+                'users.foto'
+            ])
+            ->having('total_hki', '>', 0);
+
+            // Apply text search filter
+            if (!empty(trim($query))) {
+                switch ($searchBy) {
+                    case 'nama_pencipta':
+                        $usersQuery->where('users.nama', 'LIKE', '%' . trim($query) . '%');
+                        break;
+                    case 'program_studi':
+                        $usersQuery->where('users.program_studi', 'LIKE', '%' . trim($query) . '%');
+                        break;
+                }
+            }
+
+            // Apply program studi filter
+            if (!empty($programStudi)) {
+                $usersQuery->where('users.program_studi', $programStudi);
+            }
+
+            $results = $usersQuery->orderBy('total_hki', 'desc')
+                                 ->orderBy('users.nama', 'asc')
+                                 ->paginate($perPage)
+                                 ->appends($request->query());
+
+            $results->getCollection()->transform(function ($user) {
+                $user->submissions = HkiSubmission::where('user_id', $user->id)
+                    ->where('status', 'approved')
+                    ->orderBy('created_at', 'desc')
+                    ->limit(5)
+                    ->get(['id', 'title', 'created_at']);
+                
+                $user->institusi = $user->institusi ?? 'STMIK AMIKOM Surakarta';
+                $user->jurusan = $user->jurusan ?? 'N/A';
+                
+                return $user;
+            });
+
+            $programStudiList = $this->getProgramStudiList();
+
+            Log::info('Search results', [
+                'total_found' => $results->total(),
+                'current_page' => $results->currentPage(),
+                'query' => $query,
+                'search_by' => $searchBy,
+                'program_studi' => $programStudi
+            ]);
+
+            return view('pencipta', compact('results', 'query', 'searchBy', 'programStudi', 'programStudiList'));
+
+        } catch (\Exception $e) {
+            Log::error('Error in pencipta search', [
+                'error' => $e->getMessage(),
+                'line' => $e->getLine(),
+                'file' => $e->getFile(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            $results = User::whereRaw('1 = 0')->paginate($perPage ?? 6);
+            $programStudiList = collect();
+            return view('pencipta', compact('results', 'programStudiList'))->with('error', 'Terjadi kesalahan saat mencari data.');
+        }
+    }
+
+    /**
+     * ✅ ENHANCED: Jenis Ciptaan search with filters
+     */
+    public function searchJenisCiptaan(Request $request)
+    {
+        $searchBy = $request->get('search_by', 'jenis_ciptaan');
+        $query = $request->get('q');
+        $programStudi = $request->get('program_studi');
+        $tahunPublikasi = $request->get('tahun_publikasi');
+        
+        $results = collect();
+        
+        if (!empty($query) || !empty($programStudi) || !empty($tahunPublikasi)) {
+            $submissionsQuery = HkiSubmission::where('status', 'approved')
+                ->with(['user', 'members']);
+
+            // Apply text search
+            if (!empty($query)) {
+                if ($searchBy === 'jenis_ciptaan') {
+                    $submissionsQuery->where('creation_type', 'like', '%' . $query . '%');
+                } elseif ($searchBy === 'judul_ciptaan') {
+                    $submissionsQuery->where('title', 'like', '%' . $query . '%');
+                }
+            }
+
+            // Apply program studi filter
+            if (!empty($programStudi)) {
+                $submissionsQuery->whereHas('user', function($userQuery) use ($programStudi) {
+                    $userQuery->where('program_studi', $programStudi);
+                });
+            }
+
+            // Apply year filter
+            if (!empty($tahunPublikasi)) {
+                $submissionsQuery->where(function($q) use ($tahunPublikasi) {
+                    $q->whereYear('first_publication_date', $tahunPublikasi)
+                      ->orWhere(function($subQ) use ($tahunPublikasi) {
+                          $subQ->whereNull('first_publication_date')
+                               ->whereYear('created_at', $tahunPublikasi);
+                      });
+                });
+            }
+
+            $submissions = $submissionsQuery->get();
+            $groupedSubmissions = $submissions->groupBy('creation_type');
+            
+            foreach ($groupedSubmissions as $type => $submissionGroup) {
+                $results->push((object) [
+                    'type' => $type,
+                    'type_name' => $this->getCreationTypeDisplayName($type),
+                    'count' => $submissionGroup->count(),
+                    'submissions' => $submissionGroup,
+                    'description' => $this->getCreationTypeDescription($type)
+                ]);
+            }
+        }
+
+        $programStudiList = $this->getProgramStudiList();
+        $availableYears = $this->getAvailableYears();
+
+        return view('jenis_ciptaan', compact('results', 'searchBy', 'query', 'programStudi', 'tahunPublikasi', 'programStudiList', 'availableYears'));
+    }
+
+    // ... (keep all other existing methods unchanged)
+
     private function getOverallStatistics()
     {
         try {
-            // ✅ FIXED: Basic counts with proper queries
             $totalSubmissions = HkiSubmission::count();
             $approvedSubmissions = HkiSubmission::where('status', 'approved')->count();
             
-            // ✅ FIXED: Count unique users with approved submissions
             $totalUsers = User::where('role', 'user')
                 ->whereExists(function($query) {
                     $query->select(DB::raw(1))
@@ -54,12 +420,11 @@ class PublicSearchController extends Controller
                 })
                 ->count();
 
-            // ✅ FIXED: Submissions by creation type (limit to prevent memory issues)
             $submissionsByType = HkiSubmission::where('status', 'approved')
                 ->select('creation_type', DB::raw('COUNT(*) as count'))
                 ->groupBy('creation_type')
                 ->orderBy('count', 'desc')
-                ->limit(10) // ✅ LIMIT to prevent infinite loops
+                ->limit(10)
                 ->get()
                 ->map(function($item) {
                     return [
@@ -70,19 +435,17 @@ class PublicSearchController extends Controller
                     ];
                 });
 
-            // ✅ FIXED: Submissions by year (limit to last 5 years only)
             $submissionsByYear = HkiSubmission::where('status', 'approved')
                 ->select(DB::raw('YEAR(created_at) as year'), DB::raw('COUNT(*) as count'))
                 ->groupBy('year')
                 ->orderBy('year', 'desc')
-                ->limit(5) // ✅ LIMIT to prevent infinite data
+                ->limit(5)
                 ->get();
 
-            // ✅ FIXED: Recent approved submissions (limit to 6)
             $recentSubmissions = HkiSubmission::with(['user:id,nama'])
                 ->where('status', 'approved')
                 ->orderBy('reviewed_at', 'desc')
-                ->limit(6) // ✅ STRICT LIMIT
+                ->limit(6)
                 ->get()
                 ->map(function($submission) {
                     return [
@@ -96,7 +459,6 @@ class PublicSearchController extends Controller
                     ];
                 });
 
-            // ✅ FIXED: Top contributors (limit to 5)
             $topContributors = User::select([
                 'users.id',
                 'users.nama',
@@ -109,10 +471,9 @@ class PublicSearchController extends Controller
             ->where('hki_submissions.status', 'approved')
             ->groupBy(['users.id', 'users.nama', 'users.foto', 'users.program_studi'])
             ->orderBy('total_submissions', 'desc')
-            ->limit(5) // ✅ STRICT LIMIT
+            ->limit(5)
             ->get();
 
-            // ✅ FIXED: Return structured array
             return [
                 'total_submissions' => $totalSubmissions,
                 'approved_submissions' => $approvedSubmissions,
@@ -135,9 +496,6 @@ class PublicSearchController extends Controller
         }
     }
 
-    /**
-     * ✅ NEW: Get empty statistics structure
-     */
     private function getEmptyStatistics()
     {
         return [
@@ -152,9 +510,6 @@ class PublicSearchController extends Controller
         ];
     }
 
-    /**
-     * ✅ FIXED: Get creation type display name
-     */
     private function getCreationTypeDisplayName($type)
     {
         $types = [
@@ -172,9 +527,6 @@ class PublicSearchController extends Controller
         return $types[$type] ?? ucfirst(str_replace('_', ' ', $type));
     }
 
-    /**
-     * ✅ FIXED: Get type color for charts
-     */
     private function getTypeColor($type)
     {
         $colors = [
@@ -192,291 +544,6 @@ class PublicSearchController extends Controller
         return $colors[$type] ?? '#6c757d';
     }
 
-    /**
-     * Handle search from beranda
-     */
-    public function search(Request $request)
-    {
-        $filter = $request->get('filter');
-        $query = $request->get('q');
-        
-        if (empty($query)) {
-            return back()->with('error', 'Silakan masukkan kata kunci pencarian');
-        }
-
-        // Redirect based on filter type
-        switch ($filter) {
-            case 'nama':
-                return redirect()->route('pencipta', [
-                    'search_by' => 'nama_pencipta',
-                    'q' => $query
-                ]);
-                
-            case 'institusi':
-                return redirect()->route('pencipta', [
-                    'search_by' => 'jurusan',
-                    'q' => $query
-                ]);
-                
-            case 'judul':
-                return redirect()->route('jenis_ciptaan', [
-                    'search_by' => 'judul_ciptaan',
-                    'q' => $query
-                ]);
-                
-            case 'tipe':
-                return redirect()->route('jenis_ciptaan', [
-                    'search_by' => 'jenis_ciptaan',
-                    'q' => $query
-                ]);
-                
-            default:
-                // Default search on beranda
-                return $this->searchOnBeranda($request);
-        }
-    }
-
-    /**
-     * Search directly on beranda page
-     */
-    public function searchOnBeranda(Request $request)
-    {
-        $query = $request->get('q');
-        $filter = $request->get('filter');
-        
-        if (empty($query)) {
-            return redirect()->route('beranda');
-        }
-
-        // Get approved submissions for public display
-        $submissions = HkiSubmission::where('status', 'approved')
-            ->with(['user:id,nama,jurusan,institusi', 'members:id,submission_id,name,is_leader'])
-            ->where(function($q) use ($query, $filter) {
-                if ($filter === 'nama') {
-                    // Search by creator name
-                    $q->whereHas('user', function($userQuery) use ($query) {
-                        $userQuery->where('nama', 'like', '%' . $query . '%');
-                    })
-                    ->orWhereHas('members', function($memberQuery) use ($query) {
-                        $memberQuery->where('name', 'like', '%' . $query . '%');
-                    });
-                } elseif ($filter === 'institusi') {
-                    // Search by department/institution
-                    $q->whereHas('user', function($userQuery) use ($query) {
-                        $userQuery->where('jurusan', 'like', '%' . $query . '%')
-                               ->orWhere('institusi', 'like', '%' . $query . '%');
-                    });
-                } elseif ($filter === 'judul') {
-                    // Search by title
-                    $q->where('title', 'like', '%' . $query . '%');
-                } elseif ($filter === 'tipe') {
-                    // Search by creation type
-                    $q->where('creation_type', 'like', '%' . $query . '%');
-                } else {
-                    // Default: search all fields
-                    $q->where('title', 'like', '%' . $query . '%')
-                      ->orWhere('creation_type', 'like', '%' . $query . '%')
-                      ->orWhereHas('members', function($memberQuery) use ($query) {
-                          $memberQuery->where('name', 'like', '%' . $query . '%');
-                      });
-                }
-            })
-            ->limit(50) // ✅ LIMIT search results
-            ->get();
-
-        // Transform data for display
-        $ciptaans = $submissions->map(function($submission) {
-            $leader = $submission->members->where('is_leader', true)->first();
-            
-            return (object) [
-                'id' => $submission->id,
-                'judul' => $submission->title,
-                'pencipta' => $leader->name ?? $submission->user->nama ?? 'N/A',
-                'pencipta_id' => $submission->user_id,
-                'jurusan' => $submission->user->jurusan ?? 'N/A',
-                'tipe' => $this->getCreationTypeDisplayName($submission->creation_type),
-                'tahun' => $submission->created_at->format('Y')
-            ];
-        });
-
-        // Get statistics but don't create infinite loop
-        $statistics = $this->getOverallStatistics();
-
-        return view('beranda', compact('ciptaans', 'statistics'));
-    }
-
-    /**
-     * Handle pencipta page search
-     */
-    public function searchPencipta(Request $request)
-    {
-        $searchBy = $request->get('search_by', 'nama_pencipta');
-        $query = $request->get('q');
-        
-        $results = collect();
-        
-        if (!empty($query)) {
-            if ($searchBy === 'nama_pencipta') {
-                // ✅ UPDATED: Search by leader/creator name (from users who submitted HKI)
-                $users = User::where('role', 'user')
-                    ->where('nama', 'like', '%' . $query . '%')
-                    ->whereHas('submissions', function($q) {
-                        $q->where('status', 'approved');
-                    })
-                    ->with([
-                        'submissions' => function($q) {
-                            $q->where('status', 'approved')
-                              ->with(['members', 'documents']);
-                        },
-                        'department'
-                    ])
-                    ->get();
-
-                foreach ($users as $user) {
-                    $results->push((object) [
-                        'id' => $user->id,
-                        'user_id' => $user->id, // ✅ ADD: For total submission tracking
-                        'nama' => $user->nama,
-                        'foto' => $user->foto ?? 'default.png',
-                        'institusi' => 'STMIK AMIKOM Surakarta',
-                        'jurusan' => $user->program_studi ?? ($user->department->name ?? 'N/A'),
-                        'total_hki' => $user->submissions->count(),
-                        'submissions' => $user->submissions
-                    ]);
-                }
-                
-            } elseif ($searchBy === 'jurusan') {
-                // ✅ UPDATED: Search by program_studi or department
-                $users = User::where('role', 'user')
-                    ->where(function($q) use ($query) {
-                        $q->where('program_studi', 'like', '%' . $query . '%')
-                          ->orWhereHas('department', function($deptQuery) use ($query) {
-                              $deptQuery->where('name', 'like', '%' . $query . '%');
-                          });
-                    })
-                    ->whereHas('submissions', function($q) {
-                        $q->where('status', 'approved');
-                    })
-                    ->with([
-                        'submissions' => function($q) {
-                            $q->where('status', 'approved')
-                              ->with(['members', 'documents']);
-                        },
-                        'department'
-                    ])
-                    ->get();
-
-                foreach ($users as $user) {
-                    $results->push((object) [
-                        'id' => $user->id,
-                        'user_id' => $user->id,
-                        'nama' => $user->nama,
-                        'foto' => $user->foto ?? 'default.png',
-                        'institusi' => 'STMIK AMIKOM Surakarta',
-                        'jurusan' => $user->program_studi ?? ($user->department->name ?? 'N/A'),
-                        'total_hki' => $user->submissions->count(),
-                        'submissions' => $user->submissions
-                    ]);
-                }
-            }
-        } else {
-            // ✅ Show all users with approved submissions when no search
-            $users = User::where('role', 'user')
-                ->whereHas('submissions', function($q) {
-                    $q->where('status', 'approved');
-                })
-                ->with([
-                    'submissions' => function($q) {
-                        $q->where('status', 'approved')
-                          ->with(['members', 'documents']);
-                    },
-                    'department'
-                ])
-                ->get();
-
-            foreach ($users as $user) {
-                $results->push((object) [
-                    'id' => $user->id,
-                    'user_id' => $user->id,
-                    'nama' => $user->nama,
-                    'foto' => $user->foto ?? 'default.png',
-                    'institusi' => 'STMIK AMIKOM Surakarta',
-                    'jurusan' => $user->program_studi ?? ($user->department->name ?? 'N/A'),
-                    'total_hki' => $user->submissions->count(),
-                    'submissions' => $user->submissions
-                ]);
-            }
-        }
-
-        return view('pencipta', compact('results', 'searchBy', 'query'));
-    }
-
-
-    /**
-     * Handle jenis ciptaan page search
-     */
-    public function searchJenisCiptaan(Request $request)
-    {
-        $searchBy = $request->get('search_by', 'jenis_ciptaan');
-        $query = $request->get('q');
-        
-        $results = collect();
-        
-        if (!empty($query)) {
-            if ($searchBy === 'jenis_ciptaan') {
-                // Search by creation type
-                $submissions = HkiSubmission::where('status', 'approved')
-                    ->where('creation_type', 'like', '%' . $query . '%')
-                    ->with(['user.department', 'members'])
-                    ->get()
-                    ->groupBy('creation_type');
-
-                foreach ($submissions as $type => $submissionGroup) {
-                    $results->push((object) [
-                        'type' => $type,
-                        'type_name' => ucfirst(str_replace('_', ' ', $type)),
-                        'count' => $submissionGroup->count(),
-                        'submissions' => $submissionGroup,
-                        'description' => $this->getCreationTypeDescription($type)
-                    ]);
-                }
-                
-            } elseif ($searchBy === 'judul_ciptaan') {
-                // Search by title
-                $submissions = HkiSubmission::where('status', 'approved')
-                    ->where('title', 'like', '%' . $query . '%')
-                    ->with(['user.department', 'members'])
-                    ->get();
-
-                // Group by creation type for display
-                $groupedSubmissions = $submissions->groupBy('creation_type');
-                
-                foreach ($groupedSubmissions as $type => $submissionGroup) {
-                    $results->push((object) [
-                        'type' => $type,
-                        'type_name' => ucfirst(str_replace('_', ' ', $type)),
-                        'count' => $submissionGroup->count(),
-                        'submissions' => $submissionGroup,
-                        'description' => $this->getCreationTypeDescription($type),
-                        'search_results' => $submissionGroup->map(function($submission) {
-                            return (object) [
-                                'title' => $submission->title,
-                                'creator' => $submission->members->where('is_leader', true)->first()->name ?? 'N/A',
-                                'year' => $submission->created_at->format('Y'),
-                                'department' => $submission->user->department->name ?? 'N/A'
-                            ];
-                        })
-                    ]);
-                }
-            }
-        }
-
-        return view('jenis_ciptaan', compact('results', 'searchBy', 'query'));
-    }
-
-    /**
-     * Get creation type description
-     */
     private function getCreationTypeDescription($type)
     {
         $descriptions = [
@@ -494,20 +561,16 @@ class PublicSearchController extends Controller
         return $descriptions[$type] ?? 'Karya cipta dalam bidang ' . str_replace('_', ' ', $type);
     }
 
-    /**
-     * ✅ NEW: Show detail pencipta with all their HKI submissions
-     */
+    // Keep all other existing methods...
     public function detailPencipta(Request $request, $id)
     {
         $user = User::where('id', $id)
             ->where('role', 'user')
             ->with([
                 'submissions' => function($q) {
-                    // ✅ FIXED: Show ALL approved submissions, not just with certificates
                     $q->where('status', 'approved')
-                    ->with(['members', 'documents']); // Remove certificate filter
-                },
-                'department'
+                      ->with(['members', 'documents']);
+                }
             ])
             ->first();
 
@@ -515,14 +578,6 @@ class PublicSearchController extends Controller
             abort(404, 'Pencipta tidak ditemukan');
         }
 
-        // ✅ DEBUG: Log submissions
-        Log::info('User submissions count:', [
-            'user_id' => $user->id,
-            'total_submissions' => $user->submissions->count(),
-            'approved_submissions' => $user->submissions->where('status', 'approved')->count()
-        ]);
-
-        // Transform submissions for detail view
         $submissions = $user->submissions->map(function($submission) {
             $certificate = $submission->documents->where('document_type', 'certificate')->first();
             
@@ -537,7 +592,7 @@ class PublicSearchController extends Controller
                     : ($submission->created_at ? $submission->created_at->format('d M Y') : 'Tidak diketahui'),
                 'pencipta_utama' => $submission->members->where('is_leader', true)->first()->name ?? ($submission->user->nama ?? 'Tidak diketahui'),
                 'anggota_pencipta' => $submission->members->where('is_leader', false)->pluck('name')->toArray(),
-                'has_certificate' => $certificate ? true : false, // ✅ FIXED: Check if certificate exists
+                'has_certificate' => $certificate ? true : false,
                 'certificate_path' => $certificate ? $certificate->file_path : null,
                 'created_at' => $submission->created_at,
                 'status' => $submission->status,
@@ -545,7 +600,6 @@ class PublicSearchController extends Controller
             ];
         });
 
-        // Generate statistics - only for approved submissions
         $statistics = $this->generateStatistics($user->submissions->where('status', 'approved'));
 
         $pencipta = (object) [
@@ -553,7 +607,7 @@ class PublicSearchController extends Controller
             'nama' => $user->nama ?? 'Tidak diketahui',
             'foto' => $user->foto ?? null, 
             'institusi' => 'STMIK AMIKOM Surakarta',
-            'jurusan' => $user->program_studi ?? ($user->department->name ?? 'N/A'),
+            'jurusan' => $user->program_studi ?? 'N/A',
             'total_hki' => $submissions->count(),
             'submissions' => $submissions
         ];
@@ -561,9 +615,6 @@ class PublicSearchController extends Controller
         return view('detail_pencipta', compact('pencipta', 'submissions', 'statistics'));
     }
 
-    /**
-     * ✅ NEW: Generate statistics for chart
-     */
     private function generateStatistics($submissions)
     {
         if (!$submissions || $submissions->isEmpty()) {
@@ -577,7 +628,6 @@ class PublicSearchController extends Controller
             ];
         }
 
-        // Count by creation type
         $typeStats = $submissions->groupBy('creation_type')->map(function($group, $type) {
             return [
                 'type' => $type,
@@ -587,7 +637,6 @@ class PublicSearchController extends Controller
             ];
         })->values();
 
-        // Count by year
         $yearStats = $submissions->groupBy(function($submission) {
             return $submission->created_at ? $submission->created_at->format('Y') : 'Unknown';
         })->map(function($group, $year) {
@@ -597,7 +646,6 @@ class PublicSearchController extends Controller
             ];
         })->sortBy('year')->values();
 
-        // Get date ranges safely
         $latestSubmission = $submissions->sortByDesc('created_at')->first();
         $oldestSubmission = $submissions->sortBy('created_at')->first();
 
@@ -618,9 +666,6 @@ class PublicSearchController extends Controller
         ];
     }
 
-    /**
-     * ✅ NEW: Get color for creation type
-     */
     private function getCreationTypeColor($type)
     {
         $colors = [
@@ -658,7 +703,6 @@ class PublicSearchController extends Controller
         
         if (!$certificate) {
             Log::warning('Certificate not found for submission:', ['id' => $submissionId]);
-            // ✅ ENHANCED: Return error page instead of 404
             return response()->view('errors.certificate-not-found', [
                 'submission' => $submission
             ], 404);
@@ -686,9 +730,6 @@ class PublicSearchController extends Controller
         ]);
     }
 
-    /**
-     * ✅ NEW: Show detail ciptaan
-     */
     public function detailCiptaan(Request $request, $id)
     {
         $submission = HkiSubmission::where('id', $id)
@@ -706,7 +747,6 @@ class PublicSearchController extends Controller
             abort(404, 'Ciptaan tidak ditemukan');
         }
 
-        // Transform data for view
         $ciptaan = (object) [
             'id' => $submission->id,
             'judul' => $submission->title,
@@ -727,170 +767,54 @@ class PublicSearchController extends Controller
         return view('detail_ciptaan', compact('ciptaan'));
     }
 
-    /**
-     * ✅ NEW: Show detail jenis with all submissions of that type
-     */
     public function detailJenis(Request $request, $type = null)
     {
         $searchBy = $request->get('search_by', 'jenis_ciptaan');
         $query = $request->get('q');
+        $programStudi = $request->get('program_studi');
+        $tahunPublikasi = $request->get('tahun_publikasi');
         
-        $submissions = collect();
+        $submissionsQuery = HkiSubmission::where('status', 'approved')
+            ->with([
+                'user', 
+                'members',
+                'documents' => function($q) {
+                    $q->where('document_type', 'certificate');
+                }
+            ]);
         
         if ($type) {
-            // Show all submissions of specific type with full relations
-            $submissions = HkiSubmission::where('status', 'approved')
-                ->where('creation_type', $type)
-                ->with([
-                    'user.department', 
-                    'members',
-                    'documents' => function($q) {
-                        $q->where('document_type', 'certificate');
-                    }
-                ])
-                ->orderBy('created_at', 'desc')
-                ->paginate(10);
-                
+            $submissionsQuery->where('creation_type', $type);
         } elseif (!empty($query)) {
-            // Search functionality with full relations
             if ($searchBy === 'jenis_ciptaan') {
-                $submissions = HkiSubmission::where('status', 'approved')
-                    ->where('creation_type', 'like', '%' . $query . '%')
-                    ->with([
-                        'user.department', 
-                        'members',
-                        'documents' => function($q) {
-                            $q->where('document_type', 'certificate');
-                        }
-                    ])
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(10);
+                $submissionsQuery->where('creation_type', 'like', '%' . $query . '%');
             } else {
-                $submissions = HkiSubmission::where('status', 'approved')
-                    ->where('title', 'like', '%' . $query . '%')
-                    ->with([
-                        'user.department', 
-                        'members',
-                        'documents' => function($q) {
-                            $q->where('document_type', 'certificate');
-                        }
-                    ])
-                    ->orderBy('created_at', 'desc')
-                    ->paginate(10);
+                $submissionsQuery->where('title', 'like', '%' . $query . '%');
             }
         }
-        
-        Log::info('Detail Jenis Query Result:', [
-            'type' => $type,
-            'query' => $query,
-            'searchBy' => $searchBy,
-            'total_submissions' => $submissions->count(),
-            'submissions_with_certs' => $submissions->where('documents.count', '>', 0)->count()
-        ]);
-        
-        return view('detail_jenis', compact('submissions', 'type', 'searchBy', 'query'));
-    }
 
-    /**
-     * ✅ FIXED: Pencipta method with proper search and show all functionality
-     */
-    public function pencipta(Request $request)
-    {
-        try {
-            $perPage = 6; // 6 pencipta per page
-            $query = $request->get('q');
-            $searchBy = $request->get('search_by', 'nama_pencipta');
-
-            Log::info('Pencipta search request', [
-                'query' => $query,
-                'search_by' => $searchBy,
-                'per_page' => $perPage
-            ]);
-
-            // ✅ FIXED: Base query for users with approved HKI submissions
-            $usersQuery = User::select([
-                'users.id',
-                'users.nama',
-                'users.email',
-                'users.institusi',
-                'users.jurusan',
-                'users.foto',
-                DB::raw('COUNT(DISTINCT hki_submissions.id) as total_hki')
-            ])
-            ->join('hki_submissions', 'users.id', '=', 'hki_submissions.user_id') // Use inner join to ensure only users with submissions
-            ->where('users.role', 'user') // Only show users with role 'user'
-            ->where('hki_submissions.status', 'approved') // Only count approved submissions
-            ->groupBy([
-                'users.id',
-                'users.nama', 
-                'users.email',
-                'users.institusi',
-                'users.jurusan',
-                'users.foto'
-            ])
-            ->having('total_hki', '>', 0); // Only users with approved HKI
-
-            // ✅ FIXED: Apply search filters only if query is provided
-            if (!empty($query)) {
-                switch ($searchBy) {
-                    case 'nama_pencipta':
-                        $usersQuery->where('users.nama', 'like', '%' . $query . '%');
-                        break;
-                    case 'jurusan':
-                        $usersQuery->where('users.jurusan', 'like', '%' . $query . '%');
-                        break;
-                    default:
-                        // Default to nama_pencipta if invalid search_by
-                        $usersQuery->where('users.nama', 'like', '%' . $query . '%');
-                        break;
-                }
-            }
-
-            // ✅ FIXED: Get paginated results
-            $results = $usersQuery->orderBy('total_hki', 'desc')
-                                 ->orderBy('users.nama')
-                                 ->paginate($perPage)
-                                 ->appends($request->query()); // Preserve query parameters
-
-            // ✅ FIXED: Load recent submissions for each paginated user
-            $results->getCollection()->transform(function ($user) {
-                $user->submissions = HkiSubmission::where('user_id', $user->id)
-                    ->where('status', 'approved')
-                    ->orderBy('created_at', 'desc')
-                    ->limit(5)
-                    ->get(['id', 'title', 'created_at']);
-                return $user;
+        // Apply program studi filter
+        if (!empty($programStudi)) {
+            $submissionsQuery->whereHas('user', function($userQuery) use ($programStudi) {
+                $userQuery->where('program_studi', $programStudi);
             });
-
-            Log::info('Pencipta search completed', [
-                'total_results' => $results->total(),
-                'current_page' => $results->currentPage(),
-                'per_page' => $results->perPage(),
-                'last_page' => $results->lastPage(),
-                'query' => $query,
-                'search_by' => $searchBy
-            ]);
-
-            return view('pencipta', compact('results', 'query', 'searchBy'));
-
-        } catch (\Exception $e) {
-            Log::error('Error in pencipta search', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            // ✅ FIXED: Return empty paginated results on error
-            $results = User::whereRaw('1 = 0')->paginate($perPage ?? 6);
-            return view('pencipta', compact('results'))->with('error', 'Terjadi kesalahan saat mencari data pencipta.');
         }
-    }
 
-    /**
-     * ✅ ENHANCED: Show all pencipta (same as pencipta method but clearer intent)
-     */
-    public function showAllPencipta(Request $request)
-    {
-        // Just redirect to main pencipta route without search parameters
-        return redirect()->route('pencipta');
+        // Apply year filter
+        if (!empty($tahunPublikasi)) {
+            $submissionsQuery->where(function($q) use ($tahunPublikasi) {
+                $q->whereYear('first_publication_date', $tahunPublikasi)
+                  ->orWhere(function($subQ) use ($tahunPublikasi) {
+                      $subQ->whereNull('first_publication_date')
+                           ->whereYear('created_at', $tahunPublikasi);
+                  });
+            });
+        }
+        
+        $submissions = $submissionsQuery->orderBy('created_at', 'desc')->paginate(10);
+        $programStudiList = $this->getProgramStudiList();
+        $availableYears = $this->getAvailableYears();
+        
+        return view('detail_jenis', compact('submissions', 'type', 'searchBy', 'query', 'programStudi', 'tahunPublikasi', 'programStudiList', 'availableYears'));
     }
 }
