@@ -14,6 +14,24 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
     <style>
+        .search-form-horizontal {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            align-items: end;
+        }
+
+        .form-group-flex {
+            display: flex;
+            flex-direction: column;
+            min-width: 200px;
+            flex: 1;
+        }
+
+        .form-group-flex.search-input {
+            min-width: 300px;
+            flex: 2;
+        }
 
     </style>
 </head>
@@ -59,12 +77,12 @@
                     <i class="bi bi-search me-2"></i>Cari Pencipta HKI
                 </h4>
                 <form method="GET" action="{{ route('pencipta') }}" class="search-form-horizontal">
-                    <!-- Dropdown Cari Berdasarkan -->
+                    <!-- Row 1: Search criteria -->
                     <div class="form-group-flex">
                         <label for="searchBy" class="form-label">Cari Berdasarkan</label>
                         <select class="form-select" id="searchBy" name="search_by">
                             <option value="nama_pencipta" {{ request('search_by') == 'nama_pencipta' ? 'selected' : '' }}>Nama Pencipta</option>
-                            <option value="jurusan" {{ request('search_by') == 'jurusan' ? 'selected' : '' }}>Jurusan/Program Studi</option>
+                            <option value="program_studi" {{ request('search_by') == 'program_studi' ? 'selected' : '' }}>Program Studi</option>
                         </select>
                     </div>
 
@@ -72,7 +90,33 @@
                     <div class="form-group-flex search-input">
                         <label for="searchInput" class="form-label">Kata Kunci</label>
                         <input type="text" class="form-control" id="searchInput" name="q" 
-                               value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
+                            value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
+                    </div>
+
+                    <!-- Row 2: Additional filters -->
+                    <div class="form-group-flex">
+                        <label for="programStudi" class="form-label">Program Studi</label>
+                        <select class="form-select" id="programStudi" name="program_studi">
+                            <option value="">Semua Program Studi</option>
+                            <option value="D3 Manajemen Informatika" {{ request('program_studi') == 'D3 Manajemen Informatika' ? 'selected' : '' }}>D3 Manajemen Informatika</option>
+                            <option value="S1 Informatika" {{ request('program_studi') == 'S1 Informatika' ? 'selected' : '' }}>S1 Informatika</option>
+                            <option value="S1 Sistem Informasi" {{ request('program_studi') == 'S1 Sistem Informasi' ? 'selected' : '' }}>S1 Sistem Informasi</option>
+                            <option value="S1 Teknologi Informasi" {{ request('program_studi') == 'S1 Teknologi Informasi' ? 'selected' : '' }}>S1 Teknologi Informasi</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group-flex">
+                        <label for="tahunPublikasi" class="form-label">Tahun Publikasi</label>
+                        <select class="form-select" id="tahunPublikasi" name="tahun_publikasi">
+                            <option value="">Semua Tahun</option>
+                            @php
+                                $currentYear = date('Y');
+                                for($year = $currentYear; $year >= $currentYear - 10; $year--) {
+                                    $selected = request('tahun_publikasi') == $year ? 'selected' : '';
+                                    echo "<option value='{$year}' {$selected}>{$year}</option>";
+                                }
+                            @endphp
+                        </select>
                     </div>
 
                     <!-- Tombol Cari dan Show All -->
@@ -80,8 +124,7 @@
                         <button class="btn-search" type="submit">
                             <i class="bi bi-search me-2"></i>Cari
                         </button>
-                        <!-- ✅ NEW: Show All Button -->
-                        @if(request()->has('q') || request()->has('search_by'))
+                        @if(request()->has('q') || request()->has('search_by') || request()->has('program_studi') || request()->has('tahun_publikasi'))
                             <a href="{{ route('pencipta') }}" class="btn-show-all">
                                 <i class="bi bi-list-ul me-2"></i>Lihat Semua
                             </a>
@@ -106,7 +149,13 @@
                             untuk pencarian "<strong>{{ $query }}</strong>"
                         @endif
                         @if(isset($searchBy))
-                            berdasarkan <strong>{{ $searchBy === 'nama_pencipta' ? 'Nama Pencipta' : 'Jurusan/Program Studi' }}</strong>
+                            berdasarkan <strong>{{ $searchBy === 'nama_pencipta' ? 'Nama Pencipta' : 'Program Studi' }}</strong>
+                        @endif
+                        @if(request('program_studi'))
+                            dalam program studi <strong>{{ request('program_studi') }}</strong>
+                        @endif
+                        @if(request('tahun_publikasi'))
+                            tahun <strong>{{ request('tahun_publikasi') }}</strong>
                         @endif
                     </div>
                 </div>
@@ -198,6 +247,12 @@
                     <p>Tidak ada pencipta yang ditemukan untuk pencarian "<strong>{{ $query }}</strong>"</p>
                     @if(isset($searchBy))
                         <p class="text-muted">berdasarkan {{ $searchBy === 'nama_pencipta' ? 'Nama Pencipta' : 'Jurusan/Program Studi' }}</p>
+                    @endif
+                    @if(request('program_studi'))
+                        <p class="text-muted">dalam program studi {{ request('program_studi') }}</p>
+                    @endif
+                    @if(request('tahun_publikasi'))
+                        <p class="text-muted">untuk tahun {{ request('tahun_publikasi') }}</p>
                     @endif
                     <a href="{{ route('pencipta') }}" class="btn btn-outline-primary mt-3">
                         <i class="bi bi-arrow-left me-1"></i>Kembali ke Semua Pencipta
@@ -340,7 +395,7 @@
             
             const placeholders = {
                 'nama_pencipta': 'Contoh: Ahmad Fauzi, Sari Dewi',
-                'jurusan': 'Contoh: S1 Informatika, D3 Manajemen Informatika'
+                'program_studi': 'Contoh: S1 Informatika, D3 Manajemen Informatika'
             };
             
             searchInput.placeholder = placeholders[searchType] || 'Masukkan kata kunci pencarian...';
@@ -349,8 +404,14 @@
         // Form enhancement
         document.querySelector('form').addEventListener('submit', function(e) {
             const searchInput = document.getElementById('searchInput');
-            if (searchInput.value.trim() === '') {
-                // Allow empty search to show all results
+            const programStudi = document.getElementById('programStudi');
+            const tahunPublikasi = document.getElementById('tahunPublikasi');
+            
+            // Allow search if at least one field has value
+            if (searchInput.value.trim() === '' && 
+                programStudi.value === '' && 
+                tahunPublikasi.value === '') {
+                // Allow to show all results
                 return true;
             }
         });

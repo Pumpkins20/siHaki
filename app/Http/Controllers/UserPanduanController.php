@@ -71,7 +71,7 @@ class UserPanduanController extends Controller
                 'id' => 7,
                 'category' => 'anggota',
                 'question' => 'Berapa minimal anggota pencipta yang diperlukan?',
-                'answer' => 'Minimal 2 orang pencipta, maksimal 5 orang. Jika lebih dari 5 orang, silakan hubungi LPPM di hki@amikom.ac.id untuk penanganan khusus.',
+                'answer' => 'Minimal 1 orang pencipta (individu), maksimal 5 orang. Jika lebih dari 5 orang, silakan hubungi LPPM di hki@amikom.ac.id untuk penanganan khusus.',
                 'is_popular' => true
             ],
             [

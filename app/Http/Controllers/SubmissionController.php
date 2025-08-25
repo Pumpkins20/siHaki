@@ -62,8 +62,8 @@ class SubmissionController extends Controller
                 'creation_type' => 'required|in:program_komputer,sinematografi,buku,poster,fotografi,seni_gambar,karakter_animasi,alat_peraga,basis_data',
                 'description' => 'required|string|max:1000',
                 'first_publication_date' => 'required|date|before_or_equal:today',
-                'member_count' => 'required|integer|min:2|max:6', // ✅ UPDATED: Max 6 anggota
-                'members' => 'required|array|min:2|max:6', // ✅ UPDATED: Max 6 anggota
+                'member_count' => 'required|integer|min:1|max:6', // ✅ UPDATED: Max 6 anggota
+                'members' => 'required|array|min:1|max:6', // ✅ UPDATED: Max 6 anggota
                 'members.*.name' => 'required|string|max:255',
                 'members.*.whatsapp' => 'required|string|regex:/^[0-9]{10,13}$/',
                 'members.*.email' => 'required|email',
@@ -84,7 +84,7 @@ class SubmissionController extends Controller
                 'first_publication_date.date' => 'Format tanggal tidak valid',
                 'first_publication_date.before_or_equal' => 'Tanggal tidak boleh lebih dari hari ini',
                 'member_count.required' => 'Jumlah anggota harus diisi',
-                'member_count.min' => 'Minimal 2 anggota pencipta',
+                'member_count.min' => 'Minimal 1 anggota pencipta',
                 'member_count.max' => 'Maksimal 6 anggota pencipta', // ✅ UPDATED
                 'members.*.name.required' => 'Nama anggota harus diisi',
                 'members.*.whatsapp.required' => 'No. WhatsApp anggota harus diisi',
@@ -310,7 +310,7 @@ class SubmissionController extends Controller
                 'title' => 'required|string|max:255',
                 'description' => 'required|string|max:1000',
                 'first_publication_date' => 'required|date|before_or_equal:today',
-                'members' => 'required|array|min:2|max:6', // ✅ UPDATED: Max 6 anggota
+                'members' => 'required|array|min:1|max:6', // ✅ UPDATED: Max 6 anggota
                 'members.*.id' => 'required|exists:submission_members,id',
                 'members.*.name' => 'required|string|max:255',
                 'members.*.whatsapp' => 'required|string|regex:/^[0-9]{10,13}$/',
@@ -1304,8 +1304,8 @@ class SubmissionController extends Controller
             'description' => 'required|string|max:1000',
             'creation_type' => 'required|string',
             'first_publication_date' => 'required|date|before_or_equal:today',
-            'member_count' => 'required|integer|min:2|max:6', // ✅ UPDATED: max 6
-            'members' => 'required|array|min:2|max:6', // ✅ UPDATED: max 6
+            'member_count' => 'required|integer|min:1|max:6', // ✅ UPDATED: max 6
+            'members' => 'required|array|min:1|max:6', // ✅ UPDATED: max 6
             'members.*.name' => 'required|string|max:255',
             'members.*.whatsapp' => 'required|string|regex:/^[0-9]{10,13}$/',
             'members.*.email' => 'required|email',

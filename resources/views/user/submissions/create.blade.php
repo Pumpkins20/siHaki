@@ -123,6 +123,7 @@
                                 <select class="form-select @error('member_count') is-invalid @enderror" 
                                         id="member_count" name="member_count" required onchange="updateMemberFields()">
                                     <option value="">Pilih Jumlah Anggota</option>
+                                    <option value="1" {{ old('member_count') == '1' ? 'selected' : '' }}>1 Orang (Individu)</option>
                                     <option value="2" {{ old('member_count') == '2' ? 'selected' : '' }}>2 Orang</option>
                                     <option value="3" {{ old('member_count') == '3' ? 'selected' : '' }}>3 Orang</option>
                                     <option value="4" {{ old('member_count') == '4' ? 'selected' : '' }}>4 Orang</option>
@@ -133,7 +134,7 @@
                                     <div class="invalid-feedback">{{ $message }}</div>
                                 @enderror
                                 <div class="form-text">
-                                    Minimal 2 orang, maksimal 6 orang. 
+                                    Minimal 1 orang (individu), maksimal 6 orang. 
                                     <strong>Catatan:</strong> Apabila jumlah pencipta lebih dari yang disediakan, silakan menghubungi LPPM.
                                 </div>
                             </div>
@@ -207,7 +208,7 @@
                     <div class="small">
                         <h6 class="fw-bold">Persyaratan Anggota:</h6>
                         <ul class="mb-3">
-                            <li>Minimal 2 orang pencipta</li>
+                            <li>Minimal 1 orang pencipta (individu)</li>
                             <li>Maksimal 6 orang pencipta</li>
                             <li>Semua data harus diisi lengkap</li>
                             <li>Nomor WhatsApp aktif untuk komunikasi</li>
@@ -215,6 +216,14 @@
                             <li>Alamat lengkap dan kode pos setiap anggota</li>
                             <li><strong>Scan foto KTP dalam format JPG (maksimal 2MB)</strong></li>
                         </ul>
+
+                        {{-- ✅ NEW: Tambah info untuk individu --}}
+                        <div class="alert alert-success">
+                            <small>
+                                <i class="bi bi-person-check"></i>
+                                <strong>Pengajuan Individu:</strong> Anda dapat mengajukan HKI atas nama diri sendiri (1 orang) atau bersama tim (2-6 orang).
+                            </small>
+                        </div>
                         
                         <div class="alert alert-info">
                             <small>
@@ -719,24 +728,29 @@ function updateMemberFields() {
     const memberCount = parseInt(document.getElementById('member_count').value);
     const membersSection = document.getElementById('members-section');
     
-    if (!memberCount || memberCount < 2 || memberCount > 6) {
+    // ✅ UPDATED: Ubah validasi minimal menjadi 1
+    if (!memberCount || memberCount < 1 || memberCount > 6) {
         membersSection.innerHTML = '';
         return;
     }
+
+    // ✅ UPDATED: Dynamic title based on member count
+    const sectionTitle = memberCount === 1 ? 
+        'Data Pencipta Individu' : 
+        `Data Anggota Pencipta (${memberCount} Orang)`;
 
     let html = `
         <div class="card border-success">
             <div class="card-header bg-success bg-gradient text-white">
                 <h6 class="mb-0 fw-bold">
-                    <i class="bi bi-people me-2"></i>Data Anggota Pencipta (${memberCount} Orang)
+                    <i class="bi bi-people me-2"></i>${sectionTitle}
                 </h6>
             </div>
             <div class="card-body">
     `;
 
-    // ✅ FIXED: Remove the problematic const declaration
     for (let i = 1; i <= memberCount; i++) {
-        // ✅ FIXED: Get old values using different approach to avoid Blade issues in JS
+        // Get old values logic remains the same...
         let oldName = '';
         let oldWhatsapp = '';
         let oldEmail = '';
@@ -744,7 +758,6 @@ function updateMemberFields() {
         let oldKodePos = '';
         let oldKtp = '';
         
-        // Check if old values exist from server-side
         @if(old('members'))
             const oldMembersData = @json(old('members'));
             if (oldMembersData && oldMembersData[i]) {
@@ -757,12 +770,29 @@ function updateMemberFields() {
             }
         @endif
 
+        // ✅ UPDATED: Dynamic label based on member count
+        let memberLabel = '';
+        let memberBadge = '';
+        
+        if (memberCount === 1) {
+            memberLabel = 'Pencipta Individu';
+            memberBadge = '<span class="badge bg-primary ms-2">Pencipta Tunggal</span>';
+        } else {
+            if (i === 1) {
+                memberLabel = 'Anggota Pencipta 1';
+                memberBadge = '<span class="badge bg-success ms-2">Pencipta Utama</span>';
+            } else {
+                memberLabel = `Anggota Pencipta ${i}`;
+                memberBadge = '';
+            }
+        }
+
         html += `
             <div class="member-section ${i !== memberCount ? 'border-bottom pb-4 mb-4' : ''}">
                 <div class="d-flex align-items-center mb-3">
                     <i class="bi bi-person-circle text-success fs-5 me-2"></i>
-                    <h6 class="mb-0 fw-bold">Anggota Pencipta ${i}</h6>
-                    ${i === 1 ? '<span class="badge bg-success ms-2">Pencipta Utama</span>' : ''}
+                    <h6 class="mb-0 fw-bold">${memberLabel}</h6>
+                    ${memberBadge}
                 </div>
                 
                 <!-- Data Pribadi -->
@@ -829,7 +859,7 @@ function updateMemberFields() {
     // Add validation for all member fields
     addMemberValidation();
     
-    // ✅ NEW: Show error messages if there are validation errors
+    // Show error messages if there are validation errors
     showValidationErrors();
 }
 
