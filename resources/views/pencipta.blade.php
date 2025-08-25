@@ -401,7 +401,7 @@
                     <!-- Dropdown Cari Berdasarkan -->
                     <div class="form-group-flex">
                         <label for="searchBy" class="form-label">Cari Berdasarkan</label>
-                        <select class="form-select" id="searchBy" name="search_by">
+                        <select class="form-select" id="searchBy" name="search_by" key="search_by">
                             <option value="nama_pencipta" {{ request('search_by') == 'nama_pencipta' ? 'selected' : '' }}>Nama Pencipta</option>
                             <option value="jurusan" {{ request('search_by') == 'jurusan' ? 'selected' : '' }}>Jurusan/Program Studi</option>
                         </select>
@@ -645,7 +645,10 @@
                                     <h5>{{ $result->nama }}</h5>
                                     <div class="institusi">{{ $result->institusi ?? 'STMIK AMIKOM Surakarta' }}</div>
                                     <div class="jurusan">{{ $result->jurusan ?? 'N/A' }}</div>
+<<<<<<< Updated upstream
                                     
+=======
+>>>>>>> Stashed changes
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
                                         <span class="total-hki-badge">
                                             <i class="bi bi-award me-1"></i>{{ $result->total_hki }} Pengajuan HKI
