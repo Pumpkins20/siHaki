@@ -154,8 +154,8 @@
                         @if(request('program_studi'))
                             dalam program studi <strong>{{ request('program_studi') }}</strong>
                         @endif
-                        @if(request('tahun_publikasi'))
-                            tahun <strong>{{ request('tahun_publikasi') }}</strong>
+                        @if(request('first_publication_date'))
+                            tahun <strong>{{ request('first_publication_date') }}</strong>
                         @endif
                     </div>
                 </div>
