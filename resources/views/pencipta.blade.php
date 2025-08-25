@@ -98,24 +98,33 @@
                         <label for="programStudi" class="form-label">Program Studi</label>
                         <select class="form-select" id="programStudi" name="program_studi">
                             <option value="">Semua Program Studi</option>
-                            <option value="D3 Manajemen Informatika" {{ request('program_studi') == 'D3 Manajemen Informatika' ? 'selected' : '' }}>D3 Manajemen Informatika</option>
-                            <option value="S1 Informatika" {{ request('program_studi') == 'S1 Informatika' ? 'selected' : '' }}>S1 Informatika</option>
-                            <option value="S1 Sistem Informasi" {{ request('program_studi') == 'S1 Sistem Informasi' ? 'selected' : '' }}>S1 Sistem Informasi</option>
-                            <option value="S1 Teknologi Informasi" {{ request('program_studi') == 'S1 Teknologi Informasi' ? 'selected' : '' }}>S1 Teknologi Informasi</option>
+                            {{-- ✅ FIXED: Menggunakan data dari database --}}
+                            @if(isset($availableProdi) && $availableProdi->count() > 0)
+                                @foreach($availableProdi as $prodi)
+                                    <option value="{{ $prodi }}" {{ request('program_studi') == $prodi ? 'selected' : '' }}>
+                                        {{ $prodi }}
+                                    </option>
+                                @endforeach
+                            @else
+                                <option value="" disabled>Tidak ada data program studi</option>
+                            @endif
                         </select>
                     </div>
 
                     <div class="form-group-flex">
-                        <label for="tahunPublikasi" class="form-label">Tahun Publikasi</label>
-                        <select class="form-select" id="tahunPublikasi" name="tahun_publikasi">
+                        <label for="tahunPengajuan" class="form-label">Tahun Pengajuan</label>
+                        <select class="form-select" id="tahunPengajuan" name="tahun_pengajuan">
                             <option value="">Semua Tahun</option>
-                            @php
-                                $currentYear = date('Y');
-                                for($year = $currentYear; $year >= $currentYear - 10; $year--) {
-                                    $selected = request('tahun_publikasi') == $year ? 'selected' : '';
-                                    echo "<option value='{$year}' {$selected}>{$year}</option>";
-                                }
-                            @endphp
+                            {{-- ✅ FIXED: Menggunakan data dari database berdasarkan submission_date --}}
+                            @if(isset($availableYears) && $availableYears->count() > 0)
+                                @foreach($availableYears as $year)
+                                    <option value="{{ $year }}" {{ request('tahun_pengajuan') == $year ? 'selected' : '' }}>
+                                        {{ $year }}
+                                    </option>
+                                @endforeach
+                            @else
+                                <option value="" disabled>Tidak ada data tahun pengajuan</option>
+                            @endif
                         </select>
                     </div>
 
@@ -124,7 +133,7 @@
                         <button class="btn-search" type="submit">
                             <i class="bi bi-search me-2"></i>Cari
                         </button>
-                        @if(request()->has('q') || request()->has('search_by') || request()->has('program_studi') || request()->has('tahun_publikasi'))
+                        @if(request()->has('q') || request()->has('search_by') || request()->has('program_studi') || request()->has('tahun_pengajuan'))
                             <a href="{{ route('pencipta') }}" class="btn-show-all">
                                 <i class="bi bi-list-ul me-2"></i>Lihat Semua
                             </a>
@@ -154,8 +163,9 @@
                         @if(request('program_studi'))
                             dalam program studi <strong>{{ request('program_studi') }}</strong>
                         @endif
-                        @if(request('first_publication_date'))
-                            tahun <strong>{{ request('first_publication_date') }}</strong>
+                        {{-- ✅ FIXED: Update info tahun pengajuan --}}
+                        @if(request('tahun_pengajuan'))
+                            untuk tahun pengajuan <strong>{{ request('tahun_pengajuan') }}</strong>
                         @endif
                     </div>
                 </div>
@@ -179,20 +189,24 @@
                             <div class="pencipta-info flex-grow-1">
                                 <h5>{{ $result->nama }}</h5>
                                 <div class="institusi">{{ $result->institusi ?? 'STMIK AMIKOM Surakarta' }}</div>
-                                <div class="jurusan">{{ $result->jurusan ?? 'N/A' }}</div>
+                                <div class="jurusan">{{ $result->program_studi ?? $result->jurusan ?? 'N/A' }}</div>
                                 
                                 <div class="d-flex align-items-center gap-2 flex-wrap">
                                     <span class="total-hki-badge">
                                         <i class="bi bi-award me-1"></i>{{ $result->total_hki }} Pengajuan HKI
+                                        {{-- ✅ NEW: Show year filter info --}}
+                                        @if(request('tahun_pengajuan'))
+                                            <small class="text-muted">(Tahun {{ request('tahun_pengajuan') }})</small>
+                                        @endif
                                     </span>
                                     
                                     @if(isset($query) && $searchBy === 'nama_pencipta' && stripos($result->nama, $query) !== false)
                                         <span class="search-match-badge">
                                             <i class="bi bi-check-circle me-1"></i>Sesuai pencarian nama
                                         </span>
-                                    @elseif(isset($query) && $searchBy === 'jurusan' && stripos($result->jurusan, $query) !== false)
+                                    @elseif(isset($query) && $searchBy === 'program_studi' && (stripos($result->program_studi, $query) !== false || stripos($result->jurusan, $query) !== false))
                                         <span class="search-match-badge">
-                                            <i class="bi bi-check-circle me-1"></i>Sesuai pencarian jurusan
+                                            <i class="bi bi-check-circle me-1"></i>Sesuai pencarian program studi
                                         </span>
                                     @endif
                                 </div>
@@ -200,13 +214,23 @@
                                 {{-- Show recent HKI works --}}
                                 @if(isset($result->submissions) && $result->submissions->count() > 0)
                                     <div class="recent-works">
-                                        <small class="text-muted fw-bold">Pengajuan HKI Terbaru:</small>
+                                        <small class="text-muted fw-bold">
+                                            Pengajuan HKI 
+                                            @if(request('tahun_pengajuan'))
+                                                Tahun {{ request('tahun_pengajuan') }}:
+                                            @else
+                                                Terbaru:
+                                            @endif
+                                        </small>
                                         <ul class="list-unstyled mt-2 mb-0">
                                             @foreach($result->submissions->take(3) as $submission)
                                                 <li>
                                                     <i class="bi bi-file-earmark-text me-1"></i>
                                                     {{ Str::limit($submission->title, 60) }}
-                                                    <small class="text-primary">({{ $submission->created_at->format('Y') }})</small>
+                                                    {{-- ✅ FIXED: Tampilkan submission_date jika ada --}}
+                                                    <small class="text-primary">
+                                                        ({{ $submission->submission_date ? $submission->submission_date->format('Y') : $submission->created_at->format('Y') }})
+                                                    </small>
                                                 </li>
                                             @endforeach
                                             @if($result->submissions->count() > 3)
@@ -230,11 +254,11 @@
                     </div>
                 @endforeach
 
-                <!-- ✅ FIXED: Pagination with proper check -->
+                <!-- Pagination -->
                 @if($results->hasPages())
                     <div class="pagination-wrapper">
                         <nav aria-label="Pagination Navigation">
-                            {{ $results->links('custom.pagination') }}
+                            {{ $results->appends(request()->query())->links('custom.pagination') }}
                         </nav>
                     </div>
                 @endif
@@ -246,13 +270,14 @@
                     <h4>Data Tidak Ditemukan</h4>
                     <p>Tidak ada pencipta yang ditemukan untuk pencarian "<strong>{{ $query }}</strong>"</p>
                     @if(isset($searchBy))
-                        <p class="text-muted">berdasarkan {{ $searchBy === 'nama_pencipta' ? 'Nama Pencipta' : 'Jurusan/Program Studi' }}</p>
+                        <p class="text-muted">berdasarkan {{ $searchBy === 'nama_pencipta' ? 'Nama Pencipta' : 'Program Studi' }}</p>
                     @endif
                     @if(request('program_studi'))
                         <p class="text-muted">dalam program studi {{ request('program_studi') }}</p>
                     @endif
-                    @if(request('tahun_publikasi'))
-                        <p class="text-muted">untuk tahun {{ request('tahun_publikasi') }}</p>
+                    {{-- ✅ FIXED: Update pesan tahun pengajuan --}}
+                    @if(request('tahun_pengajuan'))
+                        <p class="text-muted">untuk tahun pengajuan {{ request('tahun_pengajuan') }}</p>
                     @endif
                     <a href="{{ route('pencipta') }}" class="btn btn-outline-primary mt-3">
                         <i class="bi bi-arrow-left me-1"></i>Kembali ke Semua Pencipta
@@ -265,7 +290,7 @@
                     <p class="text-muted">Daftar lengkap pencipta yang memiliki pengajuan HKI yang telah disetujui</p>
                 </div>
                 
-                <!-- ✅ NEW: Auto load all users when no search -->
+                {{-- ✅ FIXED: Auto load all users berdasarkan submission_date --}}
                 @php
                     // Get all users with approved submissions for display
                     $allUsers = \App\Models\User::select([
@@ -273,12 +298,13 @@
                         'users.nama',
                         'users.email',
                         'users.foto',
+                        'users.program_studi',
                         DB::raw('COUNT(DISTINCT hki_submissions.id) as total_hki')
                     ])
                     ->join('hki_submissions', 'users.id', '=', 'hki_submissions.user_id')
                     ->where('users.role', 'user')
                     ->where('hki_submissions.status', 'approved')
-                    ->groupBy(['users.id', 'users.nama', 'users.email', 'users.foto'])
+                    ->groupBy(['users.id', 'users.nama', 'users.email', 'users.foto', 'users.program_studi'])
                     ->having('total_hki', '>', 0)
                     ->orderBy('total_hki', 'desc')
                     ->orderBy('users.nama')
@@ -288,9 +314,9 @@
                     $allUsers->getCollection()->transform(function ($user) {
                         $user->submissions = \App\Models\HkiSubmission::where('user_id', $user->id)
                             ->where('status', 'approved')
-                            ->orderBy('created_at', 'desc')
+                            ->orderBy('submission_date', 'desc')
                             ->limit(5)
-                            ->get(['id', 'title', 'created_at']);
+                            ->get(['id', 'title', 'submission_date', 'created_at']);
                         return $user;
                     });
                 @endphp
@@ -324,7 +350,8 @@
                                 <div class="pencipta-info flex-grow-1">
                                     <h5>{{ $result->nama }}</h5>
                                     <div class="institusi">{{ $result->institusi ?? 'STMIK AMIKOM Surakarta' }}</div>
-                                    <div class="jurusan">{{ $result->zz ?? 'N/A' }}</div>
+                                    {{-- ✅ FIXED: Prioritas program_studi daripada jurusan --}}
+                                    <div class="jurusan">{{ $result->program_studi ?? $result->jurusan ?? 'N/A' }}</div>
                                     
                                     <div class="d-flex align-items-center gap-2 flex-wrap">
                                         <span class="total-hki-badge">
@@ -341,7 +368,10 @@
                                                     <li>
                                                         <i class="bi bi-file-earmark-text me-1"></i>
                                                         {{ Str::limit($submission->title, 60) }}
-                                                        <small class="text-primary">({{ $submission->created_at->format('Y') }})</small>
+                                                        {{-- ✅ FIXED: Prioritas submission_date --}}
+                                                        <small class="text-primary">
+                                                            ({{ $submission->submission_date ? $submission->submission_date->format('Y') : $submission->created_at->format('Y') }})
+                                                        </small>
                                                     </li>
                                                 @endforeach
                                                 @if($result->submissions->count() > 3)
@@ -388,6 +418,11 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
     
     <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Available years from database:', @json($availableYears ?? []));
+            console.log('Available prodi from database:', @json($availableProdi ?? []));
+            console.log('Current tahun_pengajuan filter:', '{{ request("tahun_pengajuan") }}');
+        });
         // Dynamic placeholder based on search type
         document.getElementById('searchBy').addEventListener('change', function() {
             const searchInput = document.getElementById('searchInput');
@@ -405,16 +440,25 @@
         document.querySelector('form').addEventListener('submit', function(e) {
             const searchInput = document.getElementById('searchInput');
             const programStudi = document.getElementById('programStudi');
-            const tahunPublikasi = document.getElementById('tahunPublikasi');
+            const tahunPengajuan = document.getElementById('tahunPengajuan');
+            
+            // ✅ NEW: Log form data sebelum submit untuk debugging
+            console.log('Form submission data:', {
+                q: searchInput.value,
+                search_by: document.getElementById('searchBy').value,
+                program_studi: programStudi.value,
+                tahun_pengajuan: tahunPengajuan.value
+            });
             
             // Allow search if at least one field has value
             if (searchInput.value.trim() === '' && 
                 programStudi.value === '' && 
-                tahunPublikasi.value === '') {
+                tahunPengajuan.value === '') {
                 // Allow to show all results
                 return true;
             }
         });
+
 
         // Card hover effects
         document.addEventListener('DOMContentLoaded', function() {

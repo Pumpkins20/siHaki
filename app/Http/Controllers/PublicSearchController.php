@@ -43,9 +43,9 @@ class PublicSearchController extends Controller
         $filter = $request->get('filter');
         $query = $request->get('q');
         $programStudi = $request->get('program_studi');
-        $tahunPublikasi = $request->get('tahun_publikasi');
+        $tahunPengajuan = $request->get('tahun_pengajuan'); // Changed from tahun_publikasi
         
-        if (empty($query) && empty($programStudi) && empty($tahunPublikasi)) {
+        if (empty($query) && empty($programStudi) && empty($tahunPengajuan)) {
             return back()->with('error', 'Silakan masukkan minimal satu kriteria pencarian');
         }
 
@@ -61,9 +61,9 @@ class PublicSearchController extends Controller
         $query = $request->get('q');
         $filter = $request->get('filter');
         $programStudi = $request->get('program_studi');
-        $tahunPublikasi = $request->get('tahun_publikasi');
+        $tahunPengajuan = $request->get('tahun_pengajuan'); // Changed from tahun_publikasi
         
-        if (empty($query) && empty($programStudi) && empty($tahunPublikasi)) {
+        if (empty($query) && empty($programStudi) && empty($tahunPengajuan)) {
             return redirect()->route('beranda');
         }
 
@@ -109,13 +109,13 @@ class PublicSearchController extends Controller
             });
         }
 
-        // Apply year filter
-        if (!empty($tahunPublikasi)) {
-            $submissionsQuery->where(function($q) use ($tahunPublikasi) {
-                $q->whereYear('first_publication_date', $tahunPublikasi)
-                  ->orWhere(function($subQ) use ($tahunPublikasi) {
-                      $subQ->whereNull('first_publication_date')
-                           ->whereYear('created_at', $tahunPublikasi);
+        // Apply year filter - UPDATED to use submission_date
+        if (!empty($tahunPengajuan)) {
+            $submissionsQuery->where(function($q) use ($tahunPengajuan) {
+                $q->whereYear('submission_date', $tahunPengajuan)
+                  ->orWhere(function($subQ) use ($tahunPengajuan) {
+                      $subQ->whereNull('submission_date')
+                           ->whereYear('created_at', $tahunPengajuan);
                   });
             });
         }
@@ -132,11 +132,11 @@ class PublicSearchController extends Controller
                 'pencipta_id' => $submission->user_id,
                 'jurusan' => $submission->user->program_studi ?? 'N/A',
                 'tipe' => $this->getCreationTypeDisplayName($submission->creation_type),
-                'tahun' => $submission->first_publication_date 
-                    ? $submission->first_publication_date->format('Y')
+                'tahun' => $submission->submission_date 
+                    ? $submission->submission_date->format('Y')
                     : $submission->created_at->format('Y'),
-                'tanggal_publikasi' => $submission->first_publication_date 
-                    ? $submission->first_publication_date->format('d M Y')
+                'tanggal_pengajuan' => $submission->submission_date 
+                    ? $submission->submission_date->format('d M Y')
                     : $submission->created_at->format('d M Y')
             ];
         });
@@ -171,31 +171,31 @@ class PublicSearchController extends Controller
     }
 
     /**
-     * ✅ NEW: Get available publication years
+     * ✅ UPDATED: Get available submission years from submission_date
      */
     private function getAvailableYears()
     {
         try {
             $years = collect();
             
-            // Get years from first_publication_date
-            $publicationYears = HkiSubmission::where('status', 'approved')
-                ->whereNotNull('first_publication_date')
-                ->select(DB::raw('YEAR(first_publication_date) as year'))
+            // Get years from submission_date
+            $submissionYears = HkiSubmission::where('status', 'approved')
+                ->whereNotNull('submission_date')
+                ->select(DB::raw('YEAR(submission_date) as year'))
                 ->distinct()
                 ->orderBy('year', 'desc')
                 ->pluck('year');
             
-            // Get years from created_at for submissions without publication date
+            // Get years from created_at for submissions without submission_date
             $createdYears = HkiSubmission::where('status', 'approved')
-                ->whereNull('first_publication_date')
+                ->whereNull('submission_date')
                 ->select(DB::raw('YEAR(created_at) as year'))
                 ->distinct()
                 ->orderBy('year', 'desc')
                 ->pluck('year');
             
             // Merge and sort years
-            $allYears = $publicationYears->merge($createdYears)->unique()->sort()->reverse()->values();
+            $allYears = $submissionYears->merge($createdYears)->unique()->sort()->reverse()->values();
             
             return $allYears;
         } catch (\Exception $e) {
@@ -205,7 +205,7 @@ class PublicSearchController extends Controller
     }
 
     /**
-     * ✅ NEW: Generate search summary
+     * ✅ UPDATED: Generate search summary - changed tahun_publikasi to tahun_pengajuan
      */
     private function generateSearchSummary(Request $request, $resultCount)
     {
@@ -231,11 +231,11 @@ class PublicSearchController extends Controller
             ];
         }
 
-        if ($request->filled('tahun_publikasi')) {
+        if ($request->filled('tahun_pengajuan')) {
             $summary['filters'][] = [
                 'type' => 'tahun',
-                'label' => 'Tahun Publikasi',
-                'value' => $request->get('tahun_publikasi')
+                'label' => 'Tahun Pengajuan',
+                'value' => $request->get('tahun_pengajuan')
             ];
         }
 
@@ -247,112 +247,125 @@ class PublicSearchController extends Controller
      */
     public function pencipta(Request $request)
     {
-        try {
-            $perPage = 6;
-            $query = $request->get('q');
-            $searchBy = $request->get('search_by', 'nama_pencipta');
-            $programStudi = $request->get('program_studi');
+        $query = $request->get('q');
+        $searchBy = $request->get('search_by', 'nama_pencipta');
+        $programStudi = $request->get('program_studi');
+        $tahunPengajuan = $request->get('tahun_pengajuan'); // ✅ FIXED: Menggunakan tahun_pengajuan
 
-            Log::info('Pencipta search request', [
-                'query' => $query,
-                'search_by' => $searchBy,
-                'program_studi' => $programStudi
-            ]);
+        Log::info('=== PENCIPTA SEARCH ===', [
+            'query' => $query,
+            'search_by' => $searchBy,
+            'program_studi' => $programStudi,
+            'tahun_pengajuan' => $tahunPengajuan
+        ]);
 
-            $usersQuery = User::select([
-                'users.id',
-                'users.nama',
-                'users.email',
-                'users.program_studi',
-                'users.foto',
-                DB::raw('COUNT(DISTINCT hki_submissions.id) as total_hki')
-            ])
-            ->join('hki_submissions', 'users.id', '=', 'hki_submissions.user_id')
-            ->where('users.role', 'user')
-            ->where('hki_submissions.status', 'approved')
-            ->groupBy([
-                'users.id',
-                'users.nama', 
-                'users.email',
-                'users.program_studi',
-                'users.foto'
-            ])
-            ->having('total_hki', '>', 0);
+        $usersQuery = User::select([
+            'users.id',
+            'users.nama',
+            'users.email',
+            'users.foto',
+            'users.program_studi',
+            DB::raw('COUNT(DISTINCT hki_submissions.id) as total_hki')
+        ])
+        ->join('hki_submissions', 'users.id', '=', 'hki_submissions.user_id')
+        ->where('users.role', 'user')
+        ->where('hki_submissions.status', 'approved');
 
-            // Apply text search filter
-            if (!empty(trim($query))) {
-                switch ($searchBy) {
-                    case 'nama_pencipta':
-                        $usersQuery->where('users.nama', 'LIKE', '%' . trim($query) . '%');
-                        break;
-                    case 'program_studi':
-                        $usersQuery->where('users.program_studi', 'LIKE', '%' . trim($query) . '%');
-                        break;
-                }
-            }
-
-            // Apply program studi filter
-            if (!empty($programStudi)) {
-                $usersQuery->where('users.program_studi', $programStudi);
-            }
-
-            $results = $usersQuery->orderBy('total_hki', 'desc')
-                                 ->orderBy('users.nama', 'asc')
-                                 ->paginate($perPage)
-                                 ->appends($request->query());
-
-            $results->getCollection()->transform(function ($user) {
-                $user->submissions = HkiSubmission::where('user_id', $user->id)
-                    ->where('status', 'approved')
-                    ->orderBy('created_at', 'desc')
-                    ->limit(5)
-                    ->get(['id', 'title', 'created_at']);
-                
-                $user->institusi = $user->institusi ?? 'STMIK AMIKOM Surakarta';
-                $user->jurusan = $user->jurusan ?? 'N/A';
-                
-                return $user;
-            });
-
-            $programStudiList = $this->getProgramStudiList();
-
-            Log::info('Search results', [
-                'total_found' => $results->total(),
-                'current_page' => $results->currentPage(),
-                'query' => $query,
-                'search_by' => $searchBy,
-                'program_studi' => $programStudi
-            ]);
-
-            return view('pencipta', compact('results', 'query', 'searchBy', 'programStudi', 'programStudiList'));
-
-        } catch (\Exception $e) {
-            Log::error('Error in pencipta search', [
-                'error' => $e->getMessage(),
-                'line' => $e->getLine(),
-                'file' => $e->getFile(),
-                'trace' => $e->getTraceAsString()
-            ]);
-
-            $results = User::whereRaw('1 = 0')->paginate($perPage ?? 6);
-            $programStudiList = collect();
-            return view('pencipta', compact('results', 'programStudiList'))->with('error', 'Terjadi kesalahan saat mencari data.');
+        // ✅ FIXED: Apply tahun filter berdasarkan submission_date
+        if (!empty($tahunPengajuan)) {
+            $usersQuery->whereYear('hki_submissions.submission_date', $tahunPengajuan);
+            Log::info('Applied year filter', ['tahun_pengajuan' => $tahunPengajuan]);
         }
+
+        // Apply program studi filter
+        if (!empty($programStudi)) {
+            $usersQuery->where('users.program_studi', $programStudi);
+            Log::info('Applied program studi filter', ['program_studi' => $programStudi]);
+        }
+
+        // Apply search filters
+        if (!empty($query)) {
+            if ($searchBy === 'nama_pencipta') {
+                $usersQuery->where('users.nama', 'like', '%' . $query . '%');
+            } elseif ($searchBy === 'program_studi') {
+                $usersQuery->where(function($q) use ($query) {
+                    $q->where('users.program_studi', 'like', '%' . $query . '%');
+                    
+                });
+            }
+            Log::info('Applied search filter', ['search_by' => $searchBy, 'query' => $query]);
+        }
+
+        $results = $usersQuery
+            ->groupBy(['users.id', 'users.nama', 'users.email', 'users.foto', 'users.program_studi'])
+            ->having('total_hki', '>', 0)
+            ->orderBy('total_hki', 'desc')
+            ->orderBy('users.nama')
+            ->paginate(6);
+
+        // Load submissions for each user
+        $results->getCollection()->transform(function ($user) use ($tahunPengajuan) {
+            $submissionsQuery = HkiSubmission::where('user_id', $user->id)
+                ->where('status', 'approved');
+                
+            // ✅ FIXED: Apply tahun filter untuk submissions juga
+            if (!empty($tahunPengajuan)) {
+                $submissionsQuery->whereYear('submission_date', $tahunPengajuan);
+            }
+            
+            $user->submissions = $submissionsQuery
+                ->orderBy('submission_date', 'desc')
+                ->limit(5)
+                ->get(['id', 'title', 'submission_date', 'created_at']);
+                
+            return $user;
+        });
+
+        // ✅ NEW: Get available years from database berdasarkan submission_date
+        $availableYears = HkiSubmission::where('status', 'approved')
+            ->whereNotNull('submission_date')
+            ->selectRaw('YEAR(submission_date) as year')
+            ->distinct()
+            ->orderBy('year', 'desc')
+            ->pluck('year')
+            ->filter();
+
+        // ✅ NEW: Get available program studi from database
+        $availableProdi = User::join('hki_submissions', 'users.id', '=', 'hki_submissions.user_id')
+            ->where('hki_submissions.status', 'approved')
+            ->whereNotNull('users.program_studi')
+            ->where('users.program_studi', '!=', '')
+            ->distinct()
+            ->pluck('users.program_studi')
+            ->filter()
+            ->sort()
+            ->values();
+
+        Log::info('Pencipta search completed', [
+            'results_count' => $results->count(),
+            'total_results' => $results->total(),
+            'available_years_count' => $availableYears->count(),
+            'available_prodi_count' => $availableProdi->count(),
+            'available_years' => $availableYears->toArray(),
+            'available_prodi' => $availableProdi->toArray()
+        ]);
+
+        return view('pencipta', compact('results', 'query', 'searchBy', 'availableYears', 'availableProdi'));
     }
 
     /**
-     * ✅ ENHANCED: Jenis Ciptaan search with filters
+     * ✅ UPDATED: Jenis Ciptaan search with filters - changed tahun_publikasi to tahun_pengajuan
      */
     public function searchJenisCiptaan(Request $request)
     {
         $searchBy = $request->get('search_by', 'jenis_ciptaan');
         $query = $request->get('q');
         $programStudi = $request->get('program_studi');
-        $tahunPublikasi = $request->get('tahun_publikasi');
+        $tahunPengajuan = $request->get('tahun_pengajuan'); // Changed from tahun_publikasi
         
         $results = collect();
         
-        if (!empty($query) || !empty($programStudi) || !empty($tahunPublikasi)) {
+        if (!empty($query) || !empty($programStudi) || !empty($tahunPengajuan)) {
             $submissionsQuery = HkiSubmission::where('status', 'approved')
                 ->with(['user', 'members']);
 
@@ -372,13 +385,13 @@ class PublicSearchController extends Controller
                 });
             }
 
-            // Apply year filter
-            if (!empty($tahunPublikasi)) {
-                $submissionsQuery->where(function($q) use ($tahunPublikasi) {
-                    $q->whereYear('first_publication_date', $tahunPublikasi)
-                      ->orWhere(function($subQ) use ($tahunPublikasi) {
-                          $subQ->whereNull('first_publication_date')
-                               ->whereYear('created_at', $tahunPublikasi);
+            // Apply year filter - UPDATED to use submission_date
+            if (!empty($tahunPengajuan)) {
+                $submissionsQuery->where(function($q) use ($tahunPengajuan) {
+                    $q->whereYear('submission_date', $tahunPengajuan)
+                      ->orWhere(function($subQ) use ($tahunPengajuan) {
+                          $subQ->whereNull('submission_date')
+                               ->whereYear('created_at', $tahunPengajuan);
                       });
                 });
             }
@@ -400,7 +413,61 @@ class PublicSearchController extends Controller
         $programStudiList = $this->getProgramStudiList();
         $availableYears = $this->getAvailableYears();
 
-        return view('jenis_ciptaan', compact('results', 'searchBy', 'query', 'programStudi', 'tahunPublikasi', 'programStudiList', 'availableYears'));
+        return view('jenis_ciptaan', compact('results', 'searchBy', 'query', 'programStudi', 'tahunPengajuan', 'programStudiList', 'availableYears'));
+    }
+
+    /**
+     * ✅ UPDATED: Detail jenis method - changed tahun_publikasi to tahun_pengajuan
+     */
+    public function detailJenis(Request $request, $type = null)
+    {
+        $searchBy = $request->get('search_by', 'jenis_ciptaan');
+        $query = $request->get('q');
+        $programStudi = $request->get('program_studi');
+        $tahunPengajuan = $request->get('tahun_pengajuan'); // Changed from tahun_publikasi
+        
+        $submissionsQuery = HkiSubmission::where('status', 'approved')
+            ->with([
+                'user', 
+                'members',
+                'documents' => function($q) {
+                    $q->where('document_type', 'certificate');
+                }
+            ]);
+        
+        if ($type) {
+            $submissionsQuery->where('creation_type', $type);
+        } elseif (!empty($query)) {
+            if ($searchBy === 'jenis_ciptaan') {
+                $submissionsQuery->where('creation_type', 'like', '%' . $query . '%');
+            } else {
+                $submissionsQuery->where('title', 'like', '%' . $query . '%');
+            }
+        }
+
+        // Apply program studi filter
+        if (!empty($programStudi)) {
+            $submissionsQuery->whereHas('user', function($userQuery) use ($programStudi) {
+                $userQuery->where('program_studi', $programStudi);
+            });
+        }
+
+        // Apply year filter - UPDATED to use submission_date
+        if (!empty($tahunPengajuan)) {
+            $submissionsQuery->where(function($q) use ($tahunPengajuan) {
+                $q->whereYear('submission_date', $tahunPengajuan)
+                  ->orWhere(function($subQ) use ($tahunPengajuan) {
+                      $subQ->whereNull('submission_date')
+                           ->whereYear('created_at', $tahunPengajuan);
+                  });
+            });
+        }
+        
+        $submissions = $submissionsQuery->orderBy('created_at', 'desc')->paginate(10);
+        $programStudiList = $this->getProgramStudiList();
+        $availableYears = $this->getAvailableYears();
+        
+        return view('detail_jenis', compact('submissions', 'type', 'searchBy', 'query', 'programStudi', 'tahunPengajuan', 'programStudiList', 'availableYears'));
     }
 
     // ... (keep all other existing methods unchanged)
@@ -587,8 +654,8 @@ class PublicSearchController extends Controller
                 'tipe_hki' => ucfirst($submission->type ?? 'Unknown'),
                 'jenis_hki' => $this->getCreationTypeDisplayName($submission->creation_type ?? 'unknown'),
                 'uraian_singkat' => $submission->description ?? 'Tidak ada deskripsi',
-                'tanggal_publikasi' => $submission->first_publication_date 
-                    ? $submission->first_publication_date->format('d M Y') 
+                'tanggal_pengajuan' => $submission->submission_date 
+                    ? $submission->submission_date->format('d M Y') 
                     : ($submission->created_at ? $submission->created_at->format('d M Y') : 'Tidak diketahui'),
                 'pencipta_utama' => $submission->members->where('is_leader', true)->first()->name ?? ($submission->user->nama ?? 'Tidak diketahui'),
                 'anggota_pencipta' => $submission->members->where('is_leader', false)->pluck('name')->toArray(),
@@ -753,8 +820,8 @@ class PublicSearchController extends Controller
             'tipe_hki' => ucfirst($submission->type),
             'jenis_hki' => $this->getCreationTypeDisplayName($submission->creation_type),
             'uraian_singkat' => $submission->description,
-            'tanggal_publikasi' => $submission->first_publication_date 
-                ? $submission->first_publication_date->format('d M Y') 
+            'tanggal_pengajuan' => $submission->submission_date 
+                ? $submission->submission_date->format('d M Y') 
                 : $submission->created_at->format('d M Y'),
             'pencipta_utama' => $submission->members->where('is_leader', true)->first()->name ?? $submission->user->nama,
             'anggota_pencipta' => $submission->members->where('is_leader', false)->pluck('name')->toArray(),
@@ -765,56 +832,5 @@ class PublicSearchController extends Controller
         ];
 
         return view('detail_ciptaan', compact('ciptaan'));
-    }
-
-    public function detailJenis(Request $request, $type = null)
-    {
-        $searchBy = $request->get('search_by', 'jenis_ciptaan');
-        $query = $request->get('q');
-        $programStudi = $request->get('program_studi');
-        $tahunPublikasi = $request->get('tahun_publikasi');
-        
-        $submissionsQuery = HkiSubmission::where('status', 'approved')
-            ->with([
-                'user', 
-                'members',
-                'documents' => function($q) {
-                    $q->where('document_type', 'certificate');
-                }
-            ]);
-        
-        if ($type) {
-            $submissionsQuery->where('creation_type', $type);
-        } elseif (!empty($query)) {
-            if ($searchBy === 'jenis_ciptaan') {
-                $submissionsQuery->where('creation_type', 'like', '%' . $query . '%');
-            } else {
-                $submissionsQuery->where('title', 'like', '%' . $query . '%');
-            }
-        }
-
-        // Apply program studi filter
-        if (!empty($programStudi)) {
-            $submissionsQuery->whereHas('user', function($userQuery) use ($programStudi) {
-                $userQuery->where('program_studi', $programStudi);
-            });
-        }
-
-        // Apply year filter
-        if (!empty($tahunPublikasi)) {
-            $submissionsQuery->where(function($q) use ($tahunPublikasi) {
-                $q->whereYear('first_publication_date', $tahunPublikasi)
-                  ->orWhere(function($subQ) use ($tahunPublikasi) {
-                      $subQ->whereNull('first_publication_date')
-                           ->whereYear('created_at', $tahunPublikasi);
-                  });
-            });
-        }
-        
-        $submissions = $submissionsQuery->orderBy('created_at', 'desc')->paginate(10);
-        $programStudiList = $this->getProgramStudiList();
-        $availableYears = $this->getAvailableYears();
-        
-        return view('detail_jenis', compact('submissions', 'type', 'searchBy', 'query', 'programStudi', 'tahunPublikasi', 'programStudiList', 'availableYears'));
     }
 }

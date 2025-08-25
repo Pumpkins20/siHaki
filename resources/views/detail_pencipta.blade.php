@@ -203,7 +203,15 @@
 
                                 <div class="mb-3">
                                     <strong>Tanggal Publikasi:</strong>
-                                    <span class="text-muted">{{ $submission->tanggal_publikasi }}</span>
+                                    <span class="text-muted">
+                                        @if(isset($submission->tanggal_publikasi))
+                                            {{ $submission->tanggal_publikasi }}
+                                        @elseif(isset($submission->created_at))
+                                            {{ $submission->created_at->format('d M Y') }}
+                                        @else
+                                            <em>Tidak tersedia</em>
+                                        @endif
+                                    </span>
                                 </div>
 
                                 <!--<div class="mb-3">

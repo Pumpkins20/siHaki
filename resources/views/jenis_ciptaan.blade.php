@@ -50,31 +50,60 @@
             </div>
         </nav>
     </header>
- <!-- Search Section -->
+    <!-- Search Section -->
     <section class="search-section py-4">
         <div class="container">
-            {{-- ✅ FIXED: Form action should go to jenis_ciptaan route --}}
-            <form method="GET" action="{{ route('jenis_ciptaan') }}">
-                <!-- Dropdown Cari Berdasarkan -->
-                <div class="form-group">
-                    <label for="searchBy">Cari Berdasarkan</label>
-                    <select class="form-select" id="searchBy" name="search_by">
-                        <option value="jenis_ciptaan" {{ request('search_by') == 'jenis_ciptaan' ? 'selected' : '' }}>Jenis Ciptaan</option>
-                        <option value="judul_ciptaan" {{ request('search_by') == 'judul_ciptaan' ? 'selected' : '' }}>Judul Ciptaan</option>
-                    </select>
+            {{-- ✅ ENHANCED: Form with year filter --}}
+            <form method="GET" action="{{ route('jenis_ciptaan') }}" class="search-form-enhanced">
+                <!-- Row 1: Search criteria -->
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <label for="searchBy" class="form-label">Cari Berdasarkan</label>
+                        <select class="form-select" id="searchBy" name="search_by">
+                            <option value="jenis_ciptaan" {{ request('search_by') == 'jenis_ciptaan' ? 'selected' : '' }}>Jenis Ciptaan</option>
+                            <option value="judul_ciptaan" {{ request('search_by') == 'judul_ciptaan' ? 'selected' : '' }}>Judul Ciptaan</option>
+                        </select>
+                    </div>
+
+                    <div class="col-md-5">
+                        <label for="searchInput" class="form-label">Kata Kunci Pencarian</label>
+                        <input type="text" class="form-control" id="searchInput" name="q" 
+                            value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
+                    </div>
+
+                    {{-- ✅ NEW: Year filter --}}
+                    <div class="col-md-3">
+                        <label for="tahunPengajuan" class="form-label">Tahun Pengajuan</label>
+                        <select class="form-select" id="tahunPengajuan" name="tahun_pengajuan">
+                            <option value="">Semua Tahun</option>
+                            @if(isset($availableYears) && $availableYears->count() > 0)
+                                @foreach($availableYears as $year)
+                                    <option value="{{ $year }}" {{ request('tahun_pengajuan') == $year ? 'selected' : '' }}>
+                                        {{ $year }}
+                                    </option>
+                                @endforeach
+                            @else
+                                <option value="" disabled>Tidak ada data tahun</option>
+                            @endif
+                        </select>
+                    </div>
                 </div>
 
-                <!-- Input Pencarian -->
-                <div class="form-group search-input-group">
-                    <label for="searchInput" id="searchLabel">Cari</label>
-                    <input type="text" class="form-control" id="searchInput" name="q" value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
+                <!-- Row 2: Action buttons -->
+                <div class="row">
+                    <div class="col-12 d-flex gap-2 justify-content-center">
+                        <button class="btn btn-primary btn-lg search-btn" type="submit">
+                            <i class="bi bi-search me-2"></i>Cari Sekarang
+                        </button>
+                        
+                        {{-- ✅ NEW: Show clear filter button when filters are active --}}
+                        @if(request()->has('q') || request()->has('search_by') || request()->has('tahun_pengajuan'))
+                            <a href="{{ route('jenis_ciptaan') }}" class="btn btn-outline-secondary btn-lg">
+                                <i class="bi bi-arrow-clockwise me-2"></i>Reset Filter
+                            </a>
+                        @endif
+                    </div>
                 </div>
-
-                <!-- Tombol Cari -->
-                <button class="search-btn" type="submit">
-                    <i class="bi bi-search"></i>
-                    Cari
-                </button>
             </form>
         </div>
     </section>
