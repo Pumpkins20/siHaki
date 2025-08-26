@@ -56,8 +56,8 @@
             {{-- ✅ ENHANCED: Form with year filter --}}
             <form method="GET" action="{{ route('jenis_ciptaan') }}" class="search-form-enhanced">
                 <!-- Row 1: Search criteria -->
-                <div class="row mb-3">
-                    <div class="col-md-4">
+                
+                    <div class="form-group-flex">
                         <label for="searchBy" class="form-label">Cari Berdasarkan</label>
                         <select class="form-select" id="searchBy" name="search_by">
                             <option value="jenis_ciptaan" {{ request('search_by') == 'jenis_ciptaan' ? 'selected' : '' }}>Jenis Ciptaan</option>
@@ -65,17 +65,18 @@
                         </select>
                     </div>
 
-                    <div class="col-md-5">
+                    <div class="form-group-flex search-input">
                         <label for="searchInput" class="form-label">Kata Kunci Pencarian</label>
                         <input type="text" class="form-control" id="searchInput" name="q" 
                             value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
                     </div>
 
                     {{-- ✅ NEW: Year filter --}}
-                    <div class="col-md-3">
+                    <div class="form-group-flex">
                         <label for="tahunPengajuan" class="form-label">Tahun Pengajuan</label>
                         <select class="form-select" id="tahunPengajuan" name="tahun_pengajuan">
                             <option value="">Semua Tahun</option>
+                            {{-- ✅ FIXED: Menggunakan data dari database berdasarkan submission_date --}}
                             @if(isset($availableYears) && $availableYears->count() > 0)
                                 @foreach($availableYears as $year)
                                     <option value="{{ $year }}" {{ request('tahun_pengajuan') == $year ? 'selected' : '' }}>
@@ -83,16 +84,15 @@
                                     </option>
                                 @endforeach
                             @else
-                                <option value="" disabled>Tidak ada data tahun</option>
+                                <option value="" disabled>Tidak ada data tahun pengajuan</option>
                             @endif
                         </select>
                     </div>
-                </div>
 
                 <!-- Row 2: Action buttons -->
-                <div class="row">
-                    <div class="col-12 d-flex gap-2 justify-content-center">
-                        <button class="btn btn-primary btn-lg search-btn" type="submit">
+                
+                    <div class="d-flex justify-content-end">
+                        <button class="search-btn" type="submit">
                             <i class="bi bi-search me-2"></i>Cari Sekarang
                         </button>
                         
@@ -103,7 +103,7 @@
                             </a>
                         @endif
                     </div>
-                </div>
+                
             </form>
         </div>
     </section>
