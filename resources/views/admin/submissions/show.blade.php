@@ -787,11 +787,7 @@
                         </div>
                     </div>
                     
-                    <div class="alert alert-danger">
-                        <i class="bi bi-exclamation-triangle me-2"></i>
-                        <strong>Submission "{{ $submission->title }}" akan ditolak secara permanen.</strong>
-                        <br><small>User tidak dapat mengedit submission yang sudah ditolak.</small>
-                    </div>
+                   
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>

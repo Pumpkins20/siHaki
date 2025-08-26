@@ -217,26 +217,38 @@
                             <li><strong>Scan foto KTP dalam format JPG (maksimal 2MB)</strong></li>
                         </ul>
 
-                        {{-- ✅ NEW: Tambah info untuk individu --}}
-                        <div class="alert alert-success">
-                            <small>
-                                <i class="bi bi-person-check"></i>
-                                <strong>Pengajuan Individu:</strong> Anda dapat mengajukan HKI atas nama diri sendiri (1 orang) atau bersama tim (2-6 orang).
-                            </small>
+                       {{-- ✅ NEW: Tambah info untuk individu --}}
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="p-3 border rounded bg-success-subtle border-success text-success-emphasis">
+                                    <small>
+                                        <i class="bi bi-person-check me-2"></i>
+                                        <strong>Pengajuan Individu:</strong> Anda dapat mengajukan HKI atas nama diri sendiri (1 orang) atau bersama tim (2-6 orang).
+                                    </small>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="alert alert-info">
-                            <small>
-                                <i class="bi bi-info-circle"></i>
-                                <strong>Info KTP:</strong> Pastikan foto KTP jelas, tidak buram, dan semua informasi dapat dibaca dengan baik.
-                            </small>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="p-3 border rounded bg-info-subtle border-info text-info-emphasis">
+                                    <small>
+                                        <i class="bi bi-info-circle me-2"></i>
+                                        <strong>Info KTP:</strong> Pastikan foto KTP jelas, tidak buram, dan semua informasi dapat dibaca dengan baik.
+                                    </small>
+                                </div>
+                            </div>
                         </div>
-                        
-                        <div class="alert alert-warning">
-                            <small>
-                                <i class="bi bi-exclamation-triangle"></i>
-                                <strong>Privasi:</strong> File KTP hanya akan digunakan untuk verifikasi identitas dan tidak akan disebarluaskan.
-                            </small>
+
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <div class="p-3 border rounded bg-warning-subtle border-warning text-warning-emphasis">
+                                    <small>
+                                        <i class="bi bi-exclamation-triangle me-2"></i>
+                                        <strong>Privasi:</strong> File KTP hanya akan digunakan untuk verifikasi identitas dan tidak akan disebarluaskan.
+                                    </small>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>

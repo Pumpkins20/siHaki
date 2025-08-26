@@ -251,7 +251,7 @@
                 </div>
             </div>Today's Stats -->
 
-            <!-- Status Summary -->
+            <!-- 
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Ringkasan Status</h6>
@@ -307,7 +307,7 @@
                         </div>
                     </div>
                 </div>
-            </div>
+            </div>Status Summary -->
 
             <!-- IT Support Contact -->
             <div class="card shadow mb-4">

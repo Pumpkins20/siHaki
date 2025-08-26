@@ -1,5 +1,4 @@
-
-        :root {
+:root {
             --primary-color: #AE4FA8;
             --secondary-color: #F9A02F;
             --accent-color: #96CEB4;
@@ -35,8 +34,8 @@
             color: var(--primary-color) !important;
         }
         .navbar-nav .nav-link.active {
-    color: var(--primary-color) !important;
-}
+            color: var(--primary-color) !important;
+        }
 
         .search-section {
             background: white;
@@ -53,6 +52,7 @@
             z-index: 10;
         }
 
+        /* ✅ UPDATED: Enhanced form layout - single row */
         .search-section form {
             background: var(--bg-light);
             border-radius: 15px;
@@ -69,8 +69,8 @@
         }
 
         .form-group.search-input-group {
-            flex: 2;
-            min-width: 250px;
+            flex: 3; /* Make search input wider */
+            min-width: 300px;
         }
 
         .form-group label {
@@ -107,14 +107,90 @@
             height: fit-content;
             white-space: nowrap;
             flex-shrink: 0;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
         }
         
         .search-btn:hover {
             background: var(--secondary-color);
             transform: translateY(-2px);
             box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+            color: white;
         }
-        
+
+        /* ✅ NEW: Reset button styling */
+        .btn-outline-secondary {
+            background: white;
+            border: 2px solid #6c757d;
+            color: #6c757d;
+            padding: 12px 25px;
+            border-radius: 10px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            white-space: nowrap;
+        }
+
+
+/* ✅ ADD: Tambahkan styling untuk class form-group-flex dan search-input */
+.form-group-flex {
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group-flex.search-input {
+    flex: 3; /* Membuat field pencarian 3x lebih lebar dari field lain */
+    min-width: 350px;
+}
+
+/* ✅ UPDATED: Enhanced styling untuk tombol Reset Filter - menyamakan dengan search-btn */
+.btn-outline-secondary {
+    background: white;
+    border: 2px solid var(--primary-color) !important; /* Gunakan primary color untuk konsistensi */
+    color: var(--primary-color) !important;
+    padding: 12px 25px !important; /* Same padding as search-btn */
+    border-radius: 10px !important;
+    font-weight: 600 !important;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    height: fit-content; /* Same height property as search-btn */
+    font-size: 1rem; /* Explicit font size */
+    line-height: normal; /* Reset line height */
+}
+
+.btn-outline-secondary:hover {
+    background: var(--primary-color) !important;
+    color: white !important;
+    transform: translateY(-2px);
+    box-shadow: 0 5px 15px rgba(174, 79, 168, 0.3);
+}
+
+/* ✅ OVERRIDE: Remove Bootstrap btn-lg effects */
+.btn-lg.btn-outline-secondary {
+    padding: 12px 25px !important; /* Override btn-lg padding */
+    font-size: 1rem !important; /* Override btn-lg font-size */
+}
+
+/* ✅ ADD: Ensure both buttons have same properties */
+.search-btn, 
+.btn-outline-secondary {
+    min-height: 48px; /* Same minimum height */
+    box-sizing: border-box;
+}
+
+/* ✅ ADD: Form label styling untuk form-group-flex */
+.form-group-flex label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: var(--text-dark);
+}
         .content-section {
             padding: 40px 0;
             background: #f8f9fa;
@@ -245,6 +321,7 @@
             color: #6c757d;
         }
 
+        /* ✅ UPDATED: Responsive design - back to original logic */
         @media (max-width: 768px) {
             .search-section form {
                 flex-direction: column;
@@ -256,7 +333,8 @@
                 flex: 1;
             }
             
-            .search-btn {
+            .search-btn,
+            .btn-outline-secondary {
                 width: 100%;
                 margin-top: 10px;
             }
@@ -310,11 +388,11 @@
             margin-left: 3rem; 
         }
 
-/* If you want even more separation, you could also add this */
-.category-card > div {
-    justify-content: space-between; /* Ensures maximum space between elements */
-    width: 100%; /* Ensures the flex container takes full width */
-}
+        /* If you want even more separation, you could also add this */
+        .category-card > div {
+            justify-content: space-between; /* Ensures maximum space between elements */
+            width: 100%; /* Ensures the flex container takes full width */
+        }
         /* ✅ NEW: Badge enhancements */
         .badge-sm {
             font-size: 0.7rem;

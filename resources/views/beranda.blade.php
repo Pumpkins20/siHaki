@@ -218,7 +218,7 @@
     </section>
     @endif
 
-    <!-- Search Section -->
+    <!-- Search Section 
     <section class="search-section" id="search">
         <div class="container">
             <div class="search-container">
@@ -373,7 +373,7 @@
                 @endif
             </div>
         </div>
-    </section>
+    </section>-->
 
     <!-- Footer -->
     <footer class="footer">

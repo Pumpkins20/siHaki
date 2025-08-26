@@ -64,14 +64,7 @@
                             <option value="judul_ciptaan" {{ request('search_by') == 'judul_ciptaan' ? 'selected' : '' }}>Judul Ciptaan</option>
                         </select>
                     </div>
-
-                    <div class="form-group-flex search-input">
-                        <label for="searchInput" class="form-label">Kata Kunci Pencarian</label>
-                        <input type="text" class="form-control" id="searchInput" name="q" 
-                            value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
-                    </div>
-
-                    {{-- ✅ NEW: Year filter --}}
+                     {{-- ✅ NEW: Year filter --}}
                     <div class="form-group-flex">
                         <label for="tahunPengajuan" class="form-label">Tahun Pengajuan</label>
                         <select class="form-select" id="tahunPengajuan" name="tahun_pengajuan">
@@ -88,13 +81,20 @@
                             @endif
                         </select>
                     </div>
+                    <div class="form-group-flex search-input">
+                        <label for="searchInput" class="form-label">Kata Kunci Pencarian</label>
+                        <input type="text" class="form-control" id="searchInput" name="q" 
+                            value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
+                    </div>
+
+                   
 
                 <!-- Row 2: Action buttons -->
                 
                     <div class="d-flex justify-content-end">
                         <button class="search-btn" type="submit">
                             <i class="bi bi-search me-2"></i>Cari Sekarang
-                        </button>
+                        </button> &nbsp;
                         
                         {{-- ✅ NEW: Show clear filter button when filters are active --}}
                         @if(request()->has('q') || request()->has('search_by') || request()->has('tahun_pengajuan'))
@@ -231,8 +231,8 @@
                             </div>
                         @endif
                         
-                        {{-- ✅ ENHANCED: View all button --}}
-                        <div class="mt-3">
+                       {{-- ✅ UPDATED: Move button to right corner --}}
+                        <div class="d-flex justify-content-end mt-3">
                             <a href="{{ route('detail_jenis', ['type' => $result->type]) }}" 
                             class="btn btn-outline-primary">
                                 <i class="bi bi-arrow-right me-1"></i>Lihat Semua {{ $result->type_name }} ({{ $result->count }} karya)

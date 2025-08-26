@@ -1451,17 +1451,25 @@ class AdminController extends Controller
             'user_department' => $submission->user->department->name ?? 'N/A',
             'member_count' => $submission->member_count,
             'leader_name' => $leader ? $leader->name : $submission->user->nama,
+            'leader_alamat' => $leader ? $leader->alamat : $submission->user->alamat,
             'leader_email' => $leader ? $leader->email : $submission->user->email,
             'leader_whatsapp' => $leader ? $leader->whatsapp : '',
 
             // ✅ ADDED: Alamat data untuk surat pengalihan
-            'alamat' => $submission->alamat ?: '',
             'kode_pos' => $submission->kode_pos ?: '',
             'alamat_lengkap' => $this->getFormattedAlamat($submission),
             
             'submission_date' => $submission->submission_date->format('d M Y'),
             'reviewed_at' => $submission->reviewed_at->format('d M Y'),
-            'current_date' => now()->format('d M Y'),
+            'current_date' => (function() {
+                $bulanIndonesia = [
+                    1 => 'Januari', 2 => 'Februari', 3 => 'Maret', 4 => 'April',
+                    5 => 'Mei', 6 => 'Juni', 7 => 'Juli', 8 => 'Agustus',
+                    9 => 'September', 10 => 'Oktober', 11 => 'November', 12 => 'Desember'
+                ];
+                $now = now();
+                return $now->format('d') . ' ' . $bulanIndonesia[$now->month] . ' ' . $now->format('Y');
+            })(),
             'current_year' => now()->format('Y'),
             'members_list' => $members->map(function($member, $index) {
                 return [
@@ -1906,10 +1914,9 @@ class AdminController extends Controller
         $pihak1Table->addRow();
         $pihak1Table->addCell(2000)->addText('Alamat', $textStyle);
         $pihak1Table->addCell(300)->addText(':', $textStyle);
+        $pihak1Table->addCell(6000)->addText($templateData['leader_alamat'], $textStyle);
         // ✅ UPDATED: Alamat diisi otomatis dari data submission
-        $alamatLengkap = $this->getFormattedAlamat($submission);
-        $pihak1Table->addCell(6000)->addText($alamatLengkap, $textStyle);
-
+       
         $section->addTextBreak(1);
 
         // ✅ PENJELASAN PIHAK I

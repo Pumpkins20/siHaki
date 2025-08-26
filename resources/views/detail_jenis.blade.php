@@ -538,33 +538,7 @@
         </nav>
     </header>
 
-    <!-- Search Section -->
-    <section class="search-section py-4">
-        <div class="container">
-            <form method="GET" action="{{ route('jenis_ciptaan') }}">
-                <!-- Dropdown Cari Berdasarkan -->
-                <div class="form-group">
-                    <label for="searchBy">Cari Berdasarkan</label>
-                    <select class="form-select" id="searchBy" name="search_by">
-                        <option value="jenis_ciptaan" {{ request('search_by') == 'jenis_ciptaan' ? 'selected' : '' }}>Jenis Ciptaan</option>
-                        <option value="judul_ciptaan" {{ request('search_by') == 'judul_ciptaan' ? 'selected' : '' }}>Judul Ciptaan</option>
-                    </select>
-                </div>
-
-                <!-- Input Pencarian -->
-                <div class="form-group search-input-group">
-                    <label for="searchInput" id="searchLabel">Cari</label>
-                    <input type="text" class="form-control" id="searchInput" name="q" value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
-                </div>
-
-                <!-- Tombol Cari -->
-                <button class="search-btn" type="submit">
-                    <i class="bi bi-search"></i>
-                    Cari
-                </button>
-            </form>
-        </div>
-    </section>
+  
 
     <!-- Results Section -->
     <section class="results-section">

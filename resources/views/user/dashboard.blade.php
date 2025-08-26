@@ -261,6 +261,18 @@
             <!-- Notifikasi Terbaru -->
             <div class="card shadow">
                 <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">Jadwal Pengajuan</h6>
+                </div>
+                <div class="card-body">
+                   <h6>jadwal pengajuan berlangsung secara periodik pada bulan: <br><br>
+                    • Desember <br>
+                    • April<br>
+                    • September</h6>
+                </div>
+            </div>
+
+            <div class="card shadow">
+                <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Notifikasi Terbaru</h6>
                 </div>
                 <div class="card-body">

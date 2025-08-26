@@ -262,7 +262,7 @@
                                             <td>
                                                 <strong>{{ $member->name }}</strong>
                                                 @if($member->is_leader)
-                                                    <br><span class="badge bg-success badge-sm">Ketua Tim</span>
+                                                    <br><span class="badge bg-success badge-sm">Pencipta Utama</span>
                                                 @endif
                                             </td>
                                             <td>
