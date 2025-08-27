@@ -211,7 +211,7 @@
                                     <span class="text-primary">{{ $submission->pencipta_utama }}</span>
                                 </div> -->
 
-                               @if(count($submission->anggota_pencipta) > 0)
+    @if(count($submission->anggota_pencipta) > 0)
     <div class="mb-3">
         <strong>Anggota Pencipta:</strong>
         <div class="anggota-list">
@@ -222,6 +222,8 @@
                         {{ $anggota }}
                         @if($index === 0)
                             <span class="badge bg-primary ms-2">(PENCIPTA UTAMA)</span>
+                        @else
+                            <span class="badge bg-secondary ms-2">(ANGGOTA)</span>
                         @endif
                     </div>
                 </div>
