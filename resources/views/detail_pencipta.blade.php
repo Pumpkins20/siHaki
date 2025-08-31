@@ -214,29 +214,29 @@
                                     </span>
                                 </div>
 
-                                <!--<div class="mb-3">
+                                
                                     <strong>Pencipta Utama:</strong>
                                     <span class="text-primary">{{ $submission->pencipta_utama }}</span>
-                                </div> -->
 
+                                    <br><br>
                                @if(count($submission->anggota_pencipta) > 0)
-    <div class="mb-3">
-        <strong>Anggota Pencipta:</strong>
-        <div class="anggota-list">
-            @foreach($submission->anggota_pencipta as $index => $anggota)
-                <div class="anggota-item">
-                    <div class="anggota-number">{{ $index + 1 }}</div>
-                    <div>
-                        {{ $anggota }}
-                        @if($index === 0)
-                            <span class="badge bg-primary ms-2">(PENCIPTA UTAMA)</span>
+                            <div class="mb-3">
+                                <strong>Anggota Pencipta:</strong>
+                                <div class="anggota-list">
+                                    @foreach($submission->anggota_pencipta as $index => $anggota)
+                                        <div class="anggota-item">
+                                            <div class="anggota-number">{{ $index + 1 }}</div>
+                                            <div>
+                                                {{ $anggota }}
+                                                @if($index === 0)
+                                                    
+                                                @endif
+                                            </div>
+                                        </div>
+                                    @endforeach
+                                </div>
+                            </div>
                         @endif
-                    </div>
-                </div>
-            @endforeach
-        </div>
-    </div>
-@endif
                             </div>
 
                             <div class="col-md-4 text-end">

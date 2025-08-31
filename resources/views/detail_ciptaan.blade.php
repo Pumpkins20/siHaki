@@ -78,11 +78,7 @@
                             <div class="info-label">Uraian Singkat</div>
                             <div class="info-value">{{ $ciptaan->uraian_singkat ?? 'Tidak tersedia' }}</div>
                         </div>
-                        
-                        <div class="info-row">
-                            <div class="info-label">Tanggal Publikasi</div>
-                            <div class="info-value">{{ $ciptaan->tanggal_publikasi ?? 'Tidak tersedia' }}</div>
-                        </div>
+                       
                         
        
                         <!-- Section Divider -->

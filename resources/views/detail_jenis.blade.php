@@ -596,12 +596,12 @@
                                     </span>
                                 </div>
 
-                               <!--  <div class="mb-3">
+                                <div class="mb-3">
                                     <strong>Pencipta Utama:</strong>
                                     <span class="text-primary">
                                         {{ $submission->members->where('is_leader', true)->first()->name ?? $submission->user->nama ?? 'Tidak diketahui' }}
                                     </span>
-                                </div> -->
+                                </div>
 
                                 {{-- ✅ IDENTICAL: Anggota pencipta section sama persis dengan detail_pencipta --}}
                                 @if($submission->members->where('is_leader', false)->count() > 0)
@@ -610,7 +610,7 @@
                                         <div class="anggota-list">
                                             @foreach($submission->members->where('is_leader', false) as $index => $member)
                                                 <div class="anggota-item">
-                                                    <div class="anggota-number">{{ $index + 1 }}</div>
+                                                    <div class="anggota-number">{{ $index  }}</div>
                                                     <div>
                                                         {{ $member->name }}
                                                         @if($index === 0)
