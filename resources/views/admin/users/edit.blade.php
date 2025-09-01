@@ -53,7 +53,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="nidn" class="form-label">NIDN</label>
-                                        <input type="text" class="form-control bg-light" id="nidn" 
+                                        <input type="number" class="form-control bg-light" id="nidn" 
                                                value="{{ $user->nidn }}" readonly>
                                         <div class="form-text">NIDN tidak dapat diubah</div>
                                     </div>
@@ -75,9 +75,9 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="username" class="form-label">Username <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control @error('username') is-invalid @enderror" 
+                                        <input type="text" class="form-control bg-light @error('username') is-invalid @enderror" 
                                                id="username" name="username" value="{{ old('username', $user->username) }}" 
-                                               placeholder="Username untuk login" required>
+                                               placeholder="Username untuk login" required readonly>
                                         @error('username')
                                             <div class="invalid-feedback">{{ $message }}</div>
                                         @enderror

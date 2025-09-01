@@ -58,7 +58,7 @@
                                 <div class="col-md-6">
                                     <div class="mb-3">
                                         <label for="nidn" class="form-label">NIDN <span class="text-danger">*</span></label>
-                                        <input type="text" class="form-control @error('nidn') is-invalid @enderror" 
+                                        <input type="number" class="form-control @error('nidn') is-invalid @enderror" 
                                             id="nidn" name="nidn" value="{{ old('nidn') }}" 
                                             placeholder="Masukkan NIDN" required>
                                         @error('nidn')
