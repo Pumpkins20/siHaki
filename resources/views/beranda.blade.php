@@ -233,7 +233,7 @@
                         <label for="authorFilter">Filter Pencarian</label>
                         <select id="authorFilter" name="filter" class="form-select" required>
                             <option value="">-- Pilih Filter Pencarian --</option>
-                            <option value="nama" {{ request('filter') == 'nama' ? 'selected' : '' }}>Berdasarkan Nama Pencipta</option>
+                            <option value="nama" {{ request('filter') == 'nama' ? 'selected' : '' }}>Berdasarkan Nama Pencipta Utama</option>
                             <option value="institusi" {{ request('filter') == 'institusi' ? 'selected' : '' }}>Berdasarkan Jurusan</option>
                             <option value="judul" {{ request('filter') == 'judul' ? 'selected' : '' }}>Berdasarkan Judul Ciptaan</option>
                             <option value="tipe" {{ request('filter') == 'tipe' ? 'selected' : '' }}>Berdasarkan Tipe Ciptaan</option>
@@ -271,8 +271,7 @@
                                 <thead>
                                     <tr>
                                         <th>Judul</th>
-                                        <th>Pencipta</th>
-                                        <th>Jurusan</th>
+                                        <th>Pencipta Utama</th>
                                         <th>Tipe</th>
                                         <th>Tahun</th>
                                         <th>Aksi</th>
@@ -294,14 +293,6 @@
                                                 @if(request('filter') == 'nama')
                                                     <br><small class="text-success">
                                                         <i class="bi bi-check-circle"></i> Sesuai pencarian nama
-                                                    </small>
-                                                @endif
-                                            </td>
-                                            <td>
-                                                {{ $ciptaan->jurusan }}
-                                                @if(request('filter') == 'institusi')
-                                                    <br><small class="text-success">
-                                                        <i class="bi bi-check-circle"></i> Sesuai pencarian jurusan
                                                     </small>
                                                 @endif
                                             </td>

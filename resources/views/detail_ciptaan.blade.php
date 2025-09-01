@@ -64,10 +64,7 @@
                             <div class="info-value">{{ $ciptaan->judul ?? 'Tidak tersedia' }}</div>
                         </div>
 
-                        <div class="info-row">
-                            <div class="info-label">Tipe HKI</div>
-                            <div class="info-value">{{ $ciptaan->tipe_hki ?? 'Tidak tersedia' }}</div>
-                        </div>
+                        
                         
                         <div class="info-row">
                             <div class="info-label">Jenis HKI</div>
@@ -79,8 +76,7 @@
                             <div class="info-value">{{ $ciptaan->uraian_singkat ?? 'Tidak tersedia' }}</div>
                         </div>
                        
-                        
-       
+                      
                         <!-- Section Divider -->
                         <hr class="section-divider">
 
@@ -144,9 +140,9 @@
 
                         <!-- Action Buttons -->
                         <div class="action-buttons">
-                            <button type="button" class="btn btn-secondary">
+                            <a href="{{ route('beranda') }}" class="btn btn-secondary">
                                 <i class="bi bi-arrow-left me-2"></i>Kembali
-                            </button>
+                            </a>
                         </div>
                     </div>
                 </div>

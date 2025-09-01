@@ -81,7 +81,7 @@
                     <div class="form-group-flex">
                         <label for="searchBy" class="form-label">Cari Berdasarkan</label>
                         <select class="form-select" id="searchBy" name="search_by">
-                            <option value="nama_pencipta" {{ request('search_by') == 'nama_pencipta' ? 'selected' : '' }}>Nama Pencipta</option>
+                            <option value="nama_pencipta" {{ request('search_by') == 'nama_pencipta' ? 'selected' : '' }}>Nama Pengusul</option>
                             <option value="program_studi" {{ request('search_by') == 'program_studi' ? 'selected' : '' }}>Program Studi</option>
                         </select>
                     </div>
@@ -93,7 +93,7 @@
                             value="{{ request('q') }}" placeholder="Masukkan kata kunci pencarian...">
                     </div>
 
-                    <!-- Row 2: Additional filters -->
+                    <!-- 
                     <div class="form-group-flex">
                         <label for="programStudi" class="form-label">Program Studi</label>
                         <select class="form-select" id="programStudi" name="program_studi">
@@ -109,7 +109,7 @@
                                 <option value="" disabled>Tidak ada data program studi</option>
                             @endif
                         </select>
-                    </div>
+                    </div>Row 2: Additional filters -->
 
                     <div class="form-group-flex">
                         <label for="tahunPengajuan" class="form-label">Tahun Pengajuan</label>
